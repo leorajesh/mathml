@@ -9,16 +9,39 @@ import { learningObjectives, selfChecksByConcept } from './data/learningObjectiv
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { normalizeDefinitionSymbol } from './utils/mathText.js';
+import { PythonRunner } from './python/PythonRunner.jsx';
+
+function conceptIdFromHash() {
+  const id = decodeURIComponent(window.location.hash.replace('#', ''));
+  return conceptMap[id] ? id : null;
+}
 
 export function App() {
-  const initialId = window.location.hash.replace('#', '') || '';
-  const [selectedId, setSelectedId] = React.useState(conceptMap[initialId] ? initialId : null);
+  const [selectedId, setSelectedId] = React.useState(conceptIdFromHash);
   const selectedConcept = selectedId ? conceptMap[selectedId] : null;
+
+  // The URL hash is the source of truth, so browser Back/Forward and shared links work.
+  React.useEffect(() => {
+    function syncFromUrl() {
+      setSelectedId(conceptIdFromHash());
+      window.scrollTo({ top: 0 });
+    }
+    window.addEventListener('hashchange', syncFromUrl);
+    window.addEventListener('popstate', syncFromUrl);
+    return () => {
+      window.removeEventListener('hashchange', syncFromUrl);
+      window.removeEventListener('popstate', syncFromUrl);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    document.title = selectedConcept ? `${selectedConcept.title} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
+  }, [selectedConcept]);
 
   function selectConcept(id) {
     setSelectedId(id);
     window.location.hash = id;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0 });
   }
 
   function showLanding() {
@@ -41,7 +64,7 @@ export function App() {
       </header>
 
       {selectedConcept ? (
-        <ConceptPage concept={selectedConcept} onBack={showLanding} onSelect={selectConcept} />
+        <ConceptPage key={selectedConcept.id} concept={selectedConcept} onBack={showLanding} onSelect={selectConcept} />
       ) : (
         <Landing onSelect={selectConcept} />
       )}
@@ -134,8 +157,8 @@ function ConceptPage({ concept, onBack, onSelect }) {
         <ConceptGraph graph={concept.graph} />
       </OrderedSection>
 
-      <OrderedSection number="6" title="Python Implementation Sketch">
-        <CodeExample conceptId={concept.id} />
+      <OrderedSection number="6" title="Try It in Python">
+        <PythonRunner conceptId={concept.id} original={codeExamples[concept.id] ?? '# No code example available yet.\nprint("Hello from Python")'} />
       </OrderedSection>
 
       <OrderedSection number="7" title="Common Misconception">
@@ -152,33 +175,6 @@ function ConceptPage({ concept, onBack, onSelect }) {
         <div className="sources"><Sigma size={18} /> Sources: {concept.sources.join(', ')}</div>
       </OrderedSection>
     </main>
-  );
-}
-
-function CodeExample({ conceptId }) {
-  const code = codeExamples[conceptId] ?? '# No code example available yet.';
-  const [copied, setCopied] = React.useState(false);
-
-  async function copyCode() {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setCopied(false);
-    }
-  }
-
-  return (
-    <div className="code-example">
-      <div className="code-toolbar">
-        <span>Python</span>
-        <button onClick={copyCode} aria-label="Copy Python code">
-          {copied ? 'Copied' : 'Copy code'}
-        </button>
-      </div>
-      <pre><code>{code}</code></pre>
-    </div>
   );
 }
 

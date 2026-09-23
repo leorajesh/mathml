@@ -10,26 +10,39 @@ import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { normalizeDefinitionSymbol } from './utils/mathText.js';
 import { PythonRunner } from './python/PythonRunner.jsx';
+import { TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
+import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
 
-function conceptIdFromHash() {
-  let id;
+// Routes live in the URL hash so Back/Forward and shared links work:
+//   #<concept-id>              concept page (as before)
+//   #<concept-id>?track=math   concept page inside the Math or ML track, with previous / next
+//   #track=ml                  the ML track's step-by-step list
+function routeFromHash() {
+  let raw;
   try {
-    id = decodeURIComponent(window.location.hash.replace('#', ''));
+    raw = decodeURIComponent(window.location.hash.replace('#', ''));
   } catch {
-    return null; // Malformed escapes such as "#%E0" fall back to the landing page.
+    return {}; // Malformed escapes such as "#%E0" fall back to the landing page.
   }
+  const [path, query = ''] = raw.split('?');
+  const params = new URLSearchParams(path.startsWith('track=') ? path : query);
+  const trackId = isTrackId(params.get('track')) ? params.get('track') : null;
   // Own-property check so hashes like "#constructor" are not mistaken for concepts.
-  return Object.hasOwn(conceptMap, id) ? id : null;
+  const conceptId = Object.hasOwn(conceptMap, path) ? path : null;
+  return {
+    conceptId,
+    // A concept keeps its track only if the track actually contains it.
+    trackId: conceptId ? (trackId && trackOrder(trackId).includes(conceptId) ? trackId : null) : trackId,
+  };
 }
 
 export function App() {
-  const [selectedId, setSelectedId] = React.useState(conceptIdFromHash);
-  const selectedConcept = selectedId ? conceptMap[selectedId] : null;
+  const [route, setRoute] = React.useState(routeFromHash);
+  const selectedConcept = route.conceptId ? conceptMap[route.conceptId] : null;
 
-  // The URL hash is the source of truth, so browser Back/Forward and shared links work.
   React.useEffect(() => {
     function syncFromUrl() {
-      setSelectedId(conceptIdFromHash());
+      setRoute(routeFromHash());
       window.scrollTo({ top: 0 });
     }
     window.addEventListener('hashchange', syncFromUrl);
@@ -41,17 +54,31 @@ export function App() {
   }, []);
 
   React.useEffect(() => {
-    document.title = selectedConcept ? `${selectedConcept.title} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
-  }, [selectedConcept]);
+    const trackTitle = route.trackId ? tracks[route.trackId].title : null;
+    document.title = selectedConcept
+      ? `${selectedConcept.title} | ML + Math Study Map`
+      : trackTitle ? `${trackTitle} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
+  }, [selectedConcept, route.trackId]);
 
-  function selectConcept(id) {
-    setSelectedId(id);
-    window.location.hash = id;
+  function go(hash) {
+    window.location.hash = hash;
+    setRoute(routeFromHash());
     window.scrollTo({ top: 0 });
   }
 
+  // Opening a concept keeps the current track when the concept belongs to it, so prerequisite and
+  // follow-on links still work as before inside a track.
+  function selectConcept(id, trackId = route.trackId) {
+    const keepTrack = trackId && trackOrder(trackId).includes(id);
+    go(keepTrack ? `${id}?track=${trackId}` : id);
+  }
+
+  function showTrack(trackId) {
+    go(`track=${trackId}`);
+  }
+
   function showLanding() {
-    setSelectedId(null);
+    setRoute({});
     history.pushState('', document.title, window.location.pathname + window.location.search);
   }
 
@@ -62,36 +89,46 @@ export function App() {
           <Network size={22} />
           <span>ML + Math Study Map</span>
         </button>
-        <nav className="top-actions" aria-label="Concept shortcuts">
-          <button onClick={() => selectConcept('linear-classifier')}>Classification</button>
-          <button onClick={() => selectConcept('linear-regression')}>Regression</button>
-          <button onClick={() => selectConcept('logistic-regression')}>Logistic</button>
+        <nav className="top-actions" aria-label="Learning tracks">
+          {trackIds.map((trackId) => (
+            <button key={trackId} className={route.trackId === trackId ? 'active' : ''} onClick={() => showTrack(trackId)}>{tracks[trackId].title}</button>
+          ))}
         </nav>
       </header>
 
       {selectedConcept ? (
-        <ConceptPage key={selectedConcept.id} concept={selectedConcept} onBack={showLanding} onSelect={selectConcept} />
+        <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} />
       ) : (
-        <Landing onSelect={selectConcept} />
+        <Landing trackId={route.trackId} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} />
       )}
     </div>
   );
 }
 
-function Landing({ onSelect }) {
-  const [activeTab, setActiveTab] = React.useState('map');
+function Landing({ trackId, onSelect, onShowTrack, onShowLanding }) {
+  const [localTab, setLocalTab] = React.useState('map');
+  const activeTab = trackId ? `track-${trackId}` : localTab;
+
+  function openLocalTab(tab) {
+    setLocalTab(tab);
+    if (trackId) onShowLanding();
+  }
 
   return (
     <main className="landing landing-full">
       <nav className="landing-tabs" aria-label="Landing views">
-        <button className={activeTab === 'map' ? 'active' : ''} onClick={() => setActiveTab('map')}>Concept Map</button>
-        <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => setActiveTab('objectives')}>Learning Objectives</button>
-        <button className={activeTab === 'concepts' ? 'active' : ''} onClick={() => setActiveTab('concepts')}>All Concepts</button>
+        <button className={activeTab === 'map' ? 'active' : ''} onClick={() => openLocalTab('map')}>Concept Map</button>
+        {trackIds.map((id) => (
+          <button key={id} className={activeTab === `track-${id}` ? 'active' : ''} onClick={() => onShowTrack(id)}>{tracks[id].title}</button>
+        ))}
+        <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => openLocalTab('objectives')}>Learning Objectives</button>
+        <button className={activeTab === 'concepts' ? 'active' : ''} onClick={() => openLocalTab('concepts')}>All Concepts</button>
       </nav>
 
-      {activeTab === 'map' && <MindMap onSelect={onSelect} />}
-      {activeTab === 'objectives' && <LearningObjectives onSelect={onSelect} />}
-      {activeTab === 'concepts' && <ConceptIndex onSelect={onSelect} />}
+      {activeTab === 'map' && <MindMap onSelect={(id) => onSelect(id, null)} />}
+      {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} />}
+      {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
+      {activeTab === 'concepts' && <ConceptIndex onSelect={(id) => onSelect(id, null)} />}
     </main>
   );
 }
@@ -118,10 +155,17 @@ function ConceptIndex({ onSelect }) {
   );
 }
 
-function ConceptPage({ concept, onBack, onSelect }) {
+function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
   return (
     <main className="concept-page">
-      <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to mind map</button>
+      {trackId ? (
+        <TrackBar trackId={trackId} conceptId={concept.id} onOpen={onSelect} onShowTrack={onShowTrack} />
+      ) : (
+        <div className="concept-page-top">
+          <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to mind map</button>
+          <TrackMembership conceptId={concept.id} onOpen={onSelect} />
+        </div>
+      )}
       <section className="concept-hero">
         <p className="eyebrow">{concept.group} / {conceptLevel(concept.id)} / Source context: {concept.week}</p>
         <h1>{concept.title}</h1>
@@ -180,6 +224,8 @@ function ConceptPage({ concept, onBack, onSelect }) {
         <LinkGroup label="Follow-on" ids={concept.followOns} onSelect={onSelect} fallback="This is the end of this concept path." />
         <div className="sources"><Sigma size={18} /> Sources: {concept.sources.join(', ')}</div>
       </OrderedSection>
+
+      {trackId && <TrackBar trackId={trackId} conceptId={concept.id} onOpen={onSelect} onShowTrack={onShowTrack} position="bottom" />}
     </main>
   );
 }

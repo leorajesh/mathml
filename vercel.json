@@ -1,0 +1,5 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "week1-2-ml-ai-study/dist"
+}

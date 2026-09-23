@@ -1,0 +1,11 @@
+{
+  "name": "mathml-vercel",
+  "private": true,
+  "workspaces": [
+    "week1-2-ml-ai-study"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace week1-2-ml-ai-study",
+    "dev": "npm run dev --workspace week1-2-ml-ai-study"
+  }
+}

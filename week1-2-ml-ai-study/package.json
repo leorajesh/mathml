@@ -1,0 +1,21 @@
+{
+  "name": "week1-2-ml-ai-study",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "katex": "latest",
+    "react-katex": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {}
+}

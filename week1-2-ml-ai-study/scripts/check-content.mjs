@@ -5,6 +5,7 @@ import katex from 'katex';
 import { codeExamples } from '../src/data/codeExamples.js';
 import { conceptMap, concepts, entryFor, topics } from '../src/data/concepts.js';
 import { workedExampleMath } from '../src/data/workedExampleMath.js';
+import { quizzes } from '../src/data/quizzes.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
 const problems = [];
@@ -49,6 +50,17 @@ for (const topic of topics) {
     parentOf.set(child, topic.id);
   }
 }
+for (const concept of concepts) {
+  const questions = quizzes[concept.id] ?? [];
+  if (questions.length < 3) problems.push(`${concept.id}: quiz needs at least 3 questions (has ${questions.length})`);
+  questions.forEach((q, index) => {
+    const where = `${concept.id} quiz question ${index + 1}`;
+    if (!q.question || !q.answer || !q.why) problems.push(`${where}: missing question, answer, or explanation`);
+    if (!Array.isArray(q.wrong) || q.wrong.length !== 3) problems.push(`${where}: needs exactly 3 wrong options`);
+    else if (new Set([q.answer, ...q.wrong]).size !== 4) problems.push(`${where}: options are not all different`);
+  });
+}
+for (const key of Object.keys(quizzes)) if (!conceptMap[key]) problems.push(`quiz for unknown concept "${key}"`);
 for (const key of Object.keys(codeExamples)) if (!conceptMap[key]) problems.push(`code for unknown concept "${key}"`);
 for (const key of Object.keys(workedExampleMath)) if (!conceptMap[key]) problems.push(`worked math for unknown concept "${key}"`);
 
@@ -56,4 +68,4 @@ if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);
 }
-console.log(`Content OK: ${concepts.length} concepts, ${topics.length} topics, ${graphTypes.size} graph types.`);
+console.log(`Content OK: ${concepts.length} concepts, ${topics.length} topics, ${graphTypes.size} graph types, ${Object.values(quizzes).flat().length} quiz questions.`);

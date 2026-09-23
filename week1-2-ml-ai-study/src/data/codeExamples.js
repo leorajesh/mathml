@@ -25,8 +25,25 @@ print("training error E_n =", train_error)
 # Try: set theta0 = -3.5 and see which email becomes a mistake.`,
 
 
-  'feature-vectors': py`import numpy as np
+  'vectors-dot-product': py`import numpy as np
 
+u = np.array([2.0, 3.0])
+v = np.array([4.0, -1.0])
+
+print("u . v =", u @ v)
+print("|u| =", round(np.linalg.norm(u), 4), " |v| =", round(np.linalg.norm(v), 4))
+cos_angle = (u @ v) / (np.linalg.norm(u) * np.linalg.norm(v))
+print("cos(angle) =", round(cos_angle, 3), " angle =", round(np.degrees(np.arccos(cos_angle)), 1), "degrees")
+
+w = np.array([3.0, -2.0])
+print("u . w =", u @ w, "-> perpendicular" if u @ w == 0 else "")
+print("u . u =", u @ u, "= |u|^2")
+
+# Try: change v to [-4, 1]. What happens to the dot product and the angle?`,
+
+  'feature-representation': py`import numpy as np
+
+# Features for one email: [times "free" appears, number of links]
 x = np.array([2.0, 3.0])
 theta = np.array([4.0, -1.0])
 
@@ -34,10 +51,13 @@ contributions = theta * x
 score = theta @ x
 print("per-feature contributions theta_i * x_i:", contributions)
 print("score theta . x =", score)
-print("predicted class:", "+1" if score > 0 else "-1")
+print("predicted class:", "+1" if score >= 0 else "-1")
 
-cos_angle = score / (np.linalg.norm(theta) * np.linalg.norm(x))
-print("cos(angle) =", round(cos_angle, 3), " angle =", round(np.degrees(np.arccos(cos_angle)), 1), "degrees")
+# One-hot encoding of a category
+categories = ["personal", "work", "unknown"]
+def one_hot(value):
+    return np.array([1.0 if c == value else 0.0 for c in categories])
+print("work ->", one_hot("work"))
 
 # Try: change theta[1] to -3. Which side does x land on now?`,
 

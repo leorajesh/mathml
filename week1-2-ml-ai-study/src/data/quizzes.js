@@ -1,0 +1,301 @@
+// Multiple-choice quizzes for each concept page. In each question the first option listed is
+// the correct one; the page shuffles options deterministically so the answer is not always first.
+// Topic pages combine the questions of their subtopics. Checked by scripts/check-content.mjs.
+
+export const quizzes = {
+  "ml-workflow": [
+    {"question": "Why is a model judged on data it did not train on?", "answer": "Because the goal is to predict well on new examples, not to memorize the training set", "wrong": ["Because training data is always mislabeled", "Because the test set is larger", "Because the loss cannot be computed on training data"], "why": "Generalization to unseen examples is the real target; a model can score perfectly on training data by memorizing it."},
+    {"question": "In the spam example, theta = [2, 1] and theta_0 = -2. What is the score of x = [1, 1]?", "answer": "1", "wrong": ["3", "-1", "0"], "why": "2*1 + 1*1 - 2 = 1, so the email is predicted as spam (+1)."},
+    {"question": "Which of these is a choice about the hypothesis class?", "answer": "Deciding to use a linear classifier sign(theta dot x + theta_0)", "wrong": ["Deciding that a mistake costs 1", "Deciding to count the word 'free' as a feature", "Deciding to run gradient descent for 100 steps"], "why": "The hypothesis class is the family of models you search over; the other options are the loss, the features, and the optimizer."},
+  ],
+  "feature-representation": [
+    {"question": "An email has x = [2, 3] and the weights are theta = [4, -1]. What is the score theta dot x?", "answer": "5", "wrong": ["11", "8", "-3"], "why": "4*2 + (-1)*3 = 8 - 3 = 5."},
+    {"question": "How should the category 'work' from {personal, work, unknown} usually be encoded?", "answer": "As the one-hot vector [0, 1, 0]", "wrong": ["As the number 2", "As the number 1.5", "As the text 'work' inside the vector"], "why": "One-hot encoding avoids inventing an order or distances between categories, which the numbers 1, 2, 3 would suggest."},
+    {"question": "A feature has a negative weight. What does that mean for the score?", "answer": "Larger values of that feature push the score down", "wrong": ["That feature is ignored", "That feature always makes the prediction negative", "The feature must be wrong and should be removed"], "why": "Each feature contributes weight times value, so a negative weight lowers the score as the feature grows."},
+  ],
+  "sets": [
+    {"question": "With A = {1, 2, 3} and B = {3, 4}, what is A intersection B?", "answer": "{3}", "wrong": ["{1, 2, 3, 4}", "{1, 2}", "{4}"], "why": "The intersection keeps only elements in both sets, and only 3 is in both."},
+    {"question": "With universe U = {1, 2, 3, 4, 5} and A = {1, 2, 3}, what is the complement of A?", "answer": "{4, 5}", "wrong": ["{1, 2, 3}", "{ } (the empty set)", "{1, 2, 3, 4, 5}"], "why": "The complement is everything in U that is not in A."},
+    {"question": "Which statement about sets is true?", "answer": "{1, 2, 2, 3} and {3, 2, 1} are the same set", "wrong": ["The order of elements changes the set", "A set can contain the same element twice", "A minus B always equals B minus A"], "why": "Sets ignore order and repeats; difference is not symmetric ({1,2,3} minus {3,4} is {1,2}, while {3,4} minus {1,2,3} is {4})."},
+  ],
+  "functions": [
+    {"question": "f maps 1 -> a, 2 -> a, 3 -> b from {1, 2, 3} to {a, b, c}. Which is true?", "answer": "It is neither injective nor surjective", "wrong": ["It is injective but not surjective", "It is surjective but not injective", "It is bijective"], "why": "1 and 2 share the output a (not injective) and c is never reached (not surjective)."},
+    {"question": "What does it mean for a function to be injective?", "answer": "Different inputs always give different outputs", "wrong": ["Every output in the codomain is reached", "Every input gives exactly one output", "The function can be graphed as a straight line"], "why": "Injective (one-to-one) means no two inputs share an output. 'Every output reached' is surjective; 'exactly one output per input' is what makes it a function at all."},
+    {"question": "Is f(x) = x^2 from the real numbers to the real numbers injective?", "answer": "No, because f(2) = f(-2)", "wrong": ["Yes, because each x gives one output", "Yes, because squares are never negative", "No, because it is not a function"], "why": "Two different inputs, 2 and -2, give the same output 4."},
+  ],
+  "inverse-composition": [
+    {"question": "With f(x) = x + 1 and g(x) = 2x, what is g(f(3))?", "answer": "8", "wrong": ["7", "6", "9"], "why": "First f(3) = 4, then g(4) = 8. Note f(g(3)) = 7, so order matters."},
+    {"question": "Which functions have an inverse function?", "answer": "Exactly the bijections (injective and surjective)", "wrong": ["All functions", "Only linear functions", "Only functions from numbers to numbers"], "why": "Undoing needs every output to come from exactly one input, which is bijectivity."},
+    {"question": "What is the inverse of g after f?", "answer": "f inverse after g inverse", "wrong": ["g inverse after f inverse", "f after g", "1 / (g(f(x)))"], "why": "Undo the last step first: g was applied last, so g inverse comes first."},
+  ],
+  "vectors-dot-product": [
+    {"question": "What is u dot v for u = [2, 3] and v = [4, -1]?", "answer": "5", "wrong": ["11", "[8, -3]", "-5"], "why": "Multiply matching entries and add: 8 + (-3) = 5. A dot product is a single number."},
+    {"question": "Two nonzero vectors have dot product 0. What does that tell you?", "answer": "They are perpendicular", "wrong": ["One of them must be the zero vector", "They point in the same direction", "They have the same length"], "why": "u dot v = |u||v|cos(angle), and cos(angle) = 0 exactly at 90 degrees."},
+    {"question": "What is the length of u = [3, 4]?", "answer": "5", "wrong": ["7", "25", "12"], "why": "|u| = sqrt(u dot u) = sqrt(9 + 16) = 5."},
+  ],
+  "matrix-operations": [
+    {"question": "If A = [[1, 2], [3, 4]], what is A transpose?", "answer": "[[1, 3], [2, 4]]", "wrong": ["[[4, 3], [2, 1]]", "[[1, 2], [3, 4]]", "[[2, 4], [6, 8]]"], "why": "Transposing turns rows into columns: the first row [1, 2] becomes the first column."},
+    {"question": "Can a 2 by 3 matrix be added to a 3 by 2 matrix?", "answer": "No, addition needs exactly the same shape", "wrong": ["Yes, both have 6 entries", "Yes, after transposing automatically", "Only if both are symmetric"], "why": "Addition is entry by entry, so rows and columns must match."},
+    {"question": "For any square matrix A, which matrix is always symmetric?", "answer": "A + A transpose", "wrong": ["A minus 2A", "2A", "A with its first row removed"], "why": "(A + A^T)^T = A^T + A, the same matrix, so it equals its own transpose."},
+  ],
+  "matrix-multiplication-outer-product": [
+    {"question": "A is 2 by 3 and B is 3 by 4. What is the shape of AB?", "answer": "2 by 4", "wrong": ["3 by 3", "2 by 3", "The product is not defined"], "why": "The inner sizes (3 and 3) must match; the result takes the outer sizes."},
+    {"question": "What is the rank of an outer product a b^T when a and b are nonzero?", "answer": "1", "wrong": ["The length of a", "The length of b", "It depends on the entries"], "why": "Every row of a b^T is a multiple of b^T, so there is only one independent direction."},
+    {"question": "For square matrices A and B, which is true in general?", "answer": "AB and BA can be different", "wrong": ["AB always equals BA", "AB is always the zero matrix", "AB is only defined when A equals B"], "why": "Matrix multiplication is not commutative; the page's example gives different AB and BA."},
+  ],
+  "matrix-systems": [
+    {"question": "What is the solution of 2a + b = 5 and a - b = 1?", "answer": "a = 2, b = 1", "wrong": ["a = 1, b = 2", "a = 3, b = -1", "There is no solution"], "why": "Adding the equations gives 3a = 6, so a = 2, then b = 1."},
+    {"question": "What does solving Ax = b ask?", "answer": "Which input vector x produces the output b", "wrong": ["Which matrix A turns b into x", "What the determinant of A is", "Which entries of A are zero"], "why": "A combines the entries of x; solving finds the x that A turns into b."},
+    {"question": "Which operation does NOT change the solutions of a system?", "answer": "Adding a multiple of one equation to a different equation", "wrong": ["Multiplying an equation by 0", "Deleting an equation", "Adding a number to only one side of an equation"], "why": "Row replacement is reversible, so it keeps exactly the same solutions."},
+  ],
+  "gaussian-elimination": [
+    {"question": "Which is an allowed elementary row operation?", "answer": "Swap two rows", "wrong": ["Multiply a row by 0", "Replace a row by itself squared", "Delete a row of zeros and a nonzero row together"], "why": "The three operations are: swap rows, scale a row by a nonzero number, and add a multiple of one row to a different row."},
+    {"question": "What extra property does reduced row echelon form (RREF) have over REF?", "answer": "Every pivot is 1 and has zeros above and below it", "wrong": ["It has no zero rows", "Its entries are all integers", "It is always the identity matrix"], "why": "RREF normalizes pivots and clears their columns, so solutions can be read off."},
+    {"question": "In the page's example, what is z after elimination?", "answer": "3/2", "wrong": ["1/2", "2", "4/3"], "why": "The last row reads (4/3) z = 2, so z = 3/2."},
+  ],
+  "solution-structure": [
+    {"question": "After elimination a row reads [0 0 0 | 5]. What does it mean?", "answer": "The system has no solution", "wrong": ["The system has exactly one solution", "The system has infinitely many solutions", "The variable in column 3 equals 5"], "why": "That row says 0 = 5, a contradiction."},
+    {"question": "A consistent system has 3 unknowns but only 1 pivot. How many free variables are there?", "answer": "2", "wrong": ["1", "3", "0"], "why": "Each variable column without a pivot is free: 3 - 1 = 2."},
+    {"question": "How can every solution of a consistent system Ax = b be written?", "answer": "One particular solution plus any vector in the null space of A", "wrong": ["Only the particular solution", "Any vector in the column space of A", "The zero vector plus b"], "why": "Adding a null-space vector does not change Ax, so all solutions are x_p + x_h."},
+  ],
+  "vector-spaces": [
+    {"question": "Which set is a vector space?", "answer": "All polynomials a + bx + cx^2 with real coefficients", "wrong": ["Polynomials with constant term 1", "Vectors in R^2 with positive entries", "The line y = x + 1 in R^2"], "why": "It is closed under addition and scaling and contains the zero polynomial; the others fail closure or miss zero."},
+    {"question": "What must every vector space contain?", "answer": "The zero vector", "wrong": ["The vector [1, 1, ..., 1]", "At least two vectors", "A basis of exactly 3 vectors"], "why": "Scaling any vector by 0 must stay inside, so the zero vector is always there."},
+    {"question": "What does 'closed under addition' mean?", "answer": "Adding two members always gives another member", "wrong": ["The set has no members", "Adding members eventually reaches zero", "Only the zero vector can be added"], "why": "Closure means you can never leave the set by adding (or scaling) its members."},
+  ],
+  "span-linear-combinations": [
+    {"question": "Is b = [4, 7] in the span of v1 = [1, 2] and v2 = [2, 3]?", "answer": "Yes, b = 2 v1 + 1 v2", "wrong": ["No, it needs a third vector", "Yes, b = v1 + v2", "No, because b is longer than both"], "why": "Solving c1 + 2c2 = 4 and 2c1 + 3c2 = 7 gives c1 = 2, c2 = 1."},
+    {"question": "What is the span of a single nonzero vector in R^2?", "answer": "A line through the origin", "wrong": ["The whole plane", "Just that one vector", "A circle"], "why": "All multiples c v form a line through the origin."},
+    {"question": "Which vector is in the span of any set of vectors?", "answer": "The zero vector", "wrong": ["The sum of all entries", "The vector [1, 1]", "None in general"], "why": "Take every amount equal to 0."},
+  ],
+  "linear-independence": [
+    {"question": "When are vectors linearly independent?", "answer": "When the only combination giving zero uses all-zero amounts", "wrong": ["When no two of them are equal", "When they all have length 1", "When they are all nonzero"], "why": "Independence means no nontrivial combination is zero, so none is built from the others."},
+    {"question": "Can three vectors in R^2 be independent?", "answer": "No, at most two vectors in R^2 can be independent", "wrong": ["Yes, if they are all different", "Yes, if none is a multiple of another", "Only if one of them is zero"], "why": "R^2 has dimension 2, so any three vectors are dependent."},
+    {"question": "For v1 = [1,2,1], v2 = [3,8,2], v3 = [5,6,7], which relation holds?", "answer": "-11 v1 + 2 v2 + v3 = 0", "wrong": ["v1 + v2 = v3", "2 v1 = v2", "They are independent, so no relation holds"], "why": "Checking entry by entry: -11 + 6 + 5 = 0, -22 + 16 + 6 = 0, -11 + 4 + 7 = 0."},
+  ],
+  "subspaces": [
+    {"question": "Which set is a subspace of R^3?", "answer": "The plane x + y + z = 0", "wrong": ["The plane x + y + z = 1", "All vectors with x > 0", "The single point (1, 1, 1)"], "why": "It contains the origin and is closed under addition and scaling; the others fail."},
+    {"question": "What is the null space of a matrix A?", "answer": "All vectors x with Ax = 0", "wrong": ["All outputs Ax", "The rows of A that are zero", "All vectors with zero entries"], "why": "The null space collects every input sent to zero; the set of outputs is the column space."},
+    {"question": "When is the solution set of Ax = b a subspace?", "answer": "Only when b = 0", "wrong": ["Always", "Never", "Only when A is square"], "why": "For b not zero the solution set misses the origin, so it is an affine set, not a subspace."},
+  ],
+  "basis-coordinates": [
+    {"question": "What two properties make a set of vectors a basis?", "answer": "It spans the space and is linearly independent", "wrong": ["It has unit vectors and they are perpendicular", "It contains the zero vector and spans the space", "It has exactly two vectors"], "why": "Spanning reaches everything; independence makes the coordinates unique."},
+    {"question": "In the basis b1 = [1, 1], b2 = [1, -1], what are the coordinates of v = [3, -2]?", "answer": "[1/2, 5/2]", "wrong": ["[3, -2]", "[5/2, 1/2]", "[1, 2]"], "why": "c1 + c2 = 3 and c1 - c2 = -2 give c1 = 1/2 and c2 = 5/2."},
+    {"question": "Why are coordinates in a basis unique?", "answer": "Because the basis vectors are independent", "wrong": ["Because the basis vectors have length 1", "Because every space has only one basis", "Because coordinates are always integers"], "why": "Two different recipes for the same vector would give a nonzero combination equal to zero, contradicting independence."},
+  ],
+  "dimension": [
+    {"question": "What is the dimension of the plane x + y + z = 0 inside R^3?", "answer": "2", "wrong": ["3", "1", "0"], "why": "It has a basis of two vectors, such as [-1,1,0] and [-1,0,1]."},
+    {"question": "In a space of dimension 3, what is true of any 4 vectors?", "answer": "They are linearly dependent", "wrong": ["They always span the space", "They are always independent", "At least one of them is zero"], "why": "More vectors than the dimension must be dependent."},
+    {"question": "What is the dimension of P2, the polynomials of degree at most 2?", "answer": "3", "wrong": ["2", "Infinite", "1"], "why": "A basis is 1, x, x^2, three vectors."},
+  ],
+  "linear-transformations": [
+    {"question": "Which map from R^2 to R^2 is linear?", "answer": "T(x, y) = (2x, y)", "wrong": ["S(x, y) = (x + 1, y)", "Q(x, y) = (x^2, y)", "R(x, y) = (xy, y)"], "why": "T keeps addition and scaling; S moves the origin, and Q and R are not linear in the inputs."},
+    {"question": "What must every linear transformation do to the zero vector?", "answer": "Send it to the zero vector", "wrong": ["Send it to [1, 1]", "Leave it undefined", "Send it to the first basis vector"], "why": "T(0) = T(0 * v) = 0 * T(v) = 0."},
+    {"question": "What is the kernel of a linear map T?", "answer": "All inputs that T sends to zero", "wrong": ["All outputs T can produce", "The largest input", "The matrix of T"], "why": "The kernel (null space) is {v : T(v) = 0}; the set of outputs is the image."},
+  ],
+  "transformation-matrix": [
+    {"question": "How do you build the matrix of a linear map T on R^2?", "answer": "Put T(e1) and T(e2) as its columns", "wrong": ["Put T(e1) and T(e2) as its rows", "Apply T to the vector [1, 1] only", "Write the formula of T on the diagonal"], "why": "Every input is a combination of e1 and e2, so their images, as columns, determine T."},
+    {"question": "What is the matrix of the reflection T(x, y) = (x, -y)?", "answer": "[[1, 0], [0, -1]]", "wrong": ["[[-1, 0], [0, 1]]", "[[0, 1], [1, 0]]", "[[1, 1], [1, -1]]"], "why": "T(e1) = [1, 0] and T(e2) = [0, -1] become the columns."},
+    {"question": "Why does a linear map not need infinitely many examples to be known?", "answer": "Knowing the images of a basis determines all other images", "wrong": ["Linear maps only act on finitely many vectors", "Every linear map is the identity", "Computers round the answers"], "why": "Linearity carries the basis images to every combination of the basis."},
+  ],
+  "composition-of-transformations": [
+    {"question": "In the product AB applied to a vector x, which matrix acts first?", "answer": "B, then A", "wrong": ["A, then B", "Both at the same time", "Whichever is larger"], "why": "ABx = A(Bx): B is closest to x, so it acts first."},
+    {"question": "With R = rotate 90 degrees and F = reflect across the x-axis, is FR equal to RF?", "answer": "No, the order changes the result", "wrong": ["Yes, always", "Yes, because both are 2 by 2", "Only for vectors on the x-axis"], "why": "The page computes FR = [[0,-1],[-1,0]] and RF = [[0,1],[1,0]]."},
+    {"question": "Why can stacking linear layers without nonlinearities not add power?", "answer": "Their product is a single linear map", "wrong": ["Each layer cancels the previous one", "Linear layers cannot be multiplied", "Deep networks must use exactly one layer"], "why": "A composition of linear maps is linear, with matrix equal to the product."},
+  ],
+  "change-of-basis": [
+    {"question": "P has the new basis vectors as columns. How do you get new-basis coordinates from standard ones?", "answer": "Multiply by P inverse", "wrong": ["Multiply by P", "Multiply by P transpose, always", "Add P"], "why": "P turns new coordinates into standard ones, so P inverse goes back."},
+    {"question": "In the basis {[1,1], [1,-1]}, what are the coordinates of v = [3, 1]?", "answer": "[2, 1]", "wrong": ["[3, 1]", "[1, 2]", "[4, 2]"], "why": "2[1,1] + 1[1,-1] = [3, 1]."},
+    {"question": "What does changing the basis change?", "answer": "The coordinates used to describe a vector", "wrong": ["The vector itself", "The length of every vector", "The dimension of the space"], "why": "The arrow stays put; only its numerical description changes."},
+  ],
+  "rank-nullity": [
+    {"question": "A = [[1, 2, 3], [2, 4, 6]]. What is the rank of A?", "answer": "1", "wrong": ["2", "3", "0"], "why": "Row 2 is twice row 1, so elimination leaves one pivot."},
+    {"question": "A 3 by 5 matrix has rank 3. What is its nullity?", "answer": "2", "wrong": ["3", "5", "0"], "why": "Rank + nullity = number of columns: 5 - 3 = 2."},
+    {"question": "What does the nullity count?", "answer": "Input directions that the matrix sends to zero", "wrong": ["The number of zero entries", "The number of rows", "Output directions the matrix produces"], "why": "Nullity is the dimension of the null space; rank counts output directions."},
+  ],
+  "determinant-geometry": [
+    {"question": "What is det([[2, 1], [1, 1]])?", "answer": "1", "wrong": ["3", "0", "-1"], "why": "ad - bc = 2*1 - 1*1 = 1."},
+    {"question": "What does det(A) = 0 tell you about a square matrix A?", "answer": "A flattens some direction and has no inverse", "wrong": ["A is the identity", "A has only zero entries", "A doubles all areas"], "why": "Zero area or volume scaling means a direction collapsed, so A cannot be undone."},
+    {"question": "If det(A) = 2 and det(B) = -3 (same size), what is det(AB)?", "answer": "-6", "wrong": ["-1", "6", "It cannot be known"], "why": "Determinants multiply: det(AB) = det(A) det(B)."},
+  ],
+  "determinants-cofactor-row-ops": [
+    {"question": "How does swapping two rows change the determinant?", "answer": "It flips the sign", "wrong": ["It leaves it unchanged", "It doubles it", "It sets it to zero"], "why": "A swap reverses orientation, so det becomes -det."},
+    {"question": "How does replacing row i by row i plus 5 times row j (i different from j) change the determinant?", "answer": "It does not change it", "wrong": ["It multiplies it by 5", "It adds 5 to it", "It flips the sign"], "why": "Row replacement with a different row keeps the determinant."},
+    {"question": "What is the determinant of [[3,2,2],[2,3,2],[2,2,3]] from the page?", "answer": "7", "wrong": ["5", "15", "0"], "why": "Cofactor expansion: 3(5) - 2(2) + 2(-2) = 15 - 4 - 4 = 7."},
+  ],
+  "invertible-transformations": [
+    {"question": "Which statement is equivalent to a square matrix A being invertible?", "answer": "det(A) is not zero", "wrong": ["A has no zero entries", "A is symmetric", "A has more rows than columns"], "why": "For square matrices, invertible, nonzero determinant, full rank, and trivial null space all mean the same thing."},
+    {"question": "What is the inverse of [[3, 5], [-1, 4]]?", "answer": "(1/17) [[4, -5], [1, 3]]", "wrong": ["(1/17) [[3, 5], [-1, 4]]", "[[4, -5], [1, 3]]", "(1/7) [[4, 5], [-1, 3]]"], "why": "For [[a, b], [c, d]] the inverse is (1/(ad - bc)) [[d, -b], [-c, a]], with ad - bc = 17."},
+    {"question": "To solve Ax = b in practice, what is usually preferred?", "answer": "Elimination or a factorization such as LU", "wrong": ["Computing A inverse and multiplying", "Guessing x", "Transposing A"], "why": "Forming the inverse is slower and less numerically stable than solving directly."},
+  ],
+  "affine-maps": [
+    {"question": "Why is f(x) = 2x + 1 not linear in the linear-algebra sense?", "answer": "It sends 0 to 1, not to 0", "wrong": ["It is a curve", "It has a negative slope", "It has two variables"], "why": "Linear maps must send 0 to 0; the + 1 shift makes it affine."},
+    {"question": "In a model, what plays the role of the shift b in f(x) = Ax + b?", "answer": "The bias or intercept term", "wrong": ["The learning rate", "The number of features", "The loss function"], "why": "The bias lets a line or boundary move away from the origin."},
+    {"question": "What does the solution set of Ax = b look like when b is not zero and a solution exists?", "answer": "A particular solution plus the null space: a shifted subspace", "wrong": ["A subspace through the origin", "Always a single point", "Always empty"], "why": "It is an affine set: x_p + Null(A)."},
+  ],
+  "linear-classifier": [
+    {"question": "With theta = [1, 2] and theta_0 = -3, what is predicted for x = [1, 0]?", "answer": "-1, because the score is -2", "wrong": ["+1, because the score is 2", "+1, because theta_0 is negative", "It lies exactly on the boundary"], "why": "1*1 + 2*0 - 3 = -2, which is negative."},
+    {"question": "How is the weight vector theta related to the decision boundary?", "answer": "It is perpendicular to the boundary", "wrong": ["It lies along the boundary", "It is the boundary's midpoint", "It has no relation to the boundary"], "why": "Points on the boundary satisfy theta dot x = -theta_0, so theta is the boundary's normal direction."},
+    {"question": "What is the decision boundary of a linear classifier?", "answer": "The set of points where theta dot x + theta_0 = 0", "wrong": ["The set of training points", "The line through the two closest points", "Where the loss is largest"], "why": "Points with score exactly zero separate the positive and negative sides."},
+  ],
+  "linear-classifier-through-origin": [
+    {"question": "What can a classifier without a bias term NOT do?", "answer": "Shift its boundary away from the origin", "wrong": ["Rotate its boundary", "Use negative weights", "Use more than two features"], "why": "The boundary theta dot x = 0 always contains the origin."},
+    {"question": "With theta = [1, -1] and no bias, what is predicted for x = [2, 1]?", "answer": "+1", "wrong": ["-1", "0", "It cannot be classified"], "why": "Score = 2 - 1 = 1 > 0."},
+    {"question": "Can a through-origin classifier put [1, 1] and [2, 2] in different classes?", "answer": "No, both scores have the same sign because [2, 2] = 2 [1, 1]", "wrong": ["Yes, with the right theta", "Yes, if theta has negative entries", "Only if one point is on the boundary"], "why": "theta dot [2,2] = 2 (theta dot [1,1]), so the signs always agree (unless both are 0)."},
+  ],
+  "linear-separability": [
+    {"question": "When is a dataset linearly separable?", "answer": "When some line (hyperplane) puts every positive example strictly on one side and every negative on the other", "wrong": ["When it has the same number of positives and negatives", "When the perceptron makes at least one mistake", "When all features are positive"], "why": "Separability means some parameters give every signed margin y(theta dot x + theta_0) > 0."},
+    {"question": "Points: negative at x = 1, positive at x = 3, and positive at x = 0.5 (one feature). Are they separable by a threshold?", "answer": "No, the negative point sits between two positives", "wrong": ["Yes, at x = 2", "Yes, at x = 0.75", "Yes, any threshold works"], "why": "Any single threshold puts 0.5 and 1 on the same side, or 1 and 3 on the same side."},
+    {"question": "What is the geometric margin of a separator?", "answer": "The distance from the boundary to the closest training point", "wrong": ["The number of training points", "The largest score", "The length of theta"], "why": "It is min over t of y(theta dot x + theta_0) / |theta|, which does not change when theta is rescaled."},
+  ],
+  "perceptron": [
+    {"question": "When does the perceptron update theta?", "answer": "When an example has y (theta dot x + theta_0) <= 0", "wrong": ["After every example, no matter what", "Only when the score is exactly 1", "When the loss increases"], "why": "It updates on mistakes, including points exactly on the boundary."},
+    {"question": "What is the perceptron update after a mistake on (x, y)?", "answer": "theta <- theta + y x and theta_0 <- theta_0 + y", "wrong": ["theta <- theta - y x", "theta <- 0", "theta <- y theta"], "why": "Adding y x moves the score of that example in the correct direction."},
+    {"question": "Starting from theta = [0, 0], theta_0 = 0, the perceptron sees x = [2, 1] with y = +1. What is theta afterwards?", "answer": "[2, 1] with theta_0 = 1", "wrong": ["[0, 0] with theta_0 = 0", "[-2, -1] with theta_0 = -1", "[1, 1] with theta_0 = 1"], "why": "The score is 0, which counts as a mistake, so theta becomes [0,0] + [2,1]."},
+  ],
+  "perceptron-convergence": [
+    {"question": "On data separable through the origin with margin gamma and |x| <= R, how many mistakes can the perceptron make at most?", "answer": "(R / gamma)^2", "wrong": ["R + gamma", "Infinitely many", "gamma / R"], "why": "The convergence theorem bounds the mistakes by (R/gamma)^2 for a through-origin unit-norm separator."},
+    {"question": "What happens on data that is not linearly separable?", "answer": "The perceptron keeps making updates and does not settle", "wrong": ["It converges faster", "It stops after one pass", "It finds the best possible line"], "why": "Fixing one example can break another forever."},
+    {"question": "If the margin gamma gets smaller, what happens to the mistake bound?", "answer": "It gets larger", "wrong": ["It gets smaller", "It stays the same", "It becomes zero"], "why": "(R/gamma)^2 grows as gamma shrinks: tight gaps mean more corrections."},
+  ],
+  "empirical-risk-zero-one": [
+    {"question": "Signed margins are [2, -0.5, 0.1, -3]. What is the training error?", "answer": "0.5", "wrong": ["0.25", "0.75", "0"], "why": "Two margins are <= 0, so 2 of 4 examples are mistakes."},
+    {"question": "What does zero-one loss give for a margin of -0.01 and for -100?", "answer": "1 in both cases", "wrong": ["0.01 and 100", "0 and 1", "It depends on theta"], "why": "Zero-one loss only asks right or wrong, not by how much."},
+    {"question": "Why is zero-one loss hard to minimize directly?", "answer": "It is flat almost everywhere, so it gives no direction to improve", "wrong": ["It is always zero", "It can be negative", "It needs the test set"], "why": "Small parameter changes usually do not change the count, so there is no slope to follow."},
+  ],
+  "hinge-loss": [
+    {"question": "What is the hinge loss for a signed margin z = 0.2?", "answer": "0.8", "wrong": ["0", "0.2", "1.2"], "why": "max(0, 1 - 0.2) = 0.8."},
+    {"question": "For which margins is the hinge loss exactly 0?", "answer": "z >= 1", "wrong": ["z > 0", "z = 0 only", "Never"], "why": "The loss becomes zero once the margin clears 1."},
+    {"question": "Why can a correctly classified example still have positive hinge loss?", "answer": "Its margin is between 0 and 1: correct but not confident", "wrong": ["Hinge loss ignores the label", "Correct examples always have loss 1", "Because the bias is negative"], "why": "Hinge loss asks for margin at least 1, not just the right sign."},
+  ],
+  "convex-functions": [
+    {"question": "Which function is convex?", "answer": "f(x) = x^2", "wrong": ["f(x) = x^3", "f(x) = sin(x)", "f(x) = -x^2"], "why": "x^2 has f''(x) = 2 >= 0 everywhere; the others curve downward somewhere."},
+    {"question": "Why are convex losses convenient to minimize?", "answer": "Every local minimum is a global minimum", "wrong": ["They are always zero at the optimum", "They are always smooth", "They have exactly one input"], "why": "Convex functions have no false valleys, so descent cannot get stuck in the wrong dip."},
+    {"question": "Is |x| convex?", "answer": "Yes, even though it has a corner at 0", "wrong": ["No, because it is not smooth", "No, because it has a minimum", "Only for x > 0"], "why": "The chord test holds everywhere; convex does not require smoothness."},
+  ],
+  "surrogate-losses": [
+    {"question": "Why train with hinge or logistic loss instead of zero-one loss?", "answer": "They are convex and give useful slopes, while still upper-bounding the error", "wrong": ["They always give higher accuracy on the test set", "They are the metric we report", "They never reach zero"], "why": "A convex surrogate is easy to optimize, and pushing it down pushes the mistake count down."},
+    {"question": "For z = -0.4, what are the zero-one and hinge losses?", "answer": "1 and 1.4", "wrong": ["0 and 0.4", "1 and 0.6", "0 and 1.4"], "why": "The prediction is wrong (loss 1), and max(0, 1 + 0.4) = 1.4."},
+    {"question": "Which is true of hinge loss compared with zero-one loss?", "answer": "Hinge loss is on or above zero-one loss for every margin", "wrong": ["Hinge loss is always below zero-one loss", "They are equal for all margins", "Hinge loss is not defined for negative margins"], "why": "max(0, 1 - z) >= 1 when z <= 0 and >= 0 otherwise."},
+  ],
+  "gradient-descent-method": [
+    {"question": "For J(theta) = (theta - 3)^2, starting at theta = 0 with alpha = 0.2, what is theta after one step?", "answer": "1.2", "wrong": ["0.6", "3", "-1.2"], "why": "The gradient at 0 is 2(0 - 3) = -6, and 0 - 0.2(-6) = 1.2."},
+    {"question": "Which direction does gradient descent step in?", "answer": "Opposite to the gradient", "wrong": ["Along the gradient", "Perpendicular to the gradient", "Toward the origin"], "why": "The gradient points uphill, so we step the other way."},
+    {"question": "For J(theta) = (theta - 3)^2, what happens with learning rate alpha = 1.1?", "answer": "The iterates diverge", "wrong": ["It converges in one step", "It converges slowly", "It stays at the starting point"], "why": "Each step multiplies the distance to 3 by (1 - 2 alpha) = -1.2, which grows in size."},
+  ],
+  "subgradients": [
+    {"question": "What is the set of subgradients of |x| at x = 0?", "answer": "Every slope between -1 and 1", "wrong": ["Only 0", "Only 1", "No subgradient exists"], "why": "Any line through the origin with slope in [-1, 1] stays below |x|."},
+    {"question": "What is the subgradient of |x| at x = 2?", "answer": "1", "wrong": ["Any value in [-1, 1]", "2", "0"], "why": "Away from the corner the only valid slope is the ordinary derivative, 1."},
+    {"question": "Why are subgradients needed for hinge loss?", "answer": "Hinge loss has a corner at margin 1 where the ordinary slope does not exist", "wrong": ["Hinge loss is not convex", "Hinge loss has no minimum", "Gradients are too expensive to compute"], "why": "At a corner we can still use any valid subgradient for the descent step."},
+  ],
+  "stochastic-subgradient-descent": [
+    {"question": "What does one stochastic step use?", "answer": "One randomly chosen training example", "wrong": ["The whole training set", "Only the test set", "The largest example"], "why": "Using one example makes each step cheap but noisy."},
+    {"question": "How does hinge-loss SGD differ from the perceptron?", "answer": "It also updates on correct examples with margin below 1, uses a step size, and shrinks theta when regularized", "wrong": ["It never updates on mistakes", "It ignores the labels", "It only works on separable data"], "why": "The hinge loss asks for margin at least 1, and the regularizer shrinks theta each step."},
+    {"question": "Why can the training loss go up on some SGD steps?", "answer": "Each step follows one noisy example, not the full average", "wrong": ["The learning rate is always too large", "The loss is not convex", "SGD maximizes the loss"], "why": "On average the steps go downhill, but individual steps can go up."},
+  ],
+  "linear-regression": [
+    {"question": "With theta_1 = 2 and theta_0 = 1, what is the prediction for x = 3?", "answer": "7", "wrong": ["6", "5", "9"], "why": "2*3 + 1 = 7."},
+    {"question": "If the true y is 9 and the prediction is 7, what is the residual y - y_hat?", "answer": "2", "wrong": ["-2", "16", "63"], "why": "9 - 7 = 2."},
+    {"question": "What does 'linear' in linear regression refer to?", "answer": "Linear in the parameters theta", "wrong": ["The data must lie on a line", "Only one feature is allowed", "The residuals must be zero"], "why": "Features can be transformed (for example x^2) and the model stays linear in theta."},
+  ],
+  "polynomial-regression": [
+    {"question": "With features [x, x^2, x^3], weights a = [1, 0, 3] and b = 5, what is the prediction at x = 2?", "answer": "31", "wrong": ["19", "11", "29"], "why": "5 + 1*2 + 0*4 + 3*8 = 31."},
+    {"question": "Why is polynomial regression still linear regression?", "answer": "The prediction is a weighted sum of features, so it is linear in the weights", "wrong": ["It only fits straight lines", "Polynomials are linear functions of x", "It uses gradient descent"], "why": "Nonlinear features, linear parameters."},
+    {"question": "What usually happens as the degree gets very high?", "answer": "Training error keeps falling but test error eventually rises", "wrong": ["Both errors always fall", "Training error rises", "The model becomes linear"], "why": "High-degree curves can chase noise: overfitting."},
+  ],
+  "least-squares-normal-equation": [
+    {"question": "Fitting y = theta x through the origin to (1, 2) and (2, 3), what is theta_hat?", "answer": "1.6", "wrong": ["1.5", "2", "1.25"], "why": "X^T X = 1 + 4 = 5 and X^T y = 2 + 6 = 8, so theta = 8/5."},
+    {"question": "What is the normal equation?", "answer": "X^T X theta = X^T y", "wrong": ["X theta = 0", "theta = y / X", "X X^T = I"], "why": "Setting the gradient of the squared error to zero gives X^T X theta = X^T y."},
+    {"question": "When does the formula theta = (X^T X)^-1 X^T y work?", "answer": "When X^T X is invertible, which holds when the columns of X are independent", "wrong": ["Always", "Only with one feature", "Only when y is zero"], "why": "Dependent columns make X^T X singular."},
+  ],
+  "ridge-regularization": [
+    {"question": "What does ridge regularization penalize?", "answer": "Large weights, through lambda times the sum of squared weights", "wrong": ["The number of training examples", "The size of the residuals only", "The bias term, always"], "why": "The penalty lambda ||theta||^2 pulls weights toward zero."},
+    {"question": "In the page's example (X^T X = 5, X^T y = 8, n = 2, lambda = 0.5), what is theta_ridge?", "answer": "8/6 = 1.333", "wrong": ["8/5 = 1.6", "8/7 = 1.143", "0"], "why": "theta = X^T y / (X^T X + n lambda) = 8 / (5 + 1)."},
+    {"question": "Why can ridge improve test performance even though training error rises?", "answer": "It reduces overfitting by discouraging extreme weights", "wrong": ["It adds more training data", "It removes all features", "It changes the test labels"], "why": "Trading a little training fit for stability often generalizes better."},
+  ],
+  "lasso": [
+    {"question": "What can lasso do that ridge usually cannot?", "answer": "Set some weights exactly to zero", "wrong": ["Make weights larger", "Fit nonlinear curves", "Use no penalty at all"], "why": "The L1 penalty's soft-thresholding reaches exactly zero."},
+    {"question": "For one standardized feature with least-squares weight w = 3 and lambda = 1, what is the lasso weight?", "answer": "2", "wrong": ["1.5", "3", "0"], "why": "sign(3) max(3 - 1, 0) = 2."},
+    {"question": "Two models have theta = [3, 0] and [1.5, 1.5]. How do their L1 norms compare?", "answer": "They are equal (both 3)", "wrong": ["[3, 0] has the larger L1 norm", "[1.5, 1.5] has the larger L1 norm", "L1 norms cannot be compared"], "why": "|3| + |0| = 3 and |1.5| + |1.5| = 3; it is the L2 norm that differs (9 versus 4.5)."},
+  ],
+  "elastic-net": [
+    {"question": "What penalty does elastic net use?", "answer": "An L1 part plus an L2 part", "wrong": ["Only an L1 part", "Only an L2 part", "The number of nonzero weights squared"], "why": "It combines lasso's L1 penalty with ridge's L2 penalty."},
+    {"question": "For one standardized feature with least-squares weight w = 3, lambda_1 = 1 and lambda_2 = 1, what is the elastic net weight?", "answer": "1", "wrong": ["2", "1.5", "0"], "why": "Soft-threshold then shrink: (3 - 1) / (1 + 1) = 1."},
+    {"question": "When is elastic net especially useful compared with lasso?", "answer": "When features are strongly correlated", "wrong": ["When there is only one feature", "When no regularization is wanted", "When all weights must be nonzero"], "why": "The L2 part spreads weight across correlated features instead of picking one arbitrarily."},
+  ],
+  "model-complexity-generalization": [
+    {"question": "Model A: train 0.40, test 0.42. Model B: train 0.05, test 0.80. Which generalizes better?", "answer": "Model A", "wrong": ["Model B", "They are equal", "It cannot be told without more models"], "why": "A has the lower test loss and a small gap; B memorized the training data."},
+    {"question": "What is overfitting?", "answer": "Fitting noise in the training data so that new data is predicted poorly", "wrong": ["Having too few parameters", "Training for too short a time", "Using a convex loss"], "why": "An overly flexible model learns quirks of the training set."},
+    {"question": "How is overfitting detected?", "answer": "By comparing performance on held-out data with training performance", "wrong": ["By looking at the training loss alone", "By counting the parameters only", "By checking that the loss is convex"], "why": "A large gap between training and held-out error signals overfitting."},
+  ],
+  "train-validation-test": [
+    {"question": "What is the validation set used for?", "answer": "Choosing hyperparameters such as lambda or the polynomial degree", "wrong": ["Fitting the weights", "Reporting the final score", "Replacing the training set"], "why": "Training fits the weights, validation chooses the settings, and test reports once."},
+    {"question": "Why should the test set be used only once, at the end?", "answer": "Tuning on it makes its score optimistic and no longer an honest estimate", "wrong": ["It is too small to use twice", "It has no labels", "Using it twice changes the data"], "why": "Every decision based on the test set leaks it into model selection."},
+    {"question": "Validation errors for lambda = 0.01, 0.1, 1 are 0.30, 0.22, 0.25. Which lambda is chosen?", "answer": "0.1", "wrong": ["0.01", "1", "The average lambda, 0.37"], "why": "Pick the setting with the lowest validation error."},
+  ],
+  "cross-validation": [
+    {"question": "In 4-fold cross-validation, how many times is each example used for validation?", "answer": "Exactly once", "wrong": ["Four times", "Never", "Three times"], "why": "Each fold is held out in exactly one of the four runs."},
+    {"question": "Validation errors across 4 folds are 0.22, 0.25, 0.20, 0.24. What is the CV score?", "answer": "0.2275", "wrong": ["0.25", "0.91", "0.22"], "why": "The average: 0.91 / 4 = 0.2275."},
+    {"question": "Does cross-validation replace the test set?", "answer": "No, the final score must still come from data never used for choosing", "wrong": ["Yes, always", "Yes, when k is large", "Only for classification"], "why": "CV chooses settings, so its score is part of the selection process."},
+  ],
+  "logistic-regression": [
+    {"question": "What is sigma(0), the sigmoid of a score of 0?", "answer": "0.5", "wrong": ["0", "1", "e"], "why": "sigma(0) = 1 / (1 + e^0) = 1/2."},
+    {"question": "With a score of 2, sigma(2) is about 0.881. What is predicted with a 0.5 threshold?", "answer": "Class 1", "wrong": ["Class 0", "Undecided", "Class 2"], "why": "0.881 >= 0.5, so predict y = 1."},
+    {"question": "Why does logistic regression use the sigmoid?", "answer": "To turn any real score into a probability between 0 and 1", "wrong": ["To make the decision boundary curved", "To remove the bias term", "To make the loss zero"], "why": "Bigger scores give higher probabilities, always between 0 and 1."},
+  ],
+  "logistic-loss": [
+    {"question": "True label y = 1. Which prediction has the larger logistic loss?", "answer": "h = 0.2", "wrong": ["h = 0.8", "They are equal", "h = 0.99"], "why": "-log(0.2) = 1.609 is much larger than -log(0.8) = 0.223."},
+    {"question": "Why maximize the log-likelihood instead of the likelihood?", "answer": "Log is increasing, so the best parameters are the same, and sums of logs are easier and numerically safer than products", "wrong": ["The log-likelihood has a different maximizer", "Products of probabilities are always 1", "Logs make the loss non-convex"], "why": "The maximizer is unchanged; products of many small probabilities underflow."},
+    {"question": "What happens to the loss as a confident prediction h approaches 0 when y = 1?", "answer": "It grows without bound", "wrong": ["It approaches 0", "It approaches 1", "It becomes negative"], "why": "-log(h) goes to infinity as h goes to 0: confident mistakes are punished hard."},
+  ],
+  "classification-metrics": [
+    {"question": "TP = 8, FP = 2, TN = 90, FN = 10. What is the recall?", "answer": "8 / 18 = 0.444", "wrong": ["8 / 10 = 0.8", "98 / 110 = 0.891", "90 / 92 = 0.978"], "why": "Recall = TP / (TP + FN)."},
+    {"question": "With the same numbers, what is the precision?", "answer": "8 / 10 = 0.8", "wrong": ["8 / 18 = 0.444", "90 / 100 = 0.9", "10 / 18 = 0.556"], "why": "Precision = TP / (TP + FP)."},
+    {"question": "Why can high accuracy be misleading?", "answer": "When positives are rare, predicting 'negative' for everything scores well but catches nothing", "wrong": ["Accuracy ignores the true negatives", "Accuracy is always above 0.5", "Accuracy only works for regression"], "why": "A model that never predicts positive can have high accuracy and zero recall."},
+  ],
+  "eigenvalues-eigenvectors": [
+    {"question": "A v = 3 v for a nonzero vector v. What is v?", "answer": "An eigenvector with eigenvalue 3", "wrong": ["A basis of the null space", "The zero vector", "A row of A"], "why": "That is the definition of an eigenvector and its eigenvalue."},
+    {"question": "What are the eigenvalues of [[2, 1], [1, 2]]?", "answer": "3 and 1", "wrong": ["2 and 2", "2 and 1", "4 and 0"], "why": "(2 - l)^2 - 1 = 0 gives l = 3 or l = 1."},
+    {"question": "What does a negative eigenvalue do to its eigenvector?", "answer": "Flips it to point the opposite way along the same line", "wrong": ["Rotates it by 90 degrees", "Makes it zero", "Nothing; negative eigenvalues are impossible"], "why": "Av = lambda v with lambda < 0 reverses direction but stays on the same line."},
+  ],
+  "diagonalization": [
+    {"question": "If A = P D P^-1 with D diagonal, what is A^5?", "answer": "P D^5 P^-1", "wrong": ["P^5 D P^-5", "5 P D P^-1", "D^5"], "why": "The inner P^-1 P pairs cancel, leaving P D^5 P^-1."},
+    {"question": "When is an n by n matrix diagonalizable?", "answer": "When it has n linearly independent eigenvectors", "wrong": ["When all its entries are positive", "Always", "When it is upper triangular"], "why": "Those eigenvectors form the invertible matrix P."},
+    {"question": "Is [[1, 1], [0, 1]] diagonalizable?", "answer": "No, it has only one independent eigenvector", "wrong": ["Yes, it is already triangular", "Yes, its eigenvalues are 1 and 1", "No, because its determinant is 0"], "why": "The only eigenvalue is 1, with eigenvectors only along [1, 0]."},
+  ],
+  "pagerank": [
+    {"question": "In the link matrix M, what must each column add up to?", "answer": "1", "wrong": ["0", "The number of pages", "The number of links on the page"], "why": "Each column holds the probabilities of moving from one page to each page."},
+    {"question": "Which vector is the PageRank ranking?", "answer": "The eigenvector of the link matrix with eigenvalue 1, scaled to sum to 1", "wrong": ["The eigenvector with the smallest eigenvalue", "The number of links pointing to each page", "The first column of M"], "why": "The steady state satisfies r = Mr."},
+    {"question": "Why does PageRank add damping (random jumps)?", "answer": "It guarantees a single steady state that the iteration always reaches", "wrong": ["It makes every page rank equally", "It removes pages with no links", "It makes the matrix symmetric"], "why": "Without damping, some link graphs oscillate or have several steady states."},
+  ],
+  "orthogonality": [
+    {"question": "Are u = [1, 1] and v = [1, -1] orthogonal?", "answer": "Yes, their dot product is 0", "wrong": ["No, they have the same length", "No, v has a negative entry", "Only after normalizing"], "why": "1*1 + 1*(-1) = 0."},
+    {"question": "In an orthonormal basis q1, q2, how do you find the coordinates of x?", "answer": "Take the dot products q1 dot x and q2 dot x", "wrong": ["Solve a system with elimination", "Add the entries of x", "Multiply x by the determinant"], "why": "Orthonormality makes each coordinate a simple dot product."},
+    {"question": "For a square orthogonal matrix Q, what is Q inverse?", "answer": "Q transpose", "wrong": ["Q itself, always", "-Q", "It has no inverse"], "why": "Q^T Q = I, so the transpose undoes Q."},
+  ],
+  "dimensionality-reduction": [
+    {"question": "Projecting x = [3, 1] onto the line of u = [1, 1]/sqrt(2), what is the reconstruction?", "answer": "[2, 2]", "wrong": ["[3, 1]", "[4, 4]", "[1, 3]"], "why": "z = u dot x = 4/sqrt(2), and z u = [2, 2]."},
+    {"question": "Why can a projection onto fewer dimensions not be undone exactly?", "answer": "Different points can have the same projection", "wrong": ["Projections always output zero", "Computers cannot store the coordinates", "The basis vectors are not unit length"], "why": "Points that differ only along a discarded direction get the same compressed coordinates."},
+    {"question": "Which directions does PCA keep?", "answer": "The directions in which the data varies most", "wrong": ["The directions with the least variation", "The original coordinate axes", "Random directions"], "why": "Keeping high-variance directions loses the least information."},
+  ],
+  "spectral-theorem": [
+    {"question": "What does the spectral theorem guarantee for a real symmetric matrix A?", "answer": "A = Q Lambda Q^T with orthonormal eigenvectors and real eigenvalues", "wrong": ["A is always invertible", "All entries of A are positive", "A has only one eigenvalue"], "why": "Symmetric matrices diagonalize with an orthogonal matrix of eigenvectors."},
+    {"question": "For A = [[2, 1], [1, 2]], which pair are its unit eigenvectors?", "answer": "[1, 1]/sqrt(2) and [1, -1]/sqrt(2)", "wrong": ["[1, 0] and [0, 1]", "[2, 1] and [1, 2]", "[1, 1] and [2, 2]"], "why": "A[1,1] = [3,3] and A[1,-1] = [1,-1]; normalized they are orthonormal."},
+    {"question": "Does the theorem apply to [[1, 1], [0, 2]]?", "answer": "No, that matrix is not symmetric, and its eigenvectors are not perpendicular", "wrong": ["Yes, every 2 by 2 matrix qualifies", "Yes, because its eigenvalues are real", "No, because it is not invertible"], "why": "The theorem needs symmetry; this matrix's eigenvectors [1,0] and [1,1] are not orthogonal."},
+  ],
+  "lu-decomposition": [
+    {"question": "For A = [[2, 1], [4, 5]], what is L in A = LU?", "answer": "[[1, 0], [2, 1]]", "wrong": ["[[2, 0], [4, 1]]", "[[1, 2], [0, 1]]", "[[1, 0], [0, 1]]"], "why": "Elimination subtracts 2 times row 1 from row 2, and the multiplier 2 goes into L."},
+    {"question": "Why is LU useful when solving Ax = b for many different b?", "answer": "Elimination is done once; each b then needs only two cheap triangular solves", "wrong": ["It makes A symmetric", "It removes the need for b", "It always gives integer answers"], "why": "Triangular solves cost about n^2 operations instead of n^3."},
+    {"question": "Why is the general form PA = LU instead of A = LU?", "answer": "Some matrices need row swaps first, for example when a pivot is 0", "wrong": ["P makes the answer positive", "P stands for the pivot values", "LU never exists without P"], "why": "[[0, 1], [1, 0]] has no LU factorization without a swap."},
+  ],
+  "cholesky-decomposition": [
+    {"question": "Which matrices have a Cholesky factorization A = L L^T?", "answer": "Symmetric positive definite matrices", "wrong": ["All square matrices", "All symmetric matrices", "Only diagonal matrices"], "why": "Positive definiteness keeps every square root in the algorithm positive."},
+    {"question": "For A = [[4, 2], [2, 3]], what is the Cholesky factor L?", "answer": "[[2, 0], [1, sqrt(2)]]", "wrong": ["[[4, 0], [2, 3]]", "[[2, 1], [0, sqrt(2)]]", "[[2, 0], [2, 1]]"], "why": "L L^T = [[4, 2], [2, 1 + 2]] = A."},
+    {"question": "What happens if you run Cholesky on [[1, 2], [2, 1]]?", "answer": "It fails: the matrix is symmetric but not positive definite", "wrong": ["It succeeds with L = [[1, 0], [2, 1]]", "It returns the identity", "It succeeds because the matrix is symmetric"], "why": "Its eigenvalues are 3 and -1, so a square root of a negative number appears."},
+  ],
+  "svd": [
+    {"question": "Which matrices have a singular value decomposition?", "answer": "Every real matrix, of any shape", "wrong": ["Only square matrices", "Only symmetric matrices", "Only invertible matrices"], "why": "Unlike eigendecomposition, the SVD always exists."},
+    {"question": "How are the singular values of A related to A^T A?", "answer": "They are the square roots of the eigenvalues of A^T A", "wrong": ["They equal the diagonal entries of A", "They are the eigenvalues of A plus 1", "They are the entries of A^T A"], "why": "For A = [[3,0],[4,5]], A^T A has eigenvalues 45 and 5, giving sqrt(45) and sqrt(5)."},
+    {"question": "What is the best rank-1 approximation of A?", "answer": "sigma_1 w1 v1^T, using the largest singular value", "wrong": ["The first row of A", "sigma_2 w2 v2^T, using the smallest singular value", "A with all small entries set to zero"], "why": "Keeping the largest singular terms gives the best low-rank approximation (Eckart-Young)."},
+  ],
+};

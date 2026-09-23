@@ -43,8 +43,8 @@ export const workedExampleMath = {
     tex`y=\frac12,\quad x=\frac32`,
   ],
   'solution-structure': [
-    tex`\begin{bmatrix}1&2&-1&3\\2&4&-2&6\end{bmatrix}`, 
-    tex`R_2\leftarrow R_2-2R_1\Rightarrow \begin{bmatrix}1&2&-1&3\\0&0&0&0\end{bmatrix}`,
+    tex`\left[\begin{array}{ccc|c}1&2&-1&3\\2&4&-2&6\end{array}\right]`, 
+    tex`R_2\leftarrow R_2-2R_1\Rightarrow \left[\begin{array}{ccc|c}1&2&-1&3\\0&0&0&0\end{array}\right]`,
     tex`x_2=s,\quad x_3=t,\quad x_1=3-2s+t`,
     tex`x=\begin{bmatrix}3\\0\\0\end{bmatrix}+s\begin{bmatrix}-2\\1\\0\end{bmatrix}+t\begin{bmatrix}1\\0\\1\end{bmatrix}`,
   ],
@@ -65,22 +65,22 @@ export const workedExampleMath = {
     tex`[v]_{\mathcal B}=P^{-1}v=\begin{bmatrix}1/2&0\\0&1\end{bmatrix}\begin{bmatrix}4\\3\end{bmatrix}=\begin{bmatrix}2\\3\end{bmatrix}`,
   ],
   'transformation-matrix': [
+    tex`T(x,y)=(x,-y)`,
     tex`T(e_1)=T\!\left(\begin{bmatrix}1\\0\end{bmatrix}\right)=\begin{bmatrix}1\\0\end{bmatrix}`,
     tex`T(e_2)=T\!\left(\begin{bmatrix}0\\1\end{bmatrix}\right)=\begin{bmatrix}0\\-1\end{bmatrix}`,
-    tex`[T]=\begin{bmatrix}1&0\\0&-1\end{bmatrix}`,
-    tex`T(x,y)=\begin{bmatrix}1&0\\0&-1\end{bmatrix}\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\\-y\end{bmatrix}`,
+    tex`[T]=\begin{bmatrix}1&0\\0&-1\end{bmatrix},\quad [T]\begin{bmatrix}x\\y\end{bmatrix}=\begin{bmatrix}x\\-y\end{bmatrix}`,
   ],
   'composition-of-transformations': [
+    null,
     tex`R=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\quad F=\begin{bmatrix}1&0\\0&-1\end{bmatrix}`,
     tex`FR=\begin{bmatrix}1&0\\0&-1\end{bmatrix}\begin{bmatrix}0&-1\\1&0\end{bmatrix}=\begin{bmatrix}0&-1\\-1&0\end{bmatrix}`,
-    tex`RF=\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}1&0\\0&-1\end{bmatrix}=\begin{bmatrix}0&1\\1&0\end{bmatrix}`,
-    tex`FR\ne RF`,
+    tex`RF=\begin{bmatrix}0&-1\\1&0\end{bmatrix}\begin{bmatrix}1&0\\0&-1\end{bmatrix}=\begin{bmatrix}0&1\\1&0\end{bmatrix}\ne FR`,
   ],
   'change-of-basis': [
+    tex`B=\left\{\begin{bmatrix}1\\1\end{bmatrix},\begin{bmatrix}1\\-1\end{bmatrix}\right\},\quad v=\begin{bmatrix}3\\1\end{bmatrix}`,
     tex`\alpha\begin{bmatrix}1\\1\end{bmatrix}+\beta\begin{bmatrix}1\\-1\end{bmatrix}=\begin{bmatrix}3\\1\end{bmatrix}`,
     tex`\alpha+\beta=3,\quad \alpha-\beta=1`,
-    tex`2\alpha=4\Rightarrow \alpha=2,\quad \beta=1`,
-    tex`[v]_B=\begin{bmatrix}2\\1\end{bmatrix}`,
+    tex`2\alpha=4\Rightarrow \alpha=2,\quad \beta=1,\quad [v]_B=\begin{bmatrix}2\\1\end{bmatrix}`,
   ],
   'invertible-transformations': [
     tex`A=\begin{bmatrix}3&5\\-1&4\end{bmatrix}`,
@@ -117,10 +117,10 @@ export const workedExampleMath = {
     tex`\theta\cdot x=0\Rightarrow x_1-x_2=0\Rightarrow x_1=x_2`,
   ],
   'linear-separability': [
+    null,
     tex`s(x)=x-2`,
     tex`y\,s(x)=(-1)(1-2)=1>0`,
-    tex`y\,s(x)=(+1)(3-2)=1>0`,
-    tex`\gamma=\min(1,1)=1`,
+    tex`y\,s(x)=(+1)(3-2)=1>0,\quad \gamma=\frac{\min(1,1)}{\lVert\theta\rVert}=1`,
   ],
   perceptron: [
     tex`\theta=\begin{bmatrix}0\\0\end{bmatrix},\quad \theta_0=0`,
@@ -144,13 +144,13 @@ export const workedExampleMath = {
     tex`R_n=\frac{0+0.8+2}{3}=0.933\ldots`,
   ],
   'convexity-surrogate-losses': [
-    tex`L_{0/1}(0.7)=0,\quad L_{\text{hinge}}(0.7)=\max(0,1-0.7)=0.3`,
+    tex`L_{0/1}(0.7)=0`,
+    tex`L_{\text{hinge}}(0.7)=\max(0,1-0.7)=0.3`,
     tex`L_{0/1}(-0.4)=1,\quad L_{\text{hinge}}(-0.4)=\max(0,1.4)=1.4`,
-    tex`L_{\text{hinge}}(z)\ge L_{0/1}(z)`,
-    tex`\text{correct but low-margin examples still produce training signal}`, 
+    tex`L_{\text{hinge}}(z)\ge L_{0/1}(z)\ \text{for every } z`,
   ],
   'gradient-descent': [
-    tex`J(\theta)=(\theta-3)^2,\quad \theta_0=0,\quad \alpha=0.2`,
+    tex`J(\theta)=(\theta-3)^2,\quad \theta^{(0)}=0,\quad \alpha=0.2`,
     tex`J'(\theta)=2(\theta-3),\quad J'(0)=-6`,
     tex`\theta\leftarrow0-0.2(-6)=1.2`,
     tex`J'(1.2)=2(1.2-3)=-3.6,\quad \theta\leftarrow1.2-0.2(-3.6)=1.92`,
@@ -167,9 +167,9 @@ export const workedExampleMath = {
     tex`y-\hat y=9-7=2`,
   ],
   'polynomial-regression': [
+    tex`\varphi(x)=\begin{bmatrix}x\\x^2\\x^3\end{bmatrix}`,
     tex`\varphi(2)=\begin{bmatrix}2\\2^2\\2^3\end{bmatrix}=\begin{bmatrix}2\\4\\8\end{bmatrix}`,
-    tex`a=\begin{bmatrix}1\\0\\3\end{bmatrix},\quad b=5`,
-    tex`\hat y=5+1\cdot2+0\cdot4+3\cdot8=31`,
+    tex`a=\begin{bmatrix}1\\0\\3\end{bmatrix},\ b=5\ \Rightarrow\ \hat y=5+1\cdot2+0\cdot4+3\cdot8=31`,
     tex`\hat y\text{ is nonlinear in }x\text{ but linear in }a`,
   ],
   'least-squares-normal-equation': [
@@ -184,10 +184,10 @@ export const workedExampleMath = {
     tex`\hat\theta_{\text{ridge}}=\frac{8}{6}=1.333\ldots <1.6`,
   ],
   'lasso-elastic-net': [
-    tex`\theta_A=\begin{bmatrix}3\\0\end{bmatrix}\Rightarrow \lVert\theta_A\rVert_1=3`,
-    tex`\theta_B=\begin{bmatrix}1.5\\1.5\end{bmatrix}\Rightarrow \lVert\theta_B\rVert_1=3`,
-    tex`\lVert\theta_A\rVert_2^2=9,\quad \lVert\theta_B\rVert_2^2=4.5`,
-    tex`L_1\text{ can choose sparse corners; }L_2\text{ shrinks smoothly}`, 
+    tex`\theta_A=\begin{bmatrix}3\\0\end{bmatrix},\quad \theta_B=\begin{bmatrix}1.5\\1.5\end{bmatrix}`,
+    tex`\lVert\theta_A\rVert_1=3=\lVert\theta_B\rVert_1`,
+    tex`\lVert\theta_A\rVert_2^2=9>4.5=\lVert\theta_B\rVert_2^2`,
+    tex`w_{\text{lasso}}=\operatorname{sign}(w)\max(|w|-\lambda,0),\quad w_{\text{ridge}}=\frac{w}{1+\lambda}`,
   ],
   'model-complexity-generalization': [
     tex`E_{\text{train}}(A)=0.40,\quad E_{\text{test}}(A)=0.42`,
@@ -198,12 +198,12 @@ export const workedExampleMath = {
     tex`\operatorname{CV}_4=\frac{1}{4}\sum_{j=1}^{4}R_{\text{val}}^{(j)}`,
     tex`\text{run 1: train on folds }2,3,4\text{ and validate on fold }1`,
     tex`\text{repeat until each fold is validation once}`, 
-    tex`\text{choose hyperparameters using the average validation risk}`, 
+    tex`\text{choose the hyperparameter with the lowest average validation risk}`,
   ],
   'logistic-regression': [
     tex`s=\theta\cdot x+\theta_0=2`,
     tex`\sigma(2)=\frac{e^2}{1+e^2}\approx\frac{7.389}{8.389}\approx0.881`,
-    tex`0.881>0.5\Rightarrow \hat y=+1`,
+    tex`0.881\ge0.5\Rightarrow \hat y=1`,
   ],
   'logistic-loss': [
     tex`y=1,\quad h=0.8,\quad L=-\log(0.8)\approx0.223`,

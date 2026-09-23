@@ -22,7 +22,7 @@ print("predictions:", pred)
 print("labels:     ", y)
 print("training error E_n =", train_error)
 
-# Try: set theta0 = -3 and see which email becomes a mistake.`,
+# Try: set theta0 = -3.5 and see which email becomes a mistake.`,
 
   'sets-functions': py`U = {1, 2, 3, 4, 5}
 A = {1, 2, 3}
@@ -129,12 +129,16 @@ print("x, y, z =", x, y, z)
 
   'solution-structure': py`import sympy as sp
 
+x1, x2, x3 = sp.symbols("x1 x2 x3")
 A = sp.Matrix([[1, 2, -1], [2, 4, -2]])
 b = sp.Matrix([3, 6])
 
 print("rank(A) =", A.rank(), " nullity(A) =", A.shape[1] - A.rank())
 print("null space basis:", [list(v) for v in A.nullspace()])
-print("all solutions:", sp.linsolve((A, b)))
+print("all solutions (x2, x3 are free):", sp.linsolve((A, b), x1, x2, x3))
+
+x_p = sp.Matrix([3, 0, 0])
+print("particular solution x_p =", list(x_p), " A x_p =", list(A * x_p))
 
 # Try: change b to [3, 7]. What does linsolve return, and why?`,
 
@@ -223,7 +227,7 @@ print("back to standard coordinates:", P @ v_B)
 
 A = np.array([[2, 1], [1, 2]], dtype=float)
 print("same map in basis B, P^-1 A P =")
-print(np.round(np.linalg.solve(P, A @ P), 6))
+print(np.round(np.linalg.solve(P, A @ P), 6) + 0.0)   # + 0.0 turns -0.0 into 0.0
 
 # Try: the matrix above is diagonal. Why does this basis make A so simple?`,
 
@@ -306,7 +310,7 @@ plt.scatter(X[:, 0], X[:, 1], c=["green" if p > 0 else "red" for p in predict(X)
 plt.quiver(1, 1, theta[0], theta[1], angles="xy", scale_units="xy", scale=2, label="theta (normal)")
 plt.axis("equal"); plt.legend(); plt.title("Linear classifier")
 
-# Try: change theta0 to -5. Which point changes class?`,
+# Try: change theta0 to -6. Which point changes class? (At -5 the first point sits exactly on the boundary.)`,
 
   'linear-classifier-through-origin': py`import numpy as np
 
@@ -333,7 +337,7 @@ print("signed margins:", margins)
 print("all positive (separates the data)?", np.all(margins > 0))
 print("geometric margin gamma =", geometric_margin)
 
-# Try: add a point x = 2.5 with label -1. Can any threshold still separate?`,
+# Try: add a point x = 0.5 with label +1. Can any threshold still separate the data?`,
 
   perceptron: py`import numpy as np
 
@@ -449,25 +453,31 @@ plt.xlabel("theta"); plt.legend(); plt.title(f"alpha = {alpha}")
 
   'stochastic-subgradient-descent': py`import numpy as np
 
+# The page's single step: theta = 0, x = [2, 1], y = +1, eta = 0.2
+theta = np.zeros(2)
+x, y_t, eta, lam = np.array([2.0, 1.0]), 1, 0.2, 0.0
+if y_t * (theta @ x) < 1:
+    theta = (1 - eta * lam) * theta + eta * y_t * x
+print("one step:", theta)
+
+# Many random steps on overlapping classes (no line gets every point right)
 rng = np.random.default_rng(1)
-# Overlapping classes: no line gets every point right
 X = np.array([[2, 1], [1, 3], [-1, -2], [-2, 0], [1.5, 2], [-1.5, -1]], dtype=float)
 y = np.array([1, 1, -1, -1, -1, 1])
 lam = 0.01
 theta = np.zeros(2)
-
-for k in range(1, 201):
+for k in range(1, 501):
     t = rng.integers(len(X))                 # one random example
     eta = 0.5 / np.sqrt(k)                   # decaying step size
     if y[t] * (theta @ X[t]) < 1:
         theta = (1 - eta * lam) * theta + eta * y[t] * X[t]
     else:
         theta = (1 - eta * lam) * theta
-    if k in (1, 10, 50, 200):
+    if k in (1, 10, 100, 500):
         hinge = np.maximum(0, 1 - y * (X @ theta)).mean()
-        print(f"step {k:3d}: theta = {np.round(theta, 3)}, average hinge = {hinge:.3f}")
+        print(f"step {k:3d}: theta = {np.round(theta, 3)}, ||theta|| = {np.linalg.norm(theta):.3f}, average hinge = {hinge:.3f}")
 
-# Try: set lam = 0.5. What happens to the size of theta?`,
+# Try: set lam = 1.0. How does ||theta|| at step 500 compare?`,
 
   'linear-regression': py`import numpy as np
 
@@ -544,10 +554,12 @@ theta_B = np.array([1.5, 1.5])
 for name, t in [("A", theta_A), ("B", theta_B)]:
     print(f"{name}: L1 = {np.abs(t).sum():.1f}, L2^2 = {(t ** 2).sum():.2f}")
 
-# One standardized feature with least-squares weight w
+# One standardized feature with least-squares weight w. Minimizing
+#   lasso: 1/2 (theta - w)^2 + lambda |theta|        ->  soft-thresholding
+#   ridge: 1/2 (theta - w)^2 + lambda/2 theta^2      ->  w / (1 + lambda)
 w = 3.0
 for lam in [0.0, 1.0, 2.0, 3.0, 4.0]:
-    lasso = np.sign(w) * max(abs(w) - lam, 0.0)
+    lasso = np.sign(w) * max(abs(w) - lam, 0.0) + 0.0
     ridge = w / (1 + lam)
     print(f"lambda = {lam}: lasso = {lasso:.3f}, ridge = {ridge:.3f}")
 
@@ -574,25 +586,35 @@ for degree in (1, 3, 5, 9, 15):
   'validation-cross-validation': py`import numpy as np
 
 rng = np.random.default_rng(0)
-x = rng.uniform(-1, 1, 40)
+x = rng.uniform(-1, 1, 60)
 y = np.sin(3 * x) + 0.3 * rng.normal(size=x.size)
-folds = np.array_split(rng.permutation(len(x)), 4)
+
+# Hold out a test set first; it is used exactly once, at the end.
+order = rng.permutation(len(x))
+test, rest = order[:20], order[20:]
+K = 4
+folds = np.array_split(rest, K)
 
 def cv_score(degree):
     scores = []
-    for k in range(4):
+    for k in range(K):
         val = folds[k]
-        train = np.concatenate([folds[j] for j in range(4) if j != k])
+        train = np.concatenate([folds[j] for j in range(K) if j != k])
         coeffs = np.polyfit(x[train], y[train], degree)
         scores.append(np.mean((np.polyval(coeffs, x[val]) - y[val]) ** 2))
     return np.mean(scores)
 
 results = {d: cv_score(d) for d in range(1, 11)}
 for d, s in results.items():
-    print(f"degree {d:2d}: 4-fold CV error {s:.3f}")
-print("chosen degree:", min(results, key=results.get))
+    print(f"degree {d:2d}: {K}-fold CV error {s:.3f}")
+best = min(results, key=results.get)
+print("chosen degree:", best)
 
-# Try: switch to 8 folds with np.array_split(..., 8) and range(8).`,
+final = np.polyfit(x[rest], y[rest], best)        # refit on all non-test data
+test_error = np.mean((np.polyval(final, x[test]) - y[test]) ** 2)
+print(f"test error of the chosen model (reported once): {test_error:.3f}")
+
+# Try: set K = 8. Does the chosen degree change?`,
 
   'logistic-regression': py`import numpy as np
 import matplotlib.pyplot as plt
@@ -626,8 +648,9 @@ print("difference:", round(losses[1] - losses[0], 3))
 
 # Likelihood of many examples underflows; log-likelihood does not
 p = np.full(2000, 0.6)
-print("product of 2000 probabilities:", np.prod(p))
-print("sum of their logs:", round(np.sum(np.log(p)), 2))
+print("product of 2000 probabilities (float64):", np.prod(p))
+print("true value: about 10 **", round(np.sum(np.log10(p)), 1), "-> far below what float64 can store")
+print("sum of their logs:", round(np.sum(np.log(p)), 2), "(no problem)")
 
 # Try: set h = [0.99, 0.01]. How big is the second loss?`,
 
@@ -656,28 +679,38 @@ for lam, v in zip(values, vectors.T):
     print(f"lambda = {lam}: A v = {A @ v}, lambda v = {lam * v}")
 
 w = np.array([1.0, 1.0])
-print("A [1, 1] =", A @ w, "-> not a multiple of [1, 1], so not an eigenvector")
+Aw = A @ w
+is_eigen = np.isclose(Aw[0] * w[1], Aw[1] * w[0])   # Aw parallel to w?
+print("A [1, 1] =", Aw, "->", "an eigenvector" if is_eigen else "not a multiple of [1, 1], so not an eigenvector")
 
 # Try: A = [[0, 1], [1, 0]]. Find its eigenvalues. Is one negative?`,
 
   'diagonalization-pagerank': py`import numpy as np
 
+# Page example: A is already diagonal, so P = I and D = A
 A = np.diag([2.0, 3.0])
-print("A^3 =")
-print(np.linalg.matrix_power(A, 3))
 print("A^3 [1, 1] =", np.linalg.matrix_power(A, 3) @ np.array([1.0, 1.0]))
 
-# PageRank-style power iteration on a 3-page web (columns sum to 1)
-M = np.array([[0.0, 0.5, 1.0],
-              [0.5, 0.0, 0.0],
-              [0.5, 0.5, 0.0]])
+# A matrix that is not diagonal: diagonalize it, then use A^k = P D^k P^-1
+B = np.array([[4.0, 1.0], [2.0, 3.0]])
+values, P = np.linalg.eig(B)
+D = np.diag(values)
+print("eigenvalues:", values)
+print("P D P^-1 equals B:", np.allclose(P @ D @ np.linalg.inv(P), B))
+k = 5
+print(f"B^{k} via P D^{k} P^-1 matches matrix_power:", np.allclose(P @ np.diag(values ** k) @ np.linalg.inv(P), np.linalg.matrix_power(B, k)))
+
+# PageRank-style: column j lists where page j links (each column sums to 1)
+M = np.array([[0.0, 0.5, 1/3],
+              [0.5, 0.0, 1/3],
+              [0.5, 0.5, 1/3]])
 r = np.ones(3) / 3
 for _ in range(50):
     r = M @ r
 print("ranks after 50 steps:", np.round(r, 4))
-print("eigenvalues of M:", np.round(np.linalg.eigvals(M), 4))
+print("eigenvalues of M:", np.round(np.linalg.eigvals(M), 4), "-> the others fade as powers of |lambda| < 1")
 
-# Try: change the link structure and rerun. Which page ranks highest?`,
+# Try: set k = 10, or change a column of M (keep it summing to 1). Which page ranks highest?`,
 
   'orthogonality-spectral-theorem': py`import numpy as np
 
@@ -686,7 +719,7 @@ v = np.array([1.0, -1.0])
 print("u . v =", u @ v)
 Q = np.column_stack([u / np.linalg.norm(u), v / np.linalg.norm(v)])
 print("Q^T Q =")
-print(np.round(Q.T @ Q, 6))
+print(np.round(Q.T @ Q, 6) + 0.0)
 
 A = np.array([[2.0, 1.0], [1.0, 2.0]])      # symmetric
 values, vectors = np.linalg.eigh(A)
@@ -700,17 +733,22 @@ import scipy.linalg as la
 
 A = np.array([[4, 2], [2, 3]], dtype=float)
 
-L = np.linalg.cholesky(A)
-print("Cholesky L =")
-print(np.round(L, 4))
-print("L L^T equals A:", np.allclose(L @ L.T, A))
+try:
+    L = np.linalg.cholesky(A)          # needs A symmetric positive definite
+    print("Cholesky L =")
+    print(np.round(L, 4))
+    print("L L^T equals A:", np.allclose(L @ L.T, A))
+except np.linalg.LinAlgError as err:
+    print("Cholesky failed:", err)
 
-P, L_lu, U = la.lu(A)
-print("LU with pivoting, A = P L U:", np.allclose(P @ L_lu @ U, A))
+P, L_lu, U = la.lu(A)                  # scipy returns A = P L U, i.e. P^T A = L U
+print("U (upper triangular) =")
+print(np.round(U, 4))
+print("P^T A equals L U:", np.allclose(P.T @ A, L_lu @ U))
 
 W, s, Vt = np.linalg.svd(A)
 print("singular values:", np.round(s, 4))
 print("W diag(s) V^T equals A:", np.allclose(W @ np.diag(s) @ Vt, A))
 
-# Try: A = [[0, 1], [1, 0]]. Cholesky fails (not positive definite) but SVD still works.`,
+# Try: A = [[0, 1], [1, 0]]. Cholesky fails (not positive definite) but LU and SVD still work.`,
 };

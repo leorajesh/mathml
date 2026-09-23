@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { conceptMap, mindMapEdges } from '../data/concepts.js';
+import { entryFor, mindMapEdges, topicMap } from '../data/concepts.js';
 import { conceptLevel, recommendedPaths } from '../data/studyGuidance.js';
 
 const groupColors = {
@@ -243,7 +243,7 @@ function FocusedMap({ domain, layout, nodeMap, edges, onBack, onSelect }) {
       <div className="study-path">
         <h3>Concept Sequence</h3>
         <ol>
-          {path.map((id) => <li key={id}><button onClick={() => onSelect(id)}>{conceptMap[id]?.title ?? id}</button><span>{conceptLevel(id)}</span></li>)}
+          {path.map((id) => <li key={id}><button onClick={() => onSelect(id)}>{entryFor(id)?.title ?? id}</button><span>{topicMap[id] ? `${topicMap[id].children.length} subtopics` : conceptLevel(id)}</span></li>)}
         </ol>
       </div>
       <div className="map-scroll">
@@ -255,15 +255,16 @@ function FocusedMap({ domain, layout, nodeMap, edges, onBack, onSelect }) {
           </defs>
           {edges.map(([from, to]) => <path key={`${from}-${to}`} className="map-edge" d={edgePath(nodeMap[from], nodeMap[to])} markerEnd="url(#clusterArrow)" />)}
           {layout.nodes.map((node) => {
-            const concept = conceptMap[node.id];
+            const concept = entryFor(node.id);
+            const isTopic = Boolean(topicMap[node.id]);
             const lines = wrapTitle(concept.title, 24);
             const level = conceptLevel(node.id);
-            const levelLabel = level === 'Fundamental' ? 'Base' : 'Adv';
+            const levelLabel = isTopic ? `${topicMap[node.id].children.length} sub` : level === 'Fundamental' ? 'Base' : 'Adv';
             return (
               <g key={node.id} className="cluster-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)} onKeyDown={activateOnKey(() => onSelect(node.id))} role="button" tabIndex="0" aria-label={`Open ${concept.title}`}>
                 <rect width={node.width} height={node.height} rx="9" fill="#fffdf8" stroke={groupColors[concept.group]} strokeWidth="3" />
                 <text x="14" y="22" className="node-group" fill={groupColors[concept.group]}>{concept.group}</text>
-                <g className={`level-pill ${level.toLowerCase()}`} transform={`translate(${node.width - 58}, 10)`}>
+                <g className={`level-pill ${isTopic ? 'topic' : level.toLowerCase()}`} transform={`translate(${node.width - 58}, 10)`}>
                   <rect width="44" height="18" rx="9" />
                   <text x="22" y="12" textAnchor="middle">{levelLabel}</text>
                 </g>

@@ -169,7 +169,7 @@ h3 { margin: 0 0 10px; font-size: 1.22rem; }
 .spectral-ellipse { stroke: var(--plum); stroke-width: 3; fill: rgba(109, 90, 156, 0.16); }
 .bar-a { fill: rgba(50, 104, 168, 0.72); }
 .bar-b { fill: rgba(217, 93, 57, 0.72); }
-.residual { stroke: var(--berry); stroke-width: 3; stroke-dasharray: 5 5; }
+.residual { stroke: var(--berry); stroke-width: 3; stroke-dasharray: 5 5; fill: none; }
 .zero-one-line { stroke: #6d746f; stroke-width: 3; stroke-dasharray: 7 6; fill: none; }
 .descent-path { stroke: #9b8f7d; stroke-width: 1.5; stroke-dasharray: 3 4; fill: none; }
 .positive-region { fill: rgba(63, 122, 59, 0.1); }
@@ -320,3 +320,62 @@ fieldset:disabled .quiz-option { cursor: default; }
   .track-bar.top { position: static; }
   .landing-tabs { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* Graphs for the MML-book pages */
+.norm-ball { stroke: #9aa29e; stroke-width: 1.5; stroke-dasharray: 4 4; fill: none; }
+.norm-ball-active { stroke: var(--teal); stroke-width: 3.5; fill: rgba(47, 125, 128, 0.12); }
+.contour { stroke: #b9ad9b; stroke-width: 1.5; fill: none; }
+.contour.strong { stroke: var(--plum); stroke-width: 2.5; }
+.path-plain { stroke: #7d8581; stroke-width: 2; fill: none; }
+.path-momentum { stroke: var(--rust); stroke-width: 3; fill: none; }
+.active-dot.small { stroke-width: 1.5; }
+.residual.thin { stroke-width: 1.5; stroke-dasharray: 3 3; }
+
+/* "Picture it" figures */
+.picture-it { margin-top: 18px; }
+.picture-it h3 { margin: 0 0 10px; font-size: 1.05rem; }
+.concept-figure { margin: 0 0 16px; padding: 14px; background: rgba(255, 253, 248, 0.86); border: 1px solid var(--line); border-radius: 8px; }
+.concept-figure svg { display: block; width: 100%; height: auto; max-height: 360px; }
+.concept-figure figcaption { margin-top: 10px; color: var(--muted); line-height: 1.5; }
+.concept-figure figcaption strong { color: var(--ink); }
+.figure-compare { font-style: italic; }
+.concept-figure text { font: 600 13px Avenir, Optima, Candara, sans-serif; fill: #3d4543; }
+.concept-figure .fig-heading { font-size: 15px; font-weight: 800; fill: var(--ink); }
+.concept-figure .fig-step { font-size: 13px; font-style: italic; fill: var(--muted); }
+.fig-axes line { stroke: #b3a996; stroke-width: 1.2; }
+.fig-axes text { font-style: italic; fill: var(--muted); }
+.fig-vector { stroke-width: 3.5; stroke-linecap: round; }
+.fig-vector.blue { stroke: var(--blue); }
+.fig-vector.rust { stroke: var(--rust); }
+.fig-vector.teal { stroke: var(--teal); }
+.fig-vector.ink { stroke: #2f3436; }
+.fig-vector.thin { stroke-width: 2; }
+.fig-vector.dashed { stroke-width: 2; stroke-dasharray: 6 5; }
+.fig-line-a { stroke: var(--blue); stroke-width: 3; fill: none; }
+.fig-line-b { stroke: var(--rust); stroke-width: 3; fill: none; }
+.fig-region { fill: rgba(47, 125, 128, 0.16); stroke: var(--teal); stroke-width: 2; }
+.fig-contour { fill: none; stroke: #b9ad9b; stroke-width: 1.5; }
+.fig-contour.strong { stroke: var(--plum); stroke-width: 2.5; }
+.fig-dot { fill: var(--rust); stroke: #fffdf8; stroke-width: 2; }
+.fig-dot.small { fill: var(--ink); }
+.fig-dot.grey { fill: #9aa29e; }
+.fig-error { stroke: var(--berry); stroke-width: 2.5; stroke-dasharray: 6 5; }
+.fig-right-angle { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+.fig-box { fill: rgba(255, 249, 239, 0.9); stroke: var(--line); stroke-width: 2; }
+.fig-space.teal { fill: rgba(47, 125, 128, 0.2); stroke: var(--teal); stroke-width: 2; }
+.fig-space.grey { fill: rgba(135, 144, 139, 0.18); stroke: #87908b; stroke-width: 2; }
+.fig-path { fill: none; stroke-linejoin: round; }
+.fig-path.plain { stroke: #7d8581; stroke-width: 2; }
+.fig-path.momentum { stroke: var(--rust); stroke-width: 3; }
+.fig-constraint { stroke: var(--teal); stroke-width: 3; }
+.concept-figure .fig-label.blue { fill: var(--blue); }
+.concept-figure .fig-label.rust { fill: var(--rust); }
+.concept-figure .fig-label.teal { fill: var(--teal); }
+.concept-figure .fig-label.berry { fill: var(--berry); }
+
+/* "Read more in the MML book" */
+.mml-references { margin-top: 16px; padding: 12px 14px; border-left: 4px solid var(--plum); background: rgba(109, 90, 156, 0.07); border-radius: 6px; }
+.mml-references h3 { margin: 0 0 6px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+.mml-references ul { margin: 0; padding-left: 20px; }
+.mml-references li { margin: 3px 0; }
+.mml-references p { margin: 6px 0 0; color: var(--muted); font-size: 0.92rem; }

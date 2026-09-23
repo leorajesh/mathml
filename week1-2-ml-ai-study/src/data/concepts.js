@@ -1,3 +1,4 @@
+import { mmlConcepts } from './mmlConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
 // Reading order of every concept page (topics are overview pages, not listed here).
@@ -8,6 +9,7 @@ export const conceptOrder = [
   'functions',
   'inverse-composition',
   'vectors-dot-product',
+  'norms',
   'matrix-operations',
   'matrix-multiplication-outer-product',
   'matrix-systems',
@@ -28,6 +30,11 @@ export const conceptOrder = [
   'determinants-cofactor-row-ops',
   'invertible-transformations',
   'affine-maps',
+  'inner-products',
+  'orthogonality',
+  'orthogonal-complement',
+  'orthogonal-projections',
+  'gram-schmidt',
   'linear-classifier',
   'linear-classifier-through-origin',
   'linear-separability',
@@ -38,8 +45,10 @@ export const conceptOrder = [
   'convex-functions',
   'surrogate-losses',
   'gradient-descent-method',
+  'momentum',
   'subgradients',
   'stochastic-subgradient-descent',
+  'lagrange-multipliers',
   'linear-regression',
   'polynomial-regression',
   'least-squares-normal-equation',
@@ -53,14 +62,15 @@ export const conceptOrder = [
   'logistic-loss',
   'classification-metrics',
   'eigenvalues-eigenvectors',
+  'trace',
   'diagonalization',
   'pagerank',
-  'orthogonality',
   'dimensionality-reduction',
   'spectral-theorem',
   'lu-decomposition',
   'cholesky-decomposition',
   'svd',
+  'pca',
 ];
 
 export const sourceNotes = [
@@ -70,12 +80,13 @@ export const sourceNotes = [
   'Mathematics for AI Week 1: Matrices, Linear Systems, Vector Spaces, Bases, Linear Transformations',
   'Mathematics for AI Week 2: Invertible Matrices, Rank/Nullity, Affine Spaces, Determinants, Change of Basis',
   'Mathematics for AI Week 3: Eigenvalues, Eigenvectors, Diagonalization, PageRank, Spectral Theorem, Cholesky, LU, SVD',
+  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
 ];
 
 export const notCovered = [
   'Administrative course logistics and syllabus items were omitted because they do not teach the requested ML or mathematics concepts.',
   'Later Production ML topics such as SVMs, clustering, decision trees, ensemble methods, HMMs, reinforcement learning, and anomaly detection were listed in the introduction slides but fall outside Week 1-2 coverage.',
-  'The full Mathematics for Machine Learning book was not exhaustively converted; the app focuses on the attached lecture-note concepts and their prerequisites.',
+  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-4, 7, and 10, plus least squares as a projection); vector calculus, probability, Bayesian regression, Gaussian mixtures, and SVMs are not converted.',
   'Long theorem proofs were compressed into intuition, formulas, and numeric examples so the app stays focused on conceptual understanding.',
 ];
 
@@ -167,6 +178,7 @@ const baseConcepts = [
     ],
     example: ['Solve 2a + b = 5 and a - b = 1.', 'Add the equations: 3a = 6, so a = 2.', 'Substitute into a - b = 1: 2 - b = 1, so b = 1.', 'Matrix form: [[2, 1], [1, -1]][a, b]^T = [5, 1]^T.'],
     graph: { type: 'linearSystem', title: 'Intersection of two linear equations', sliders: [{ key: 'm1', label: 'Line 1 slope', min: -3, max: 3, step: 0.25, value: -2 }, { key: 'b1', label: 'Line 1 intercept', min: -5, max: 5, step: 0.25, value: 5 }, { key: 'm2', label: 'Line 2 slope', min: -3, max: 3, step: 0.25, value: 1 }, { key: 'b2', label: 'Line 2 intercept', min: -5, max: 5, step: 0.25, value: -1 }] },
+    figure: 'row-column-picture',
     misconception: 'Gaussian elimination is not a numerical trick separate from algebra; it is a sequence of equivalent equation systems.',
     prerequisites: ['matrix-multiplication-outer-product'],
     followOns: ['gaussian-elimination', 'span-linear-combinations', 'least-squares-normal-equation'],
@@ -505,15 +517,17 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W2',
     problem: 'It picks the regression line that makes the average squared prediction error as small as possible.',
-    intuition: 'Measure each miss (residual), square it so big misses count much more than small ones, and average. The line with the smallest average is the least-squares fit. Because this total is a smooth bowl, there is a direct formula for the bottom: the normal equation. Geometrically, it finds the point reachable by the model that sits closest to the true answers.',
+    intuition: 'Measure each miss (residual), square it so big misses count much more than small ones, and average. The line with the smallest average is the least-squares fit. Because this total is a smooth bowl, there is a direct formula for the bottom: the normal equation. Geometrically, the model can only produce vectors of predictions in the column space of X, and least squares picks the one closest to the true answers y: the orthogonal projection of y onto that space, which leaves a residual perpendicular to every feature column.',
     formulas: [
       { tex: tex`R_n(\theta)=\frac{1}{n}\sum_{t=1}^{n}(y^{(t)}-\theta\cdot x^{(t)})^2`, definitions: ['R_n: mean squared empirical risk', 'y^(t): true response', 'theta dot x^(t): prediction'] },
       { tex: tex`\hat{\theta}=(X^TX)^{-1}X^Ty`, definitions: ['X: design matrix', 'y: response vector', 'requires X^TX to be invertible'] },
+      { tex: tex`\hat{y}=X\hat\theta=X(X^TX)^{-1}X^Ty,\qquad X^T(y-\hat{y})=0`, definitions: [tex`\hat{y}: fitted values, the orthogonal projection of y onto the column space of X`, tex`y-\hat{y}: residual vector, perpendicular to every column of X`] },
     ],
-    example: ['Fit y = theta x through the origin to points (1,2) and (2,3).', 'X^T X = 1^2 + 2^2 = 5.', 'X^T y = 1*2 + 2*3 = 8.', 'theta_hat = 8 / 5 = 1.6. Predictions are 1.6 and 3.2.'],
+    example: ['Fit y = theta x through the origin to points (1,2) and (2,3).', 'X^T X = 1^2 + 2^2 = 5.', 'X^T y = 1*2 + 2*3 = 8.', 'theta_hat = 8 / 5 = 1.6. Predictions are 1.6 and 3.2.', 'Projection view: the residual y - y_hat = [2 - 1.6, 3 - 3.2] = [0.4, -0.2] is perpendicular to the column x = [1, 2]: 0.4 - 0.4 = 0.'],
     graph: { type: 'fitLine', title: 'Least squares as visible residuals', caption: 'This graph uses a separate three-point dataset with an intercept. The red bars are residuals. Move the slope and intercept to see why the normal equation solution is the global minimum of this quadratic loss.', sliders: [{ key: 'slope', label: 'slope', min: -1, max: 2, step: 0.05, value: 1 }, { key: 'intercept', label: 'intercept', min: -1, max: 3, step: 0.05, value: 0 }] },
+    figure: 'projection-plane',
     misconception: 'The normal equation is elegant, but the slides note it can be slow or impractical for large/high-dimensional problems, where gradient methods are useful.',
-    prerequisites: ['matrix-systems', 'rank-nullity', 'linear-regression'],
+    prerequisites: ['matrix-systems', 'rank-nullity', 'linear-regression', 'orthogonal-projections'],
     followOns: ['ridge-regularization', 'model-complexity-generalization'],
     sources: ['Week2_notes01-LinearRegression.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
@@ -624,12 +638,12 @@ const baseConcepts = [
     graph: { type: 'eigen', title: 'Eigenvectors keep direction under a matrix', sliders: [{ key: 'lambda1', label: 'lambda_1', min: -3, max: 4, step: 0.25, value: 2 }, { key: 'lambda2', label: 'lambda_2', min: -3, max: 4, step: 0.25, value: 1 }, { key: 'angle', label: 'test vector angle', min: 0, max: 360, step: 5, value: 35 }] },
     misconception: 'An eigenvector cannot be the zero vector, but an eigenvalue is allowed to be zero.',
     prerequisites: ['determinant-geometry', 'linear-transformations'],
-    followOns: ['diagonalization', 'spectral-theorem'],
+    followOns: ['trace', 'diagonalization', 'spectral-theorem'],
     sources: ['W3C1.pdf'],
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 
@@ -697,5 +711,6 @@ export const mindMapEdges = [
   ['feature-vectors', 'linear-classifier'], ['linear-classifier', 'linear-classifier-through-origin'], ['linear-classifier-through-origin', 'linear-separability'], ['linear-separability', 'perceptron'], ['linear-classifier', 'empirical-risk-zero-one'], ['perceptron', 'perceptron-convergence'], ['perceptron-convergence', 'hinge-loss'], ['empirical-risk-zero-one', 'hinge-loss'], ['hinge-loss', 'convexity-surrogate-losses'], ['convexity-surrogate-losses', 'gradient-descent'], ['gradient-descent', 'stochastic-subgradient-descent'],
   ['feature-vectors', 'linear-regression'], ['linear-regression', 'polynomial-regression'], ['linear-regression', 'least-squares-normal-equation'], ['rank-inverse-determinant', 'least-squares-normal-equation'], ['least-squares-normal-equation', 'ridge-regularization'], ['ridge-regularization', 'lasso-elastic-net'], ['lasso-elastic-net', 'model-complexity-generalization'],
   ['model-complexity-generalization', 'validation-cross-validation'], ['validation-cross-validation', 'logistic-regression'], ['linear-classifier', 'logistic-regression'], ['logistic-regression', 'logistic-loss'], ['gradient-descent', 'logistic-loss'], ['logistic-loss', 'classification-metrics'],
-  ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'eigenvalues-eigenvectors'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],
+  ['feature-vectors', 'norms-inner-products'], ['norms-inner-products', 'orthogonality-spectral-theorem'], ['norms-inner-products', 'projections-gram-schmidt'], ['orthogonality-spectral-theorem', 'projections-gram-schmidt'], ['rank-inverse-determinant', 'projections-gram-schmidt'], ['projections-gram-schmidt', 'least-squares-normal-equation'], ['projections-gram-schmidt', 'pca'], ['eigenvalues-eigenvectors', 'trace'], ['trace', 'pca'], ['orthogonality-spectral-theorem', 'pca'], ['affine-dimensionality-reduction', 'pca'], ['matrix-decompositions', 'pca'], ['gradient-descent', 'lagrange-multipliers'], ['lagrange-multipliers', 'ridge-regularization'], ['lagrange-multipliers', 'lasso-elastic-net'],
+    ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'eigenvalues-eigenvectors'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],
 ];

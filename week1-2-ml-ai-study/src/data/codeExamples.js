@@ -454,6 +454,10 @@ print("theta_hat =", theta)
 print("predictions:", X @ theta)
 print("lstsq agrees:", np.linalg.lstsq(X, y, rcond=None)[0])
 
+# Projection view: the residual is perpendicular to every column of X
+residual = y - X @ theta
+print("residual y - y_hat =", residual, " X^T residual =", X.T @ residual)
+
 xs = np.linspace(0, 3, 10)
 plt.scatter(X[:, 0], y, s=80, label="data")
 plt.plot(xs, theta[0] * xs, label=f"y = {theta[0]:.2f} x")
@@ -1108,6 +1112,242 @@ print("best rank-1 approximation:")
 print(np.round(A1, 4))
 print("approximation error (Frobenius):", round(np.linalg.norm(A - A1), 4), "= sigma_2")
 
+# Image compression: a 48 by 48 "image" of a square and a disc, rebuilt from k singular values
+i, j = np.mgrid[0:48, 0:48]
+img = ((abs(i - 16) < 9) & (abs(j - 14) < 9)) * 0.9 + (((i - 30) ** 2 + (j - 32) ** 2) < 100) * 0.6
+U, S, VT = np.linalg.svd(img)
+for k in [1, 5, 20]:
+    Ak = U[:, :k] @ np.diag(S[:k]) @ VT[:k]
+    kept = (S[:k] ** 2).sum() / (S ** 2).sum()
+    print(f"rank {k:2d}: stores {k * (48 + 48 + 1):4d} numbers instead of {48 * 48}, keeps {kept:.1%} of the energy")
+
 # Try: a 3 by 2 matrix such as [[1, 0], [0, 1], [1, 1]]. SVD still works; how many singular values?`,
 
+  'norms': py`import numpy as np
+
+x = np.array([3.0, -4.0])
+print("L1  =", np.linalg.norm(x, 1))        # |3| + |-4|
+print("L2  =", np.linalg.norm(x))           # sqrt(9 + 16)
+print("max =", np.linalg.norm(x, np.inf))   # largest |x_i|
+
+# Triangle inequality: a detour is never shorter
+y = np.array([1.0, 1.0])
+print("||x + y|| =", np.linalg.norm(x + y), "<=", round(np.linalg.norm(x) + np.linalg.norm(y), 4))
+
+# Distance between two points in each norm
+a, b = np.array([1.0, 2.0]), np.array([4.0, 6.0])
+for p in [1, 2, np.inf]:
+    print(f"distance in norm {p}: {np.linalg.norm(a - b, p):.3f}")
+
+# Try: x = [1, 1, 1, 1]. How do the three norms compare as the dimension grows?`,
+
+  'inner-products': py`import numpy as np
+
+A = np.array([[2.0, 1.0], [1.0, 2.0]])
+print("symmetric:", np.allclose(A, A.T), " eigenvalues:", np.linalg.eigvalsh(A), "(all > 0: positive definite)")
+
+def inner(x, y):
+    return x @ A @ y
+
+x = np.array([1.0, 0.0])
+y = np.array([0.0, 1.0])
+print("dot product x . y  =", x @ y)
+print("<x, y>_A           =", inner(x, y))
+
+length = lambda v: np.sqrt(inner(v, v))
+cos_omega = inner(x, y) / (length(x) * length(y))
+print("||x||_A =", round(length(x), 4), " ||y||_A =", round(length(y), 4))
+print("angle under A:", round(np.degrees(np.arccos(cos_omega)), 1), "degrees")
+
+z = np.array([1.0, -2.0])
+print("<x, z>_A =", inner(x, z), "-> orthogonal under A")
+
+# Try: A = [[1, 0], [0, 1]]. Which of the results turn into the ordinary dot-product ones?`,
+
+  'orthogonal-complement': py`import sympy as sp
+
+A = sp.Matrix([[1, 2, 3], [2, 4, 6]])
+m, n = A.shape
+r = A.rank()
+row = A.T.columnspace()      # row space = column space of A^T
+null = A.nullspace()
+col = A.columnspace()
+left_null = A.T.nullspace()
+
+print("rank r =", r)
+print("row space      (R^3):", [list(v) for v in row], " dim", len(row))
+print("null space     (R^3):", [list(v) for v in null], " dim", len(null), "= n - r")
+print("column space   (R^2):", [list(v) for v in col], " dim", len(col))
+print("left null space(R^2):", [list(v) for v in left_null], " dim", len(left_null), "= m - r")
+
+print("row . null:", [(row[0].T * v)[0] for v in null])
+print("col . left null:", [(col[0].T * v)[0] for v in left_null])
+
+# Split x into a row-space part and a null-space part
+x = sp.Matrix([1, 0, 0])
+rv = row[0]
+x_row = (rv.dot(x) / rv.dot(rv)) * rv
+x_null = x - x_row
+print("x_row =", list(x_row), " x_null =", list(x_null), " A x_null =", list(A * x_null))
+
+# Try: A = [[1, 0, 1], [0, 1, 1]] (rank 2). What are the four dimensions now?`,
+
+  'orthogonal-projections': py`import numpy as np
+
+B = np.array([[1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])   # columns b1, b2 span a plane in R^3
+x = np.array([1.0, 2.0, 6.0])
+
+lam = np.linalg.solve(B.T @ B, B.T @ x)    # normal equation B^T B lam = B^T x
+proj = B @ lam
+e = x - proj
+print("B^T B =", (B.T @ B).tolist(), " B^T x =", B.T @ x)
+print("coordinates lambda =", lam)
+print("projection =", proj, " error =", e)
+print("error . b1 =", e @ B[:, 0], " error . b2 =", e @ B[:, 1])
+print("distance to the plane =", round(np.linalg.norm(e), 4))
+
+P = B @ np.linalg.inv(B.T @ B) @ B.T
+print("P^2 == P:", np.allclose(P @ P, P), " P symmetric:", np.allclose(P, P.T))
+
+# Projection onto a line through b
+b = np.array([1.0, 2.0, 2.0])
+print("projection onto the line through b:", (b @ x) / (b @ b) * b)
+
+# Try: move x to [2, 3, 5]. It is already in the plane: what are the projection and the error?`,
+
+  'gram-schmidt': py`import numpy as np
+
+def gram_schmidt(vectors):
+    basis = []
+    for b in vectors:
+        u = b.astype(float)
+        for q in basis:
+            u = u - (q @ b) * q          # remove the part along each earlier direction
+        basis.append(u / np.linalg.norm(u))
+    return np.array(basis)
+
+b1 = np.array([3.0, 1.0])
+b2 = np.array([2.0, 2.0])
+Q = gram_schmidt([b1, b2])
+print("q1 =", np.round(Q[0], 4), " (= [3, 1]/sqrt(10))")
+print("q2 =", np.round(Q[1], 4), " (= [-1, 3]/sqrt(10))")
+print("Q Q^T == I:", np.allclose(Q @ Q.T, np.eye(2)))
+
+# The same thing as a QR factorization of A = [b1 b2]
+A = np.column_stack([b1, b2])
+Qm, R = np.linalg.qr(A)
+print("QR: R =")
+print(np.round(R, 4))
+print("(numpy may flip the sign of a column of Q and the matching row of R)")
+
+# Try: swap the order, gram_schmidt([b2, b1]). Do you get the same basis?`,
+
+  'trace': py`import numpy as np
+
+A = np.array([[4.0, 1.0], [2.0, 3.0]])
+eig = np.linalg.eigvals(A)
+print("trace =", np.trace(A), " det =", round(np.linalg.det(A), 4))
+print("eigenvalues:", np.sort(eig)[::-1])
+print("sum =", round(eig.sum().real, 4), " product =", round(eig.prod().real, 4))
+
+B = np.array([[1.0, 0.0], [1.0, 1.0]])
+print("AB =", (A @ B).tolist(), " BA =", (B @ A).tolist())
+print("tr(AB) =", np.trace(A @ B), " tr(BA) =", np.trace(B @ A))
+
+# The trace does not change under a change of basis
+P = np.array([[1.0, 2.0], [0.0, 1.0]])
+print("tr(P^-1 A P) =", round(np.trace(np.linalg.inv(P) @ A @ P), 4))
+
+# Total variance of data = trace of its covariance matrix
+rng = np.random.default_rng(0)
+X = rng.normal(size=(500, 3)) * [1.0, 2.0, 3.0]
+S = np.cov(X.T)
+print("sum of feature variances:", round(X.var(axis=0, ddof=1).sum(), 3), " tr(S):", round(np.trace(S), 3))
+
+# Try: A = [[0, -1], [1, 0]] (a rotation). The eigenvalues are complex: do they still sum to the trace?`,
+
+  'pca': py`import numpy as np
+import matplotlib.pyplot as plt
+
+X = np.array([[2.0, 2.0], [-2.0, -2.0], [1.0, -1.0], [-1.0, 1.0]])
+X = X - X.mean(axis=0)                  # center (already centered here)
+S = X.T @ X / len(X)                    # covariance with 1/N
+values, vectors = np.linalg.eigh(S)     # ascending order
+order = np.argsort(values)[::-1]
+values, vectors = values[order], vectors[:, order]
+print("S =", S.tolist())
+print("eigenvalues:", values, " trace:", np.trace(S))
+
+b1 = vectors[:, 0]
+z = X @ b1                              # 1-number codes
+X_tilde = np.outer(z, b1)               # reconstructions
+print("first component b1 =", np.round(b1, 4))
+print("codes z =", np.round(z, 3), " mean z^2 =", round(np.mean(z ** 2), 4))
+print("average squared error =", round(np.mean(np.sum((X - X_tilde) ** 2, axis=1)), 4), "= lambda_2")
+print("explained variance:", f"{values[0] / values.sum():.0%}")
+
+# A bigger cloud: PCA via the SVD of the centered data gives the same directions
+rng = np.random.default_rng(1)
+D = rng.normal(size=(300, 2)) @ np.array([[2.0, 0.0], [1.2, 0.6]])
+D = D - D.mean(axis=0)
+_, s, Vt = np.linalg.svd(D, full_matrices=False)
+print("variances from the SVD:", np.round(s ** 2 / len(D), 3))
+plt.scatter(D[:, 0], D[:, 1], s=8, alpha=0.5)
+for sv, v in zip(s, Vt):
+    L = 2 * sv / np.sqrt(len(D))
+    plt.plot([0, L * v[0]], [0, L * v[1]], linewidth=3)
+plt.axis("equal"); plt.title("Principal directions")
+
+# Try: multiply the first feature of D by 10 before PCA. Which direction wins now, and why?`,
+
+  'momentum': py`import numpy as np
+
+def run(grad, x0, gamma, alpha, steps):
+    x, prev = np.array(x0, float), np.array(x0, float)
+    path = [x.copy()]
+    for _ in range(steps):
+        x, prev = x - gamma * grad(x) + alpha * (x - prev), x
+        path.append(x.copy())
+    return np.array(path)
+
+# 1D example from the page: f(x) = x^2
+grad1 = lambda x: 2 * x
+print("plain:   ", np.round(run(grad1, [10.0], 0.1, 0.0, 3)[:, 0], 3))
+print("momentum:", np.round(run(grad1, [10.0], 0.1, 0.5, 3)[:, 0], 3))
+
+# Narrow valley: f = (x1^2 + 20 x2^2) / 2
+f = lambda x: 0.5 * (x[0] ** 2 + 20 * x[1] ** 2)
+grad2 = lambda x: np.array([x[0], 20 * x[1]])
+for alpha in [0.0, 0.5, 0.8, 0.95]:
+    path = run(grad2, [-7.0, 2.0], 0.09, alpha, 40)
+    print(f"alpha = {alpha:.2f}: f after 40 steps = {f(path[-1]):.2e}")
+
+# Try: with alpha = 0, raise gamma to 0.11 (above 2/20). What happens to f?`,
+
+  'lagrange-multipliers': py`import sympy as sp
+
+x, y, lam = sp.symbols("x y lambda", real=True)
+
+# Equality constraint: minimize x^2 + y^2 subject to x + y = 1
+f = x ** 2 + y ** 2
+h = x + y - 1
+L = f + lam * h
+sol = sp.solve([sp.diff(L, x), sp.diff(L, y), sp.diff(L, lam)], [x, y, lam], dict=True)[0]
+print("solution:", sol, " f =", f.subs(sol))
+grad_f = [sp.diff(f, v).subs(sol) for v in (x, y)]
+grad_h = [sp.diff(h, v) for v in (x, y)]
+print("grad f =", grad_f, " grad h =", grad_h, "(parallel)")
+
+# The multiplier is the price of the constraint: with x + y = c, the best f is c^2/2
+c = sp.symbols("c", positive=True)
+best = sp.Rational(1, 2) * c ** 2
+print("d(best f)/dc at c = 1:", sp.diff(best, c).subs(c, 1), "= -lambda")
+
+# Inequality constraint: minimize (x - 2)^2 subject to x <= 1, i.e. g(x) = x - 1 <= 0
+g_obj = (x - 2) ** 2
+x_star = 1                                   # the unconstrained minimum x = 2 breaks the constraint
+mu = -sp.diff(g_obj, x).subs(x, x_star)      # from d/dx [(x-2)^2 + mu (x - 1)] = 0
+print("active constraint at x = 1, multiplier =", mu, "(>= 0, as required)")
+
+# Try: change the inequality to x <= 3. Is the constraint active, and what is the multiplier?`,
 };

@@ -38,8 +38,8 @@ const domains = [
     id: 'overview-optimization',
     title: 'Gradient Descent and Stochastic Sub-Gradient Descent',
     group: 'Optimization',
-    summary: 'Convex surrogate criteria, gradients, sub-gradients, learning rates, and stochastic training updates.',
-    concepts: ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent'],
+    summary: 'Convex surrogate criteria, gradients, momentum, sub-gradients, learning rates, stochastic training updates, and constrained optimization with Lagrange multipliers.',
+    concepts: ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
   },
   {
     id: 'overview-regression',
@@ -57,10 +57,17 @@ const domains = [
   },
   {
     id: 'overview-advanced-math',
-    title: 'Matrix Decompositions Preview',
+    title: 'Eigenvalues, Decompositions, and PCA',
     group: 'Complexity',
-    summary: 'Eigenvalues, eigenvectors, diagonalization, spectral theorem, Cholesky, LU, and singular value decomposition as later-course structure.',
-    concepts: ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions'],
+    summary: 'Eigenvalues, eigenvectors, trace, diagonalization, spectral theorem, Cholesky, LU, singular value decomposition, and principal component analysis.',
+    concepts: ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
+  },
+  {
+    id: 'overview-analytic-geometry',
+    title: 'Analytic Geometry: Lengths, Angles, and Projections',
+    group: 'Representation',
+    summary: 'Norms, inner products, orthogonality, orthogonal complements and the four fundamental subspaces, projections, Gram-Schmidt, and least squares as a projection.',
+    concepts: ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   },
 ];
 
@@ -74,6 +81,9 @@ const overviewEdges = [
   ['overview-regression', 'overview-generalization'],
   ['overview-generalization', 'overview-advanced-math'],
   ['overview-linear-algebra', 'overview-advanced-math'],
+  ['overview-linear-algebra', 'overview-analytic-geometry'],
+  ['overview-analytic-geometry', 'overview-regression'],
+  ['overview-analytic-geometry', 'overview-advanced-math'],
 ];
 
 function wrapTitle(title, maxLength = 22) {

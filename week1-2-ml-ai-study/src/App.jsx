@@ -1,13 +1,15 @@
 import React from 'react';
-import { ArrowLeft, Network, Sigma } from 'lucide-react';
+import { ArrowLeft, BookOpen, Network, Sigma } from 'lucide-react';
 import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
+import { ConceptFigure } from './components/Figures.jsx';
 import { MindMap } from './components/MindMap.jsx';
 import { codeExamples } from './data/codeExamples.js';
 import { concepts, conceptMap, entryFor, notCovered, topicMap, topicOf } from './data/concepts.js';
 import { learningObjectives, selfChecksByConcept } from './data/learningObjectives.js';
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
+import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
 import { normalizeDefinitionSymbol } from './utils/mathText.js';
 import { PythonRunner } from './python/PythonRunner.jsx';
 import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
@@ -185,6 +187,12 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
 
       <OrderedSection number="2" title="Plain-Language Intuition">
         <p>{concept.intuition}</p>
+        {concept.figure && (
+          <div className="picture-it">
+            <h3>Picture it</h3>
+            <ConceptFigure id={concept.figure} />
+          </div>
+        )}
       </OrderedSection>
 
       <OrderedSection number="3" title="Key Formulas and Symbols">
@@ -237,6 +245,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
         <LinkGroup label="Prerequisites" ids={concept.prerequisites} onSelect={onSelect} fallback="This is an entry concept." />
         <LinkGroup label="Follow-on" ids={concept.followOns} onSelect={onSelect} fallback="This is the end of this concept path." />
         <div className="sources"><Sigma size={18} /> Sources: {concept.sources.join(', ')}</div>
+        <BookReferences references={mmlReferences[concept.id] ?? []} />
       </OrderedSection>
 
       {trackId && <TrackBar trackId={trackId} conceptId={concept.id} onOpen={onSelect} onShowTrack={onShowTrack} position="bottom" />}
@@ -313,6 +322,24 @@ function FormulaDefinition({ definition }) {
       <span className="definition-symbol"><InlineMath math={symbolMath} /></span>
       <span className="definition-explanation">{explanation}</span>
     </li>
+  );
+}
+
+// Links into the course reference book, opening the free PDF at the right page.
+function BookReferences({ references }) {
+  if (!references.length) return null;
+  return (
+    <aside className="mml-references" aria-label="Read more in the reference book">
+      <h3><BookOpen size={18} /> Read more in the MML book</h3>
+      <ul>
+        {references.map((item) => (
+          <li key={`${item.section}-${item.page}`}>
+            <a href={mmlLink(item.page)} target="_blank" rel="noreferrer">§{item.section} {item.title}</a> (p. {item.page})
+          </li>
+        ))}
+      </ul>
+      <p>{MML_BOOK.authors}, <a href={MML_BOOK.home} target="_blank" rel="noreferrer"><em>{MML_BOOK.title}</em></a>, free PDF from the authors.</p>
+    </aside>
   );
 }
 
@@ -402,6 +429,7 @@ function TopicPage({ topic, onBack, onSelect }) {
           <Quiz quizId={`topic:${topic.id}`} questions={topic.children.flatMap((id) => quizzes[id] ?? [])} />
         </div>
       </section>
+      <BookReferences references={mmlReferencesFor(topic.children)} />
     </main>
   );
 }

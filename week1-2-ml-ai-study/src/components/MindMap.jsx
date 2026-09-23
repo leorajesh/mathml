@@ -112,6 +112,16 @@ function makeClusterLayout(concepts) {
   return { nodes, width: left * 2 + columns * nodeWidth + (columns - 1) * (gapX - nodeWidth), height: top * 2 + rows * nodeHeight + Math.max(0, rows - 1) * (gapY - nodeHeight) };
 }
 
+// SVG nodes act as buttons, so Enter and Space must activate them like real buttons.
+function activateOnKey(action) {
+  return (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  };
+}
+
 function connectionPoint(node, side) {
   const offset = 6;
   const centerX = node.x + node.width / 2;
@@ -199,7 +209,7 @@ function OverviewMap({ onOpenDomain, onSelect }) {
           const lines = wrapTitle(domain.title, 20);
           const fundamentalCount = domain.concepts.filter((id) => conceptLevel(id) === 'Fundamental').length;
           return (
-            <g key={domain.id} className="overview-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onOpenDomain(domain.id)} role="button" tabIndex="0">
+            <g key={domain.id} className="overview-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onOpenDomain(domain.id)} onKeyDown={activateOnKey(() => onOpenDomain(domain.id))} role="button" tabIndex="0" aria-label={`Open ${domain.title}`}>
               <rect width={node.width} height={node.height} rx="10" fill="#fffdf8" stroke={groupColors[domain.group]} strokeWidth="3" />
               <text x="16" y="26" className="node-group" fill={groupColors[domain.group]}>{domain.group}</text>
               {lines.map((line, index) => <text key={line} x="16" y={58 + index * 18} className="overview-title">{line}</text>)}
@@ -250,7 +260,7 @@ function FocusedMap({ domain, layout, nodeMap, edges, onBack, onSelect }) {
             const level = conceptLevel(node.id);
             const levelLabel = level === 'Fundamental' ? 'Base' : 'Adv';
             return (
-              <g key={node.id} className="cluster-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)} role="button" tabIndex="0">
+              <g key={node.id} className="cluster-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)} onKeyDown={activateOnKey(() => onSelect(node.id))} role="button" tabIndex="0" aria-label={`Open ${concept.title}`}>
                 <rect width={node.width} height={node.height} rx="9" fill="#fffdf8" stroke={groupColors[concept.group]} strokeWidth="3" />
                 <text x="14" y="22" className="node-group" fill={groupColors[concept.group]}>{concept.group}</text>
                 <g className={`level-pill ${level.toLowerCase()}`} transform={`translate(${node.width - 58}, 10)`}>

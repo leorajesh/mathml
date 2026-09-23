@@ -15,7 +15,7 @@ function linePath(points) { return points.map((point, index) => `${index ? 'L' :
 function circlePoint(point, className, label) { return <g><circle className={className} cx={sx(point.x)} cy={sy(point.y)} r="6" />{label && <text x={sx(point.x) + 8} y={sy(point.y) - 8}>{label}</text>}</g>; }
 
 export function ConceptGraph({ graph }) {
-  const initial = Object.fromEntries(graph.sliders.map((slider) => [slider.key, slider.value]));
+  const initial = { ...graph.fixed, ...Object.fromEntries(graph.sliders.map((slider) => [slider.key, slider.value])) };
   const [values, setValues] = React.useState(initial);
 
   function update(key, value) {
@@ -27,15 +27,15 @@ export function ConceptGraph({ graph }) {
   }
 
   const rendered = getGraphRender(graph.type, values);
+  const axes = plotAxes[graph.type];
 
   return (
     <div className="graph-card">
       <div className="graph-title-row">
         <h3>{graph.title}</h3>
-        <span>{graph.type}</span>
       </div>
       <div className="graph-body">
-        <GraphCanvas content={rendered.content} />
+        <GraphCanvas content={rendered.content} axes={axes} />
         <div className="graph-controls">
           <div className="slider-grid">
             {graph.sliders.map((slider) => (
@@ -58,14 +58,34 @@ export function ConceptGraph({ graph }) {
   );
 }
 
-function GraphCanvas({ content }) {
+// Graphs whose curves are rescaled to fit the canvas hide the default -4..4 ticks (they would show
+// the wrong units) and label their axes in words instead.
+const plotAxes = {
+  sigmoid: { x: 'score s', y: 'probability (0 to 1)' },
+  logLoss: { x: 'predicted probability h (0 to 1)', y: 'loss' },
+  gradient: { x: 'theta', y: 'loss J(theta)' },
+  stochasticGradient: { x: 'theta', y: 'loss J(theta)' },
+  generalization: { x: 'model complexity', y: 'loss' },
+  diagonalization: { x: '', y: 'size after k steps' },
+  shrinkage: { x: 'penalty strength lambda (0 to 5)', y: 'fitted weight' },
+  threshold: { x: 'predicted probability (0 to 1)', y: '' },
+  workflow: { x: '', y: '' },
+};
+
+function GraphCanvas({ content, axes }) {
   return (
     <svg className="plot" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Interactive concept graph">
       <rect className="plot-bg" x="0" y="0" width={width} height={height} rx="10" />
-      <path className="axis" d={`M ${sx(xMin)} ${sy(0)} L ${sx(xMax)} ${sy(0)}`} />
-      <path className="axis" d={`M ${sx(0)} ${sy(yMin)} L ${sx(0)} ${sy(yMax)}`} />
-      {[-4, -2, 2, 4].map((tick) => <g key={`x-${tick}`}><path className="tick" d={`M ${sx(tick)} ${sy(-0.12)} L ${sx(tick)} ${sy(0.12)}`} /><text x={sx(tick)} y={sy(0) + 18}>{tick}</text></g>)}
-      {[-4, -2, 2, 4].map((tick) => <g key={`y-${tick}`}><path className="tick" d={`M ${sx(-0.12)} ${sy(tick)} L ${sx(0.12)} ${sy(tick)}`} /><text x={sx(0) + 8} y={sy(tick) + 4}>{tick}</text></g>)}
+      {!axes && (
+        <>
+          <path className="axis" d={`M ${sx(xMin)} ${sy(0)} L ${sx(xMax)} ${sy(0)}`} />
+          <path className="axis" d={`M ${sx(0)} ${sy(yMin)} L ${sx(0)} ${sy(yMax)}`} />
+          {[-4, -2, 2, 4].map((tick) => <g key={`x-${tick}`}><path className="tick" d={`M ${sx(tick)} ${sy(-0.12)} L ${sx(tick)} ${sy(0.12)}`} /><text x={sx(tick)} y={sy(0) + 18}>{tick}</text></g>)}
+          {[-4, -2, 2, 4].map((tick) => <g key={`y-${tick}`}><path className="tick" d={`M ${sx(-0.12)} ${sy(tick)} L ${sx(0.12)} ${sy(tick)}`} /><text x={sx(0) + 8} y={sy(tick) + 4}>{tick}</text></g>)}
+        </>
+      )}
+      {axes?.x && <text className="axis-label" x={width - padding} y={height - 12} textAnchor="end">{axes.x}</text>}
+      {axes?.y && <text className="axis-label" x={14} y={padding - 14}>{axes.y}</text>}
       {content}
     </svg>
   );
@@ -83,25 +103,28 @@ function renderGraph(type, values) {
   switch (type) {
     case 'workflow': return <WorkflowGraph values={values} />;
     case 'dotProduct': return <DotProductGraph values={values} />;
-    case 'linearSystem': return <LinearSystemGraph values={values} />;
+    case 'linearSystem': return LinearSystemGraph({ values });
     case 'basis': return <BasisGraph values={values} />;
     case 'transform': return <TransformGraph values={values} />;
     case 'determinant': return <DeterminantGraph values={values} />;
-    case 'linearBoundary': return <LinearBoundaryGraph values={values} />;
+    case 'linearBoundary': return LinearBoundaryGraph({ values });
     case 'perceptron': return <PerceptronGraph values={values} />;
     case 'zeroOne': return <LossCurveGraph values={values} mode="zeroOne" />;
     case 'hinge': return <LossCurveGraph values={values} mode="hinge" />;
-    case 'gradient': return <GradientGraph values={values} />;
+    case 'gradient': return GradientGraph({ values });
     case 'linearRegression': return <LinearRegressionGraph values={values} />;
     case 'squaredLoss': return <SquaredLossGraph values={values} />;
     case 'ridge': return <RidgeGraph values={values} />;
-    case 'generalization': return <GeneralizationGraph values={values} />;
+    case 'generalization': return GeneralizationGraph({ values });
     case 'sigmoid': return <SigmoidGraph values={values} />;
     case 'logLoss': return <LogLossGraph values={values} />;
     case 'eigen': return <EigenGraph values={values} />;
     case 'diagonalization': return <DiagonalizationGraph values={values} />;
     case 'spectral': return <SpectralGraph values={values} />;
     case 'decomposition': return <DecompositionGraph values={values} />;
+    case 'stochasticGradient': return StochasticGradientGraph({ values });
+    case 'shrinkage': return ShrinkageGraph({ values });
+    case 'threshold': return ThresholdGraph({ values });
     case 'outerProduct': return OuterProductGraph({ values });
     case 'rowOpLines': return RowOpLinesGraph({ values });
     case 'lineProjection': return LineProjectionGraph({ values });
@@ -126,9 +149,11 @@ function DotProductGraph({ values }) {
 function LinearSystemGraph({ values }) {
   const line1 = [{ x: -5, y: values.m1 * -5 + values.b1 }, { x: 5, y: values.m1 * 5 + values.b1 }];
   const line2 = [{ x: -5, y: values.m2 * -5 + values.b2 }, { x: 5, y: values.m2 * 5 + values.b2 }];
-  const x = (values.b2 - values.b1) / (values.m1 - values.m2 || 0.0001);
+  const parallel = values.m1 === values.m2;
+  const x = parallel ? NaN : (values.b2 - values.b1) / (values.m1 - values.m2);
   const y = values.m1 * x + values.b1;
-  return <g><path className="line-a" d={linePath(line1)} /><path className="line-b" d={linePath(line2)} />{Number.isFinite(x) && Math.abs(x) < 5 && Math.abs(y) < 5 && circlePoint({ x, y }, 'active-dot', 'solution')}<text className="graph-note" x="44" y="48">intersection approx ({x.toFixed(2)}, {y.toFixed(2)})</text></g>;
+  const note = parallel ? (values.b1 === values.b2 ? 'same line: infinitely many solutions' : 'parallel lines: no solution') : `intersection (${x.toFixed(2)}, ${y.toFixed(2)})`;
+  return { content: <g><path className="line-a" d={linePath(line1)} /><path className="line-b" d={linePath(line2)} />{!parallel && Math.abs(x) < 5 && Math.abs(y) < 5 && circlePoint({ x, y }, 'active-dot', 'solution')}<text className="graph-note" x="44" y="48">{note}</text></g>, readout: [] };
 }
 
 function BasisGraph({ values }) {
@@ -153,10 +178,31 @@ function DeterminantGraph({ values }) {
 }
 
 function LinearBoundaryGraph({ values }) {
-  const points = [{ x: -3, y: 2, yLabel: 1 }, { x: -1, y: 1, yLabel: 1 }, { x: 2, y: -2, yLabel: -1 }, { x: 3, y: 1, yLabel: -1 }, { x: 1, y: 3, yLabel: 1 }];
-  const theta2 = Math.abs(values.theta2) < 0.1 ? 0.1 : values.theta2;
-  const line = [{ x: -5, y: -(values.theta1 * -5 + values.bias) / theta2 }, { x: 5, y: -(values.theta1 * 5 + values.bias) / theta2 }];
-  return <g><path className="boundary" d={linePath(line)} />{points.map((p, index) => <circle key={index} className={p.yLabel > 0 ? 'class-pos' : 'class-neg'} cx={sx(p.x)} cy={sy(p.y)} r="7" />)}</g>;
+  const basePoints = [{ x: -3, y: 2, yLabel: 1 }, { x: -1, y: 1, yLabel: 1 }, { x: 2, y: -2, yLabel: -1 }, { x: 3, y: 1, yLabel: -1 }, { x: 1, y: 3, yLabel: 1 }];
+  // The extra negative point sits between positives, so no line can classify every point.
+  const points = values.overlap ? [...basePoints, { x: -1.5, y: 2, yLabel: -1 }] : basePoints;
+  const { theta1, theta2, bias } = values;
+  const score = (p) => theta1 * p.x + theta2 * p.y + bias;
+  const mistakes = points.filter((p) => p.yLabel * score(p) <= 0).length;
+  const cells = [];
+  for (let gx = xMin; gx < xMax; gx += 0.5) {
+    for (let gy = yMin; gy < yMax; gy += 0.5) {
+      if (score({ x: gx + 0.25, y: gy + 0.25 }) > 0) cells.push(<rect key={`${gx},${gy}`} className="positive-region" x={sx(gx)} y={sy(gy + 0.5)} width={sx(gx + 0.5) - sx(gx)} height={sy(gy) - sy(gy + 0.5)} />);
+    }
+  }
+  const norm = Math.hypot(theta1, theta2);
+  let boundary = null;
+  let arrow = null;
+  if (norm > 0) {
+    const foot = { x: (-bias * theta1) / (norm * norm), y: (-bias * theta2) / (norm * norm) };
+    const along = { x: -theta2 / norm, y: theta1 / norm };
+    boundary = [{ x: foot.x - 12 * along.x, y: foot.y - 12 * along.y }, { x: foot.x + 12 * along.x, y: foot.y + 12 * along.y }];
+    arrow = { from: foot, to: { x: foot.x + (1.5 * theta1) / norm, y: foot.y + (1.5 * theta2) / norm } };
+  }
+  return {
+    content: <g>{cells}{boundary && <path className="boundary" d={linePath(boundary)} />}{arrow && <path className="theta-arrow" d={`M ${sx(arrow.from.x)} ${sy(arrow.from.y)} L ${sx(arrow.to.x)} ${sy(arrow.to.y)}`} />}{arrow && <text x={sx(arrow.to.x) + 6} y={sy(arrow.to.y) - 6}>theta</text>}{points.map((p, index) => <circle key={index} className={`${p.yLabel > 0 ? 'class-pos' : 'class-neg'}${p.yLabel * score(p) <= 0 ? ' misclassified' : ''}`} cx={sx(p.x)} cy={sy(p.y)} r="7" />)}</g>,
+    readout: [`mistakes: ${mistakes} of ${points.length}${mistakes ? ' (ringed points)' : ''}`, 'green = +1, red = -1; shaded side is predicted +1'],
+  };
 }
 
 function PerceptronGraph({ values }) {
@@ -169,17 +215,39 @@ function PerceptronGraph({ values }) {
 function LossCurveGraph({ values, mode }) {
   const points = Array.from({ length: 121 }, (_, index) => { const z = -3 + index * 0.05; const loss = mode === 'hinge' ? Math.max(0, 1 - z) : z <= 0 ? 1 : 0; return { x: z, y: clamp(loss, 0, 4) }; });
   const loss = mode === 'hinge' ? Math.max(0, 1 - values.margin) : values.margin <= 0 ? 1 : 0;
-  return <g><path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.margin, y: clamp(loss, 0, 4) }, 'active-dot', `loss ${loss.toFixed(2)}`)}</g>;
+  const zeroOne = [{ x: -3, y: 1 }, { x: 0, y: 1 }, { x: 0, y: 0 }, { x: 3, y: 0 }];
+  return <g>{mode === 'hinge' && <path className="zero-one-line" d={linePath(zeroOne)} />}<path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.margin, y: clamp(loss, 0, 4) }, 'active-dot', `loss ${loss.toFixed(2)}`)}</g>;
+}
+
+// For J(theta) = (theta - 3)^2 each step multiplies the distance to 3 by (1 - 2 alpha), so alpha > 1 diverges.
+function descentPlot(path, theta, alpha) {
+  const curve = Array.from({ length: 121 }, (_, index) => { const x = -4 + index * 0.1; return { x: x - 3, y: bowl(x) }; });
+  const visible = path.filter((p) => Math.abs(p.x - 3) <= 5 && bowl(p.x) <= 5);
+  return <g><path className="loss-line" d={linePath(curve)} /><path className="descent-path" d={linePath(visible.map((p) => ({ x: p.x - 3, y: bowl(p.x) })))} />{visible.map((p, index) => <circle key={index} className={p === path[path.length - 1] ? 'active-dot' : 'muted-dot'} cx={sx(p.x - 3)} cy={sy(bowl(p.x))} r="5" />)}<text className="graph-note" x="44" y="48">{alpha > 1 ? `diverging: each step overshoots further (final theta ${theta.toFixed(1)})` : `final theta ${theta.toFixed(2)} (minimum at 3)${Math.abs(theta - 3) > 5 ? ', off the chart' : ''}`}</text></g>;
 }
 
 function GradientGraph({ values }) {
   let theta = values.start;
-  const path = [{ x: theta, y: bowl(theta) }];
-  for (let step = 0; step < values.steps; step += 1) { theta = theta - values.alpha * 2 * (theta - 3); path.push({ x: theta, y: bowl(theta) }); }
-  const curve = Array.from({ length: 121 }, (_, index) => { const x = -4 + index * 0.1; return { x, y: bowl(x) }; });
-  return <g><path className="loss-line" d={linePath(curve)} />{path.map((p, index) => <circle key={index} className={index === path.length - 1 ? 'active-dot' : 'muted-dot'} cx={sx(p.x)} cy={sy(clamp(p.y, -5, 5))} r="5" />)}<text className="graph-note" x="44" y="48">final theta {theta.toFixed(2)}</text></g>;
+  const path = [{ x: theta }];
+  for (let step = 0; step < values.steps; step += 1) { theta = theta - values.alpha * 2 * (theta - 3); path.push({ x: theta }); }
+  return { content: descentPlot(path, theta, values.alpha), readout: [`J(theta) = (theta - 3)^2 after ${values.steps} steps: ${((theta - 3) ** 2).toPrecision(3)}`] };
 }
+// Loss J(theta) = (theta - 3)^2 drawn centered on its minimum and scaled to fit the canvas.
 function bowl(theta) { return ((theta - 3) ** 2) / 4 - 3; }
+
+function StochasticGradientGraph({ values }) {
+  // Fixed pseudo-random noise so the path only changes when a slider changes.
+  let seed = 7;
+  const random = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
+  let theta = -1;
+  const path = [{ x: theta }];
+  for (let step = 0; step < values.steps; step += 1) {
+    const noisyGradient = 2 * (theta - 3) + values.noise * 2 * random();
+    theta -= values.alpha * noisyGradient;
+    path.push({ x: theta });
+  }
+  return { content: descentPlot(path, theta, values.alpha), readout: ['start theta = -1', 'Each step = true gradient + random noise'] };
+}
 
 function LinearRegressionGraph({ values }) {
   const data = [{ x: -3, y: -2.5 }, { x: -1, y: -0.4 }, { x: 1, y: 2 }, { x: 3, y: 3.2 }];
@@ -202,18 +270,25 @@ function RidgeGraph({ values }) {
 }
 
 function GeneralizationGraph({ values }) {
-  const train = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: 4.2 - 0.55 * c }; });
-  const test = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: 1.1 + ((c - 5) ** 2) / 8 }; });
+  // Illustrative curves: training loss keeps falling, test loss is U-shaped and never below training loss.
+  const trainAt = (c) => 0.3 + 3 * Math.exp(-0.45 * c);
+  const testAt = (c) => trainAt(c) + 0.2 + 0.035 * c * c;
+  const toY = (loss) => loss * 1.6 - 4.5;
+  const train = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: toY(trainAt(c)) }; });
+  const test = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: toY(clamp(testAt(c), 0, 5.8)) }; });
   const c = values.complexity;
-  const trainLoss = 4.2 - 0.55 * c;
-  const testLoss = 1.1 + ((c - 5) ** 2) / 8;
-  return <g><path className="line-a" d={linePath(train)} /><path className="line-b" d={linePath(test)} />{circlePoint({ x: c - 5, y: trainLoss }, 'point-a', 'train')}{circlePoint({ x: c - 5, y: testLoss }, 'point-b', 'test')}</g>;
+  let best = 0;
+  for (let k = 0; k <= 100; k += 1) if (testAt(k / 10) < testAt(best)) best = k / 10;
+  return {
+    content: <g><path className="line-a" d={linePath(train)} /><path className="line-b" d={linePath(test)} /><path className="tick" strokeDasharray="4 4" d={`M ${sx(best - 5)} ${sy(-4.6)} L ${sx(best - 5)} ${sy(4.6)}`} />{circlePoint({ x: c - 5, y: toY(trainAt(c)) }, 'point-a', 'train')}{circlePoint({ x: c - 5, y: toY(clamp(testAt(c), 0, 5.8)) }, 'point-b', 'test')}</g>,
+    readout: [`train loss ${trainAt(c).toFixed(2)}, test loss ${testAt(c).toFixed(2)}, gap ${(testAt(c) - trainAt(c)).toFixed(2)}`, c < best - 0.5 ? 'underfitting: both losses are high' : c > best + 0.5 ? 'overfitting: the gap keeps growing' : 'near the best complexity (dashed line)'],
+  };
 }
 
 function SigmoidGraph({ values }) {
-  const points = Array.from({ length: 161 }, (_, index) => { const s = -8 + index * 0.1; return { x: s / 1.6, y: values.steepness / (1 + Math.exp(-values.steepness * s)) * 4 - 2 }; });
+  const points = Array.from({ length: 161 }, (_, index) => { const s = -8 + index * 0.1; return { x: s / 1.6, y: 4 / (1 + Math.exp(-values.steepness * s)) - 2 }; });
   const probability = 1 / (1 + Math.exp(-values.steepness * values.score));
-  return <g><path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.score / 1.6, y: probability * 4 - 2 }, 'active-dot', `p=${probability.toFixed(2)}`)}</g>;
+  return <g><path className="tick" strokeDasharray="4 4" d={`M ${sx(-5)} ${sy(0)} L ${sx(5)} ${sy(0)}`} /><text x={sx(-5) + 4} y={sy(0) - 6}>p = 0.5</text><text x={sx(-5) + 4} y={sy(2) - 6}>p = 1</text><text x={sx(-5) + 4} y={sy(-2) - 6}>p = 0</text><path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.score / 1.6, y: probability * 4 - 2 }, 'active-dot', `p=${probability.toFixed(2)}`)}</g>;
 }
 
 function LogLossGraph({ values }) {
@@ -237,7 +312,7 @@ function DiagonalizationGraph({ values }) {
   const barBase = sy(-4);
   const firstHeight = clamp(first, 0, 5);
   const secondHeight = clamp(second, 0, 5);
-  return <g><rect className="bar-a" x={sx(-2.2)} y={sy(firstHeight - 4)} width="90" height={barBase - sy(firstHeight - 4)} rx="6" /><rect className="bar-b" x={sx(0.7)} y={sy(secondHeight - 4)} width="90" height={barBase - sy(secondHeight - 4)} rx="6" /><text x={sx(-1.5)} y={barBase + 20} textAnchor="middle">lambda_1^k</text><text x={sx(1.4)} y={barBase + 20} textAnchor="middle">lambda_2^k</text><text className="graph-note" x="44" y="48">values: {first.toFixed(3)} and {second.toFixed(3)}</text></g>;
+  return <g><rect className="bar-a" x={sx(-2.2)} y={sy(firstHeight - 4)} width="90" height={barBase - sy(firstHeight - 4)} rx="6" /><rect className="bar-b" x={sx(0.7)} y={sy(secondHeight - 4)} width="90" height={barBase - sy(secondHeight - 4)} rx="6" /><text x={sx(-1.5)} y={barBase + 20} textAnchor="middle">lambda_1^k</text><text x={sx(1.4)} y={barBase + 20} textAnchor="middle">lambda_2^k</text><text className="graph-note" x="44" y="48">values: {first.toFixed(3)} and {second.toFixed(3)}{first > 0 ? `, ratio ${(second / first).toFixed(3)}` : ''}</text></g>;
 }
 
 function SpectralGraph({ values }) {
@@ -251,15 +326,17 @@ function SpectralGraph({ values }) {
 
 function DecompositionGraph({ values }) {
   const radians = values.rotation * Math.PI / 180;
+  const first = -(values.rotationV ?? 0) * Math.PI / 180;
   const unit = [{ x: -1, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 1 }, { x: -1, y: 1 }, { x: -1, y: -1 }];
   const transformed = unit.map((p) => {
-    const scaled = { x: values.sigma1 * p.x, y: values.sigma2 * p.y };
+    const turned = { x: p.x * Math.cos(first) - p.y * Math.sin(first), y: p.x * Math.sin(first) + p.y * Math.cos(first) };
+    const scaled = { x: values.sigma1 * turned.x, y: values.sigma2 * turned.y };
     return {
       x: scaled.x * Math.cos(radians) - scaled.y * Math.sin(radians),
       y: scaled.x * Math.sin(radians) + scaled.y * Math.cos(radians),
     };
   });
-  return <g><path className="shape-original" d={linePath(unit)} /><path className="shape-result" d={linePath(transformed)} /><text className="graph-note" x="44" y="48">singular values scale axes before rotation</text></g>;
+  return <g><path className="shape-original" d={linePath(unit)} /><path className="shape-result" d={linePath(transformed)} /><text className="graph-note" x="44" y="48">rotate (V^T), scale (Sigma), rotate (W)</text></g>;
 }
 
 function MatrixCells({ x, y, values, title }) {
@@ -298,7 +375,10 @@ function RowOpLinesGraph({ values }) {
   const next = { a: eq2.a + values.k * eq1.a, b: eq2.b + values.k * eq1.b, c: eq2.c + values.k * eq1.c };
   const det = eq1.a * eq2.b - eq1.b * eq2.a;
   const solution = { x: (eq1.c * eq2.b - eq1.b * eq2.c) / det, y: (eq1.a * eq2.c - eq1.c * eq2.a) / det };
-  const line = (eq) => [{ x: -5, y: (eq.c - eq.a * -5) / eq.b }, { x: 5, y: (eq.c - eq.a * 5) / eq.b }];
+  // A row with no y term (b = 0) is the vertical line x = c / a.
+  const line = (eq) => (Math.abs(eq.b) < 1e-9
+    ? [{ x: eq.c / eq.a, y: -5 }, { x: eq.c / eq.a, y: 5 }]
+    : [{ x: -5, y: (eq.c - eq.a * -5) / eq.b }, { x: 5, y: (eq.c - eq.a * 5) / eq.b }]);
   return {
     content: <g><path className="line-a" d={linePath(line(eq1))} /><path className="shape-original" d={linePath(line(eq2))} /><path className="line-b" d={linePath(line(next))} />{circlePoint(solution, 'active-dot', 'fixed solution')}</g>,
     readout: [`new row: ${next.a.toFixed(2)}x + ${next.b.toFixed(2)}y = ${next.c.toFixed(2)}`, 'The replacement row pivots around the same solution point.'],
@@ -340,5 +420,37 @@ function FitLineGraph({ values }) {
   return {
     content: <g><path className="line-a" d={linePath(line)} />{points.map((point, index) => { const prediction = values.slope * point.x + values.intercept; const residual = point.y - prediction; sse += residual ** 2; return <g key={index}><path className="residual" d={`M ${sx(point.x)} ${sy(point.y)} L ${sx(point.x)} ${sy(prediction)}`} /><circle className="point-b" cx={sx(point.x)} cy={sy(point.y)} r="7" /></g>; })}<text className="graph-note" x="44" y="48">red bars are residuals</text></g>,
     readout: [`model: y = ${values.slope.toFixed(2)}x + ${values.intercept.toFixed(2)}`, `sum of squared residuals = ${sse.toFixed(4)}`, 'best here: slope 0.50, intercept 0.67, loss 0.1667'],
+  };
+}
+
+function ShrinkageGraph({ values }) {
+  const { w, lambda } = values;
+  const lasso = (l) => Math.sign(w) * Math.max(Math.abs(w) - l, 0);
+  const ridge = (l) => w / (1 + l);
+  const toX = (l) => l * 2 - 5;
+  const ridgeCurve = Array.from({ length: 101 }, (_, index) => { const l = index / 20; return { x: toX(l), y: ridge(l) }; });
+  const lassoCurve = Array.from({ length: 101 }, (_, index) => { const l = index / 20; return { x: toX(l), y: lasso(l) }; });
+  return {
+    content: <g><path className="tick" d={`M ${sx(-5)} ${sy(0)} L ${sx(5)} ${sy(0)}`} /><path className="line-a" d={linePath(ridgeCurve)} /><path className="line-b" d={linePath(lassoCurve)} /><path className="tick" strokeDasharray="4 4" d={`M ${sx(toX(lambda))} ${sy(-4.6)} L ${sx(toX(lambda))} ${sy(4.6)}`} />{circlePoint({ x: toX(lambda), y: ridge(lambda) }, 'point-a', 'ridge')}{circlePoint({ x: toX(lambda), y: lasso(lambda) }, 'point-b', 'lasso')}</g>,
+    readout: [`ridge weight = ${ridge(lambda).toFixed(3)} (blue, never exactly 0)`, `lasso weight = ${lasso(lambda).toFixed(3)} (orange${lasso(lambda) === 0 ? ', exactly 0: feature dropped' : ''})`],
+  };
+}
+
+// Twenty fixed examples: predicted probability and true label.
+const thresholdData = [0.03, 0.08, 0.12, 0.18, 0.22, 0.27, 0.31, 0.36, 0.41, 0.45, 0.52, 0.57, 0.61, 0.66, 0.72, 0.77, 0.83, 0.88, 0.93, 0.97]
+  .map((p, index) => ({ p, y: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1][index] }));
+
+function ThresholdGraph({ values }) {
+  const { threshold } = values;
+  const counts = { TP: 0, FP: 0, TN: 0, FN: 0 };
+  thresholdData.forEach(({ p, y }) => {
+    const predicted = p >= threshold ? 1 : 0;
+    counts[predicted ? (y ? 'TP' : 'FP') : (y ? 'FN' : 'TN')] += 1;
+  });
+  const ratio = (a, b) => (b ? (a / b).toFixed(2) : 'undefined');
+  const toX = (p) => p * 9 - 4.1;
+  return {
+    content: <g><rect className="positive-region" x={sx(toX(threshold))} y={sy(4.6)} width={sx(toX(1)) - sx(toX(threshold))} height={sy(-4.6) - sy(4.6)} /><path className="boundary" d={`M ${sx(toX(threshold))} ${sy(4.6)} L ${sx(toX(threshold))} ${sy(-4.6)}`} />{thresholdData.map(({ p, y }, index) => <circle key={index} className={y ? 'class-pos' : 'class-neg'} cx={sx(toX(p))} cy={sy(y ? 1.2 : -1.2)} r="7" />)}<text x={sx(-4.95)} y={sy(1.2) + 4}>y = 1</text><text x={sx(-4.95)} y={sy(-1.2) + 4}>y = 0</text><text className="graph-note" x={sx(toX(threshold)) + 6} y="48">predict 1</text></g>,
+    readout: [`TP ${counts.TP}, FP ${counts.FP}, TN ${counts.TN}, FN ${counts.FN}`, `precision ${ratio(counts.TP, counts.TP + counts.FP)}, recall ${ratio(counts.TP, counts.TP + counts.FN)}`, `accuracy ${ratio(counts.TP + counts.TN, thresholdData.length)}`],
   };
 }

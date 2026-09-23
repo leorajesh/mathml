@@ -17,6 +17,25 @@ The app uses KaTeX through `katex` and `react-katex` from npm. There is no CDN d
 npm run build
 ```
 
+The build uses relative asset paths (`base: './'` in `vite.config.js`), so the same `dist/` works at a
+domain root and under a sub-path such as GitHub Pages' `/mathml/`.
+
+## Runnable Python
+
+Section 6 of every concept page ("Try It in Python") is an editable, runnable Python cell:
+
+- Code runs in the browser with [Pyodide](https://pyodide.org) (CPython compiled to WebAssembly) inside a
+  Web Worker (`src/python/pyodideWorker.js`), so the page stays responsive and **Stop** can end runaway loops.
+  Pyodide and packages such as numpy, sympy, scipy, and matplotlib load from `cdn.jsdelivr.net` on the first
+  run and are cached by the browser afterward. Set `VITE_PYODIDE_BASE` at build time to self-host them.
+- Students can edit the code (CodeMirror editor; **Ctrl/Cmd+Enter** runs it). Edits are saved per concept in
+  the browser's localStorage. **Reset** restores the original example, and **Versions** keeps the last ten
+  versions (saved on each run and before each reset) so earlier code can be restored.
+- `print` output, readable tracebacks, and matplotlib figures (as images) appear below the editor.
+
+Starter code lives in `src/data/codeExamples.js`. Each snippet should reproduce the page's worked example
+and end with a `# Try:` suggestion.
+
 ## Edit content
 
 Most content lives in `src/data/concepts.js`:
@@ -25,6 +44,8 @@ Most content lives in `src/data/concepts.js`:
 - `mindMapNodes`: visual positions for concept nodes on the landing-page SVG map.
 - `mindMapEdges`: dependency arrows between concepts.
 - `notCovered`: explicit list of topics omitted and why.
+
+Python starter code lives in `src/data/codeExamples.js`.
 
 Worked-example KaTeX blocks live in `src/data/workedExampleMath.js`. Keep those arrays aligned with each concept's `example` array in `src/data/concepts.js`; use `null` for a text-only step.
 

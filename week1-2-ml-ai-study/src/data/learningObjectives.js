@@ -44,6 +44,17 @@ export const learningObjectives = [
       { objective: 'Find inverses, rank, nullity, and determinants, including cofactor and row-operation methods.', concepts: ['rank-nullity', 'determinant-geometry', 'determinants-cofactor-row-ops', 'invertible-transformations'], check: 'Which row operations change a determinant, and how?' },
     ],
   },
+  {
+    area: 'Analytic Geometry, Optimization, and PCA (Mathematics for Machine Learning book)',
+    items: [
+      { objective: 'Measure lengths, distances, and angles with norms and inner products.', concepts: ['norms', 'inner-products', 'vectors-dot-product'], check: 'Which three rules must a norm satisfy, and which matrices define inner products?' },
+      { objective: 'Use orthogonal complements, the four fundamental subspaces, and orthogonal projections.', concepts: ['orthogonal-complement', 'orthogonal-projections', 'least-squares-normal-equation'], check: 'Why is the least-squares residual perpendicular to every column of X?' },
+      { objective: 'Build orthonormal bases with Gram-Schmidt.', concepts: ['gram-schmidt', 'orthogonality'], check: 'What does each Gram-Schmidt step remove from the next vector?' },
+      { objective: 'Relate the trace and determinant to the eigenvalues.', concepts: ['trace', 'eigenvalues-eigenvectors'], check: 'How do the trace and the determinant pin down the eigenvalues of a 2 by 2 matrix?' },
+      { objective: 'Speed up gradient descent with momentum, and solve constrained problems with Lagrange multipliers.', concepts: ['momentum', 'lagrange-multipliers'], check: 'Why are the gradients of f and of the constraint parallel at a constrained minimum?' },
+      { objective: 'Derive and apply PCA from the maximum-variance and projection perspectives.', concepts: ['pca', 'dimensionality-reduction', 'svd'], check: 'Why does keeping the most variance also give the smallest reconstruction error?' },
+    ],
+  },
 ];
 
 export const selfChecksByConcept = learningObjectives

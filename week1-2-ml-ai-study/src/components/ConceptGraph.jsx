@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -82,6 +82,9 @@ const plotAxes = {
   matrixFactors: { x: '', y: '' },
   convexChord: { x: 'x', y: 'f(x) (rescaled to fit)' },
   subgradient: { x: 'x', y: 'f(x) = |x|' },
+  innerProductBall: { x: 'drawn 3 times larger', y: '' },
+  traceEigen: { x: 'the real number line', y: '' },
+  svdCompression: { x: '', y: '' },
 };
 
 function renderCanvas(content, axes) {
@@ -152,6 +155,15 @@ function renderGraph(type, values) {
     case 'lineProjection': return LineProjectionGraph({ values });
     case 'basisCoords': return BasisCoordsGraph({ values });
     case 'fitLine': return FitLineGraph({ values });
+    case 'normBall': return NormBallGraph({ values });
+    case 'innerProductBall': return InnerProductBallGraph({ values });
+    case 'complement': return ComplementGraph({ values });
+    case 'gramSchmidt': return GramSchmidtGraph({ values });
+    case 'traceEigen': return TraceEigenGraph({ values });
+    case 'pca': return PcaGraph({ values });
+    case 'momentum': return MomentumGraph({ values });
+    case 'lagrange': return LagrangeGraph({ values });
+    case 'svdCompression': return SvdCompressionGraph({ values });
     default: return null;
   }
 }
@@ -678,5 +690,303 @@ function MatrixFactorsGraph({ values }) {
   return {
     content: <g><MatrixCells x={40} y={110} values={[[a, b], [c, d]]} title="A" /><MatrixCells x={210} y={110} values={[[1, 0], [m, 1]]} title="L" /><MatrixCells x={380} y={110} values={[[a, b], [0, d - m * b]]} title="U" /></g>,
     readout: [`multiplier c/a = ${m.toFixed(2)} goes into L`, `U row 2 = row 2 - ${m.toFixed(2)} x row 1`, d - m * b === 0 ? 'U has a zero pivot: A is singular' : `pivots ${a} and ${(d - m * b).toFixed(2)}`],
+  };
+}
+
+// ---------- Graphs for the MML-book pages (norms, inner products, projections, trace, PCA, momentum, Lagrange, SVD) ----------
+
+function arrow(from, to, className) {
+  return <path className={className} d={`M ${sx(from.x)} ${sy(from.y)} L ${sx(to.x)} ${sy(to.y)}`} />;
+}
+
+// Boundary of the ball of radius r in the L1 (1), L2 (2), or max (3) norm.
+function normBallShape(norm, r, className, key) {
+  if (norm === 2) return <ellipse key={key} className={className} cx={sx(0)} cy={sy(0)} rx={sx(r) - sx(0)} ry={sy(0) - sy(r)} />;
+  const corners = norm === 1
+    ? [{ x: r, y: 0 }, { x: 0, y: r }, { x: -r, y: 0 }, { x: 0, y: -r }, { x: r, y: 0 }]
+    : [{ x: r, y: r }, { x: -r, y: r }, { x: -r, y: -r }, { x: r, y: -r }, { x: r, y: r }];
+  return <path key={key} className={className} d={linePath(corners)} />;
+}
+
+function NormBallGraph({ values }) {
+  const { norm, px, py } = values;
+  const lengths = { 1: Math.abs(px) + Math.abs(py), 2: Math.hypot(px, py), 3: Math.max(Math.abs(px), Math.abs(py)) };
+  const names = { 1: 'L1', 2: 'L2', 3: 'max' };
+  const point = { x: px, y: py };
+  return {
+    content: <g>{[1, 2, 3].map((n) => normBallShape(n, 1, 'norm-ball', `unit-${n}`))}{lengths[norm] > 0 && normBallShape(norm, lengths[norm], 'norm-ball-active', 'active')}{arrow({ x: 0, y: 0 }, point, 'vector-a')}{circlePoint(point, 'point-a', 'x')}<text className="graph-note" x="44" y="48">{names[norm]} length of x = {lengths[norm].toFixed(2)}</text></g>,
+    readout: [`L1 = ${lengths[1].toFixed(2)}, L2 = ${lengths[2].toFixed(2)}, max = ${lengths[3].toFixed(2)}`, 'faint outlines: the unit balls (length 1) of each norm', `bold outline: every vector with the same ${names[norm]} length as x`],
+  };
+}
+
+function InnerProductBallGraph({ values }) {
+  const { a, b, d } = values;
+  const scale = 3;
+  const spd = a > 0 && a * d - b * b > 0;
+  const circle = <ellipse className="norm-ball" cx={sx(0)} cy={sy(0)} rx={sx(scale) - sx(0)} ry={sy(0) - sy(scale)} />;
+  if (!spd) {
+    return {
+      content: <g>{circle}<text className="graph-note" x="44" y="48">not positive definite: x^T A x is not an inner product</text></g>,
+      readout: [`A = [[${a}, ${b}], [${b}, ${d}]]`, a <= 0 ? 'A_11 must be positive' : `det(A) = ${(a * d - b * b).toFixed(2)} must be positive`, 'some nonzero vector would get length 0, or an imaginary length'],
+    };
+  }
+  const mean = (a + d) / 2;
+  const spread = Math.hypot((a - d) / 2, b);
+  const l1 = mean + spread;
+  const l2 = mean - spread;
+  const angle = 0.5 * Math.atan2(2 * b, a - d);
+  const lengthA = (v) => Math.sqrt(a * v.x * v.x + 2 * b * v.x * v.y + d * v.y * v.y);
+  const unitA = (v) => ({ x: (scale * v.x) / lengthA(v), y: (scale * v.y) / lengthA(v) });
+  const e1 = unitA({ x: 1, y: 0 });
+  const e2 = unitA({ x: 0, y: 1 });
+  const z = unitA({ x: -b, y: a });
+  const cosine = b / Math.sqrt(a * d);
+  return {
+    content: <g>{circle}<ellipse className="spectral-ellipse" cx={sx(0)} cy={sy(0)} rx={sx(scale / Math.sqrt(l1)) - sx(0)} ry={sy(0) - sy(scale / Math.sqrt(l2))} transform={`rotate(${(-angle * 180) / Math.PI} ${sx(0)} ${sy(0)})`} />{arrow({ x: 0, y: 0 }, e1, 'vector-a')}{arrow({ x: 0, y: 0 }, e2, 'vector-a')}{arrow({ x: 0, y: 0 }, z, 'vector-b')}{circlePoint(e1, 'point-a', 'e1')}{circlePoint(e2, 'point-a', 'e2')}{circlePoint(z, 'point-b', 'z')}<text className="graph-note" x="44" y="48">unit ellipse of x^T A y</text></g>,
+    readout: [`<e1, e2> = ${b.toFixed(2)}, so e1 and e2 meet at ${((Math.acos(clamp(cosine, -1, 1)) * 180) / Math.PI).toFixed(1)} degrees under A`, `orange z = [${-b}, ${a}] (rescaled) is orthogonal to e1 under A`, 'blue arrows: e1 and e2 rescaled to length 1 under A'],
+  };
+}
+
+function ComplementGraph({ values }) {
+  const radians = (values.theta * Math.PI) / 180;
+  const u = { x: Math.cos(radians), y: Math.sin(radians) };
+  const w = { x: -u.y, y: u.x };
+  const point = { x: values.px, y: values.py };
+  const cu = point.x * u.x + point.y * u.y;
+  const cw = point.x * w.x + point.y * w.y;
+  const partU = { x: cu * u.x, y: cu * u.y };
+  const partW = { x: cw * w.x, y: cw * w.y };
+  const far = 12;
+  return {
+    content: <g><path className="span-line" d={linePath([{ x: -far * u.x, y: -far * u.y }, { x: far * u.x, y: far * u.y }])} /><path className="shape-original" d={linePath([{ x: -far * w.x, y: -far * w.y }, { x: far * w.x, y: far * w.y }])} /><path className="residual" d={`M ${sx(partU.x)} ${sy(partU.y)} L ${sx(point.x)} ${sy(point.y)} L ${sx(partW.x)} ${sy(partW.y)}`} />{arrow({ x: 0, y: 0 }, partU, 'vector-a')}{arrow({ x: 0, y: 0 }, partW, 'vector-b')}{arrow({ x: 0, y: 0 }, point, 'result-vector')}{circlePoint(point, 'active-dot', 'x')}<text x={sx(4.2 * u.x) + 6} y={sy(4.2 * u.y) - 6}>U</text><text x={sx(4.2 * w.x) + 6} y={sy(4.2 * w.y) - 6}>U-perp</text></g>,
+    readout: [`part in U (blue) = (${partU.x.toFixed(2)}, ${partU.y.toFixed(2)})`, `part in U-perp (orange) = (${partW.x.toFixed(2)}, ${partW.y.toFixed(2)}); the parts' dot product is 0`, `|x|^2 = ${(cu * cu + cw * cw).toFixed(2)} = ${(cu * cu).toFixed(2)} + ${(cw * cw).toFixed(2)}`],
+  };
+}
+
+function GramSchmidtGraph({ values }) {
+  const radians = (values.theta * Math.PI) / 180;
+  const b1 = { x: 3 * Math.cos(radians), y: 3 * Math.sin(radians) };
+  const b2 = { x: values.bx, y: values.by };
+  const coefficient = (b1.x * b2.x + b1.y * b2.y) / 9;
+  const along = { x: coefficient * b1.x, y: coefficient * b1.y };
+  const u2 = { x: b2.x - along.x, y: b2.y - along.y };
+  const length = Math.hypot(u2.x, u2.y);
+  const far = 12;
+  return {
+    content: <g><path className="shape-original" d={linePath([{ x: -far * b1.x / 3, y: -far * b1.y / 3 }, { x: far * b1.x / 3, y: far * b1.y / 3 }])} /><path className="residual" d={`M ${sx(0)} ${sy(0)} L ${sx(along.x)} ${sy(along.y)} L ${sx(b2.x)} ${sy(b2.y)}`} />{arrow({ x: 0, y: 0 }, b1, 'result-vector')}{arrow({ x: 0, y: 0 }, b2, 'vector-a')}{length > 1e-9 && arrow({ x: 0, y: 0 }, u2, 'vector-b')}{circlePoint(b1, 'active-dot', 'b1 = u1')}{circlePoint(b2, 'point-a', 'b2')}{length > 1e-9 && circlePoint(u2, 'point-b', 'u2')}</g>,
+    readout: length > 1e-9
+      ? [`projection coefficient (u1 . b2)/(u1 . u1) = ${coefficient.toFixed(3)}`, `u2 = b2 - ${coefficient.toFixed(3)} u1 = (${u2.x.toFixed(2)}, ${u2.y.toFixed(2)})`, `u1 . u2 = ${Math.abs(b1.x * u2.x + b1.y * u2.y) < 1e-9 ? '0' : (b1.x * u2.x + b1.y * u2.y).toFixed(6)}: perpendicular`]
+      : ['b2 lies on the line of b1: nothing is left over', 'the vectors are dependent, so there is no second direction'],
+  };
+}
+
+function TraceEigenGraph({ values }) {
+  const { a, b, c, d } = values;
+  const trace = a + d;
+  const det = a * d - b * c;
+  const disc = trace * trace - 4 * det;
+  const real = disc >= 0;
+  const root = Math.sqrt(Math.abs(disc)) / 2;
+  const eig = real ? [trace / 2 + root, trace / 2 - root] : [trace / 2, trace / 2];
+  const lineY = -3;
+  // The number line runs from -8 to 8, drawn at 0.6 scale to fit the canvas.
+  const place = (value) => 0.6 * clamp(value, -8, 8);
+  const format = (value) => (Math.abs(value) < 1e-9 ? '0.00' : value.toFixed(2));
+  return {
+    content: <g><MatrixCells x={70} y={60} values={[[a, b], [c, d]]} title="A" /><text className="graph-note" x="190" y="92">trace = a + d = {format(trace)}</text><text className="graph-note" x="190" y="118">det = ad - bc = {format(det)}</text><path className="axis" d={`M ${sx(-5)} ${sy(lineY)} L ${sx(5)} ${sy(lineY)}`} />{[-8, -4, 0, 4, 8].map((tick) => <g key={tick}><path className="tick" d={`M ${sx(place(tick))} ${sy(lineY - 0.15)} L ${sx(place(tick))} ${sy(lineY + 0.15)}`} /><text x={sx(place(tick))} y={sy(lineY) + 20} textAnchor="middle">{tick}</text></g>)}<path className="chord-line" d={`M ${sx(place(trace / 2))} ${sy(lineY - 0.6)} L ${sx(place(trace / 2))} ${sy(lineY + 0.6)}`} /><text x={sx(place(trace / 2))} y={sy(lineY + 0.8)} textAnchor="middle">average = trace/2</text>{real ? eig.map((value, index) => <circle key={index} className={index ? 'point-a' : 'active-dot'} cx={sx(place(value))} cy={sy(lineY)} r="8" />) : <circle className="muted-dot" cx={sx(place(trace / 2))} cy={sy(lineY)} r="8" />}</g>,
+    readout: real
+      ? [`eigenvalues ${format(eig[0])} and ${format(eig[1])}${Math.abs(eig[0]) > 8 || Math.abs(eig[1]) > 8 ? ' (clipped to the line)' : ''}`, `sum = ${format(eig[0] + eig[1])} = trace, product = ${format(eig[0] * eig[1])} = det`]
+      : [`complex pair ${format(trace / 2)} +/- ${format(root)}i (the grey dot is the real part)`, `sum = ${format(trace)} = trace (imaginary parts cancel), product = ${format(trace * trace / 4 + root * root)} = det`],
+  };
+}
+
+// A fixed, centered point cloud for the PCA graph (seeded, so it is the same on every visit).
+const pcaBase = (() => {
+  let seed = 7;
+  const random = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  const points = Array.from({ length: 36 }, () => ({ x: 3.8 * (2 * random() - 1), y: 1.2 * (2 * random() - 1) }));
+  const mean = points.reduce((sum, p) => ({ x: sum.x + p.x / points.length, y: sum.y + p.y / points.length }), { x: 0, y: 0 });
+  return points.map((p) => ({ x: p.x - mean.x, y: p.y - mean.y }));
+})();
+
+function PcaGraph({ values }) {
+  const tilt = (values.tilt * Math.PI) / 180;
+  const points = pcaBase.map((p) => ({ x: p.x * Math.cos(tilt) - p.y * Math.sin(tilt), y: p.x * Math.sin(tilt) + p.y * Math.cos(tilt) }));
+  const radians = (values.angle * Math.PI) / 180;
+  const u = { x: Math.cos(radians), y: Math.sin(radians) };
+  const n = points.length;
+  let kept = 0;
+  let lost = 0;
+  const sxx = points.reduce((sum, p) => sum + (p.x * p.x) / n, 0);
+  const syy = points.reduce((sum, p) => sum + (p.y * p.y) / n, 0);
+  const sxy = points.reduce((sum, p) => sum + (p.x * p.y) / n, 0);
+  const total = sxx + syy;
+  const best = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+  const bestDegrees = (((best * 180) / Math.PI) % 180 + 180) % 180;
+  const lambda1 = total / 2 + Math.hypot((sxx - syy) / 2, sxy);
+  const far = 12;
+  const marks = points.map((p, index) => {
+    const z = p.x * u.x + p.y * u.y;
+    const q = { x: z * u.x, y: z * u.y };
+    kept += (z * z) / n;
+    lost += ((p.x - q.x) ** 2 + (p.y - q.y) ** 2) / n;
+    return <g key={index}><path className="residual thin" d={`M ${sx(p.x)} ${sy(p.y)} L ${sx(q.x)} ${sy(q.y)}`} /><circle className="point-a" cx={sx(p.x)} cy={sy(p.y)} r="4" /><circle className="active-dot small" cx={sx(q.x)} cy={sy(q.y)} r="3.5" /></g>;
+  });
+  return {
+    content: <g><path className="span-line" d={linePath([{ x: -far * u.x, y: -far * u.y }, { x: far * u.x, y: far * u.y }])} />{marks}<text className="graph-note" x="44" y="48">kept {kept.toFixed(2)} + lost {lost.toFixed(2)} = {total.toFixed(2)}</text></g>,
+    readout: [`variance kept along this direction: ${kept.toFixed(3)} (${((100 * kept) / total).toFixed(1)}% of ${total.toFixed(3)})`, `average squared reconstruction error (red): ${lost.toFixed(3)}`, `best direction: ${bestDegrees.toFixed(0)} degrees, keeping lambda_1 = ${lambda1.toFixed(3)}`],
+  };
+}
+
+function MomentumGraph({ values }) {
+  const { gamma, alpha, steps } = values;
+  const kappa = 20;
+  const start = { x: -8, y: 2 };
+  const f = (p) => 0.5 * (p.x * p.x + kappa * p.y * p.y);
+  const run = (momentum) => {
+    let point = { ...start };
+    let previous = { ...start };
+    const path = [point];
+    for (let step = 0; step < steps; step += 1) {
+      const next = { x: point.x - gamma * point.x + momentum * (point.x - previous.x), y: point.y - gamma * kappa * point.y + momentum * (point.y - previous.y) };
+      previous = point;
+      point = next;
+      path.push(point);
+      if (!Number.isFinite(point.x) || Math.abs(point.x) + Math.abs(point.y) > 1e6) break;
+    }
+    return path;
+  };
+  const plain = run(0);
+  const heavy = run(alpha);
+  const visible = (path) => path.filter((p) => Math.abs(p.x) < 11 && Math.abs(p.y) < 6);
+  const levels = [1, 2.5, 5, 8, 12];
+  const last = (path) => path[path.length - 1];
+  const describe = (path) => (Math.abs(last(path).x) + Math.abs(last(path).y) > 1e5 ? 'diverged' : `f = ${f(last(path)).toExponential(2)}${f(last(path)) > f(start) ? ', growing: diverging' : ''}`);
+  return {
+    content: <g>{levels.map((level) => <ellipse key={level} className="contour" cx={sx(0)} cy={sy(0)} rx={sx(level) - sx(0)} ry={sy(0) - sy(level / Math.sqrt(kappa))} />)}<path className="path-plain" d={linePath(visible(plain))} /><path className="path-momentum" d={linePath(visible(heavy))} />{visible(heavy).map((p, index) => <circle key={index} className="active-dot small" cx={sx(p.x)} cy={sy(p.y)} r="3" />)}{circlePoint(start, 'point-a', 'start')}{circlePoint({ x: 0, y: 0 }, 'muted-dot', 'minimum')}</g>,
+    readout: [`after ${steps} steps, plain gradient descent (grey): ${describe(plain)}`, `with momentum alpha = ${alpha.toFixed(2)} (orange): ${describe(heavy)}`, gamma > 2 / kappa + 1e-9 ? `gamma > 2/kappa = ${(2 / kappa).toFixed(2)}: plain descent diverges across the valley` : Math.abs(gamma - 2 / kappa) < 1e-9 ? `gamma = 2/kappa = ${(2 / kappa).toFixed(2)}: plain descent bounces across the valley forever` : `plain descent is stable across the valley because gamma < 2/kappa = ${(2 / kappa).toFixed(2)}`],
+  };
+}
+
+function LagrangeGraph({ values }) {
+  const { s, c } = values;
+  const direction = { x: Math.SQRT1_2, y: -Math.SQRT1_2 };
+  const point = { x: c / 2 + s * direction.x, y: c / 2 + s * direction.y };
+  const radius = Math.hypot(point.x, point.y);
+  const gradF = { x: 2 * point.x, y: 2 * point.y };
+  const gradFLength = Math.hypot(gradF.x, gradF.y);
+  const cosine = gradFLength > 0 ? (gradF.x + gradF.y) / (gradFLength * Math.SQRT2) : 1;
+  const angle = (Math.acos(clamp(cosine, -1, 1)) * 180) / Math.PI;
+  const tip = (vector, length) => {
+    const size = Math.hypot(vector.x, vector.y) || 1;
+    return { x: point.x + (length * vector.x) / size, y: point.y + (length * vector.y) / size };
+  };
+  const atMinimum = Math.abs(s) < 1e-9;
+  return {
+    content: <g><path className="boundary" d={linePath([{ x: -xHalf, y: c + xHalf }, { x: xHalf, y: c - xHalf }])} />{radius > 0 && <ellipse className="contour strong" cx={sx(0)} cy={sy(0)} rx={sx(radius) - sx(0)} ry={sy(0) - sy(radius)} />}{arrow(point, tip(gradF, 2.2), 'vector-a')}{arrow(point, tip({ x: 1, y: 1 }, 1.6), 'vector-b')}{circlePoint(point, 'active-dot', atMinimum ? 'constrained minimum' : 'x')}{circlePoint({ x: 0, y: 0 }, 'muted-dot', '')}<text className="graph-note" x="44" y="48">x + y = {c.toFixed(1)}</text></g>,
+    readout: [`f(x) = x^2 + y^2 = ${(radius * radius).toFixed(3)} (smallest possible on this line: ${(c * c / 2).toFixed(3)})`, `angle between grad f (blue) and grad h (orange): ${angle.toFixed(1)} degrees`, atMinimum ? `parallel: grad f + lambda grad h = 0 with lambda = ${(-c).toFixed(1)}` : 'not parallel: moving along the line can still lower f'],
+  };
+}
+
+// A synthetic grayscale image (48 by 48, values 0 to 1) and its singular vectors, computed once.
+const svdImage = (() => {
+  const size = 48;
+  const image = Array.from({ length: size }, (_, i) => Array.from({ length: size }, (_, j) => {
+    let value = 0.12 + 0.25 * (j / (size - 1));
+    if ((i - 15) ** 2 + (j - 15) ** 2 < 90) value = 0.95;
+    if (Math.abs(i - 32) + Math.abs(j - 31) < 11) value = 0.7;
+    if (Math.abs(i + j - 47) < 2) value = 0.85;
+    if (i > 36 && i < 42 && j > 4 && j < 20) value = 0.05;
+    return value;
+  }));
+  // Eigenvectors of A^T A by cyclic Jacobi rotations; A A^T is never needed because A_k = A V_k V_k^T.
+  const gram = Array.from({ length: size }, (_, p) => Array.from({ length: size }, (_, q) => image.reduce((sum, row) => sum + row[p] * row[q], 0)));
+  const vectors = Array.from({ length: size }, (_, p) => Array.from({ length: size }, (_, q) => (p === q ? 1 : 0)));
+  for (let sweep = 0; sweep < 12; sweep += 1) {
+    for (let p = 0; p < size - 1; p += 1) {
+      for (let q = p + 1; q < size; q += 1) {
+        if (Math.abs(gram[p][q]) < 1e-12) continue;
+        const theta = (gram[q][q] - gram[p][p]) / (2 * gram[p][q]);
+        const t = Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+        const cos = 1 / Math.sqrt(t * t + 1);
+        const sin = t * cos;
+        for (let k = 0; k < size; k += 1) {
+          const gkp = gram[k][p];
+          const gkq = gram[k][q];
+          gram[k][p] = cos * gkp - sin * gkq;
+          gram[k][q] = sin * gkp + cos * gkq;
+        }
+        for (let k = 0; k < size; k += 1) {
+          const gpk = gram[p][k];
+          const gqk = gram[q][k];
+          gram[p][k] = cos * gpk - sin * gqk;
+          gram[q][k] = sin * gpk + cos * gqk;
+        }
+        for (let k = 0; k < size; k += 1) {
+          const vkp = vectors[k][p];
+          const vkq = vectors[k][q];
+          vectors[k][p] = cos * vkp - sin * vkq;
+          vectors[k][q] = sin * vkp + cos * vkq;
+        }
+      }
+    }
+  }
+  const order = gram.map((row, index) => [Math.max(row[index], 0), index]).sort((x, y) => y[0] - x[0]);
+  const singular = order.map(([value]) => Math.sqrt(value));
+  const basis = order.map(([, index]) => vectors.map((row) => row[index]));
+  const projections = basis.map((v) => image.map((row) => row.reduce((sum, entry, j) => sum + entry * v[j], 0)));
+  return { size, image, singular, basis, projections };
+})();
+
+const svdPictureCache = new Map();
+
+function svdPicture(matrix, key) {
+  if (svdPictureCache.has(key)) return svdPictureCache.get(key);
+  if (typeof document === 'undefined') return null;
+  const canvas = document.createElement('canvas');
+  canvas.width = svdImage.size;
+  canvas.height = svdImage.size;
+  const context = canvas.getContext('2d');
+  if (!context) return null;
+  const pixels = context.createImageData(svdImage.size, svdImage.size);
+  matrix.forEach((row, i) => row.forEach((value, j) => {
+    const shade = Math.round(255 * clamp(value, 0, 1));
+    const offset = 4 * (i * svdImage.size + j);
+    pixels.data[offset] = shade;
+    pixels.data[offset + 1] = shade;
+    pixels.data[offset + 2] = shade;
+    pixels.data[offset + 3] = 255;
+  }));
+  context.putImageData(pixels, 0, 0);
+  const url = canvas.toDataURL();
+  svdPictureCache.set(key, url);
+  return url;
+}
+
+function SvdCompressionGraph({ values }) {
+  const k = Math.round(values.k);
+  const { size, image, singular, basis, projections } = svdImage;
+  // A_k = sum over the top k of (A v_i) v_i^T.
+  const approx = Array.from({ length: size }, (_, i) => Array.from({ length: size }, (_, j) => {
+    let value = 0;
+    for (let index = 0; index < k; index += 1) value += projections[index][i] * basis[index][j];
+    return value;
+  }));
+  const energy = singular.reduce((sum, value) => sum + value * value, 0);
+  const keptEnergy = singular.slice(0, k).reduce((sum, value) => sum + value * value, 0);
+  const pixel = 5;
+  const side = size * pixel;
+  const original = svdPicture(image, 'original');
+  const rebuilt = svdPicture(approx, `k${k}`);
+  const panel = (x, url, label) => (
+    <g>
+      <rect x={x - 2} y={52} width={side + 4} height={side + 4} rx="4" fill="none" stroke="#cdbfae" />
+      {url && <image href={url} x={x} y={54} width={side} height={side} preserveAspectRatio="none" style={{ imageRendering: 'pixelated' }} />}
+      <text x={x + side / 2} y={40} textAnchor="middle" className="matrix-title">{label}</text>
+    </g>
+  );
+  return {
+    content: <g>{panel(60, original, 'original A (48 by 48)')}{panel(340, rebuilt, `A_k with k = ${k}`)}</g>,
+    readout: [`stores k(48 + 48 + 1) = ${k * (size + size + 1)} numbers instead of ${size * size}`, `keeps ${((100 * keptEnergy) / energy).toFixed(1)}% of the energy (sum of squared singular values)`, `relative error ||A - A_k||_F / ||A||_F = ${Math.sqrt(Math.max(energy - keptEnergy, 0) / energy).toFixed(3)}; the next singular value is ${(singular[k] ?? 0).toFixed(2)}`],
   };
 }

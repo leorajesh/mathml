@@ -1,4 +1,10 @@
 export const advancedConceptIds = new Set([
+  'orthogonal-complement',
+  'gram-schmidt',
+  'trace',
+  'pca',
+  'lagrange-multipliers',
+  'projections-gram-schmidt',
   'lasso',
   'elastic-net',
   'train-validation-test',
@@ -30,13 +36,41 @@ export const recommendedPaths = {
   'overview-foundations': ['ml-workflow', 'sets-functions', 'feature-vectors'],
   'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
   'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss'],
-  'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent'],
+  'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
   'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net'],
   'overview-generalization': ['model-complexity-generalization', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics'],
-  'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions'],
+  'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
+  'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
 };
 
 export const guidedSelfChecks = {
+  norms: [
+    { question: 'Why does lasso use the L1 norm rather than the L2 norm to get sparse weights?', answer: 'The L1 unit ball is a diamond with corners on the axes, and the loss contours usually first touch it at a corner, where some weights are exactly 0. The round L2 ball has no corners, so weights shrink but rarely hit 0.' },
+  ],
+  'inner-products': [
+    { question: 'Is <x, y> = x^T A y with A = [[1, 2], [2, 1]] an inner product?', answer: 'No. A is symmetric but not positive definite (its eigenvalues are 3 and -1): for x = [1, -1], x^T A x = 1 - 4 + 1 = -2 < 0, so some nonzero vector would get a negative "squared length".' },
+  ],
+  'orthogonal-complement': [
+    { question: 'Why must Ax = b have no solution when b has a nonzero component in the left null space of A?', answer: 'Every Ax lies in the column space, which is perpendicular to the left null space. If b has a part in the left null space, no combination of the columns can produce that part.' },
+  ],
+  'orthogonal-projections': [
+    { question: 'How does the projection formula simplify when the columns of B are orthonormal?', answer: 'B^T B = I, so lambda = B^T x (just dot products) and P = B B^T. This is why orthonormal bases, from Gram-Schmidt or the SVD, make projections cheap.' },
+  ],
+  'gram-schmidt': [
+    { question: 'What is R in A = QR, and why is it upper triangular?', answer: 'R = Q^T A holds the dot products q_j . a_k. Column a_k is built only from q_1 to q_k, so q_j . a_k = 0 whenever j > k, and every entry below the diagonal is zero.' },
+  ],
+  trace: [
+    { question: 'Can two matrices with the same trace and determinant have different eigenvalues?', answer: 'Not for 2 by 2 matrices: the eigenvalues solve lambda^2 - tr(A) lambda + det(A) = 0, so trace and determinant fix them. For larger matrices they can differ, because more coefficients of the characteristic polynomial are needed.' },
+  ],
+  pca: [
+    { question: 'Why do the maximum-variance and minimum-reconstruction-error views of PCA give the same answer?', answer: 'For each centered point, the squared length splits into the part kept by the projection and the part lost (Pythagoras). The total is fixed, so maximizing the kept variance is the same as minimizing the average lost error.' },
+  ],
+  momentum: [
+    { question: 'Why can momentum converge faster than plain gradient descent with the same step size?', answer: 'In a narrow valley, plain descent zig-zags across and creeps along the valley. Momentum adds alpha times the last step, so the across-the-valley parts cancel and the along-the-valley parts accumulate into a larger effective step in the useful direction.' },
+  ],
+  'lagrange-multipliers': [
+    { question: 'How is ridge regression related to a constrained problem?', answer: 'Minimizing the squared error subject to ||theta||^2 <= t has Lagrangian error + lambda(||theta||^2 - t). For each t with an active constraint there is a lambda >= 0 giving the same minimizer, which is the ridge objective up to a constant.' },
+  ],
   functions: [
     { question: 'Is f(x) = x^2 from the real numbers to the real numbers injective? Surjective?', answer: 'Neither. f(2) = f(-2) = 4, so it is not injective, and no real x gives a negative output such as -1, so it is not surjective.' },
   ],

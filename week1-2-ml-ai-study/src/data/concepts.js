@@ -156,7 +156,7 @@ export const concepts = [
     misconception: 'Two matrices cannot be added just because they contain the same number of entries; addition is entrywise, so the row and column shapes must match exactly.',
     prerequisites: ['feature-vectors'],
     followOns: ['matrix-multiplication-outer-product', 'matrix-systems'],
-    sources: ['W1C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C1.pdf'],
   },
   {
     id: 'matrix-multiplication-outer-product',
@@ -174,7 +174,7 @@ export const concepts = [
     misconception: 'Matrix multiplication is not entrywise multiplication; it is defined to make matrix products match composition of linear maps.',
     prerequisites: ['matrix-operations'],
     followOns: ['matrix-systems', 'linear-transformations', 'least-squares-normal-equation'],
-    sources: ['W1C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C1.pdf'],
   },
   {
     id: 'matrix-systems',
@@ -210,7 +210,7 @@ export const concepts = [
     misconception: 'Different elimination paths can produce different REF matrices, but the pivot columns, rank, and final RREF conclusions agree.',
     prerequisites: ['matrix-systems'],
     followOns: ['solution-structure', 'linear-independence-subspaces', 'rank-inverse-determinant'],
-    sources: ['W1C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C1.pdf'],
   },
   {
     id: 'solution-structure',
@@ -228,7 +228,7 @@ export const concepts = [
     misconception: 'Infinitely many solutions are not unstructured; they form an affine set whose directions are exactly the null-space directions.',
     prerequisites: ['gaussian-elimination'],
     followOns: ['linear-independence-subspaces', 'ridge-regularization'],
-    sources: ['W1C1.pdf', 'W2C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C1.pdf', 'W2C1.pdf'],
   },
   {
     id: 'vector-spaces-bases',
@@ -264,7 +264,7 @@ export const concepts = [
     misconception: 'For more than two vectors, checking that no pair is a scalar multiple is not enough; dependence can involve all vectors at once.',
     prerequisites: ['vector-spaces-bases', 'gaussian-elimination'],
     followOns: ['affine-dimensionality-reduction', 'least-squares-normal-equation'],
-    sources: ['W1C2.pdf', 'W2C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C2.pdf', 'W2C1.pdf'],
   },
   {
     id: 'linear-transformations',
@@ -300,7 +300,7 @@ export const concepts = [
     misconception: 'A linear map does not need infinitely many examples to specify it; once a basis is fixed, its basis-vector images determine everything.',
     prerequisites: ['linear-transformations', 'vector-spaces-bases'],
     followOns: ['composition-of-transformations', 'change-of-basis', 'invertible-transformations'],
-    sources: ['W1C2.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C2.pdf'],
   },
   {
     id: 'composition-of-transformations',
@@ -318,7 +318,7 @@ export const concepts = [
     misconception: 'Matrix multiplication is not arbitrary notation; it is the only product that correctly represents composition of linear maps.',
     prerequisites: ['transformation-matrix', 'matrix-multiplication-outer-product'],
     followOns: ['invertible-transformations', 'matrix-decompositions'],
-    sources: ['W1C2.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C2.pdf'],
   },
   {
     id: 'change-of-basis',
@@ -336,7 +336,7 @@ export const concepts = [
     misconception: 'Changing basis changes the coordinate numbers, not the vector or the underlying transformation.',
     prerequisites: ['vector-spaces-bases', 'transformation-matrix'],
     followOns: ['diagonalization-pagerank', 'orthogonality-spectral-theorem'],
-    sources: ['W2C2.pdf', 'Reference app at localhost:5174'],
+    sources: ['W2C2.pdf'],
   },
   {
     id: 'invertible-transformations',
@@ -355,7 +355,7 @@ export const concepts = [
     misconception: 'Solving Ax=b does not require explicitly forming A^{-1}; elimination and factorizations are usually faster and more stable.',
     prerequisites: ['composition-of-transformations', 'gaussian-elimination', 'rank-inverse-determinant'],
     followOns: ['affine-dimensionality-reduction', 'rank-inverse-determinant', 'matrix-decompositions'],
-    sources: ['W1C2.pdf', 'W2C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C2.pdf', 'W2C1.pdf'],
   },
   {
     id: 'affine-dimensionality-reduction',
@@ -373,7 +373,7 @@ export const concepts = [
     misconception: 'A good dimensionality reduction does not keep all information; it deliberately discards directions judged less important or mostly noisy.',
     prerequisites: ['linear-transformations', 'linear-independence-subspaces'],
     followOns: ['model-complexity-generalization', 'eigenvalues-eigenvectors', 'matrix-decompositions'],
-    sources: ['W1C2.pdf', 'W2C1.pdf', 'Reference app at localhost:5174'],
+    sources: ['W1C2.pdf', 'W2C1.pdf'],
   },
   {
     id: 'rank-inverse-determinant',
@@ -463,7 +463,7 @@ export const concepts = [
     misconception: 'Not linearly separable does not mean not learnable; it means this feature representation and linear hypothesis class cannot be perfect.',
     prerequisites: ['linear-classifier'],
     followOns: ['perceptron', 'hinge-loss'],
-    sources: ['Week1_02-PerceptronLinearClassifier.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf', 'Reference app at localhost:5173'],
+    sources: ['Week1_02-PerceptronLinearClassifier.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf'],
   },
   {
     id: 'perceptron',
@@ -500,7 +500,7 @@ export const concepts = [
     misconception: 'If the data are not linearly separable, more passes will not help: the perceptron keeps cycling, and the fix is a different loss (such as hinge) or better features. On separable data with a tiny margin, more passes do help; convergence is just slow.',
     prerequisites: ['perceptron', 'linear-separability'],
     followOns: ['hinge-loss'],
-    sources: ['Week1_02-PerceptronLinearClassifier.pdf', 'Reference app at localhost:5173'],
+    sources: ['Week1_02-PerceptronLinearClassifier.pdf'],
   },
   {
     id: 'empirical-risk-zero-one',
@@ -555,7 +555,7 @@ export const concepts = [
     misconception: 'A surrogate loss is not the metric itself; it is a training objective chosen because it is mathematically easier to optimize.',
     prerequisites: ['hinge-loss', 'empirical-risk-zero-one'],
     followOns: ['gradient-descent', 'stochastic-subgradient-descent', 'logistic-loss'],
-    sources: ['Week1_03-HingeLoss.pdf', 'Reference app at localhost:5173'],
+    sources: ['Week1_03-HingeLoss.pdf'],
   },
   {
     id: 'gradient-descent',
@@ -591,7 +591,7 @@ export const concepts = [
     misconception: 'A stochastic training curve need not decrease every step; that is noise, not necessarily failure.',
     prerequisites: ['gradient-descent', 'convexity-surrogate-losses'],
     followOns: ['ridge-regularization', 'logistic-loss'],
-    sources: ['Week1_03-HingeLoss.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf', 'Reference app at localhost:5173'],
+    sources: ['Week1_03-HingeLoss.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
     id: 'linear-regression',
@@ -627,7 +627,7 @@ export const concepts = [
     misconception: 'Polynomial regression is still linear regression with engineered features; the parameters enter linearly.',
     prerequisites: ['linear-regression', 'feature-vectors'],
     followOns: ['model-complexity-generalization', 'ridge-regularization'],
-    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf', 'Reference app at localhost:5173'],
+    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
     id: 'least-squares-normal-equation',
@@ -681,7 +681,7 @@ export const concepts = [
     misconception: 'L1 and L2 are not just stronger/weaker versions of the same idea; L1 can produce exact zeros, while L2 usually only shrinks.',
     prerequisites: ['ridge-regularization'],
     followOns: ['model-complexity-generalization', 'validation-cross-validation'],
-    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf', 'Reference app at localhost:5173'],
+    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
     id: 'model-complexity-generalization',
@@ -717,7 +717,7 @@ export const concepts = [
     misconception: 'If you repeatedly tune choices using the test set, it stops being an honest test set and becomes part of training.',
     prerequisites: ['model-complexity-generalization'],
     followOns: ['classification-metrics', 'lasso-elastic-net'],
-    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf', 'Reference app at localhost:5173'],
+    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
     id: 'logistic-regression',
@@ -773,7 +773,7 @@ export const concepts = [
     misconception: 'High accuracy can be useless when positives are rare; always predicting negative can score well while recall is zero.',
     prerequisites: ['logistic-regression', 'logistic-loss', 'validation-cross-validation'],
     followOns: [],
-    sources: ['Production ML Slides Lesson 4 - Logistic Regression.pdf', 'Reference app at localhost:5173'],
+    sources: ['Production ML Slides Lesson 4 - Logistic Regression.pdf'],
   },
   {
     id: 'eigenvalues-eigenvectors',

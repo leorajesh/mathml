@@ -48,6 +48,8 @@ h3 { margin: 0 0 10px; font-size: 1.22rem; }
 .overview-map { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; flex: 1; min-height: 0; }
 .overview-svg { width: 100%; min-height: 560px; height: 100%; background: rgba(255, 253, 248, 0.58); border: 1px solid rgba(216, 204, 186, 0.7); border-radius: 10px; }
 .overview-node { cursor: pointer; }
+.overview-node:focus-visible rect, .cluster-node:focus-visible rect { stroke-width: 5; outline: none; }
+.overview-node:focus, .cluster-node:focus { outline: none; }
 .overview-node rect { transition: stroke-width 160ms ease, filter 160ms ease; }
 .overview-node:hover rect { stroke-width: 5; filter: drop-shadow(0 12px 18px rgba(31, 37, 38, 0.18)); }
 .overview-title { font: 700 17px Avenir, Optima, Candara, sans-serif; fill: var(--ink); }

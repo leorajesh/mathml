@@ -34,15 +34,14 @@ function finish(result) {
 
 function handleMessage(event) {
   const message = event.data;
-  // Output lines carry no id and always belong to the active run; status/done from a stopped run are ignored.
-  if (!active || (message.id !== undefined && message.id !== active.id)) return;
+  if (message.type === 'status' && message.status !== 'loading') loaded = true;
+  // Messages from a stopped or released run are ignored.
+  if (!active || message.id !== active.id) return;
   if (message.type === 'status') {
-    if (message.status !== 'loading') loaded = true;
+    active.phase = message.status;
     active.onStatus?.(message.status);
-  } else if (message.type === 'stdout') {
-    active.onOutput?.({ stream: 'stdout', text: `${message.text}\n` });
-  } else if (message.type === 'stderr') {
-    active.onOutput?.({ stream: 'stderr', text: `${message.text}\n` });
+  } else if (message.type === 'output') {
+    active.onOutput?.(message.chunks);
   } else if (message.type === 'done') {
     if (message.fatal) resetWorker();
     finish(message);
@@ -53,16 +52,12 @@ export function isPythonLoaded() {
   return loaded;
 }
 
-export function isPythonBusy() {
-  return active !== null;
-}
-
-// Resolves with { error, images, elapsedMs }. Output lines stream through onOutput while the code runs.
+// Resolves with { error, images, elapsedMs }. Batches of { stream, text } chunks arrive through onOutput.
 export function runPython(code, { onOutput, onStatus } = {}) {
   if (active) stopPython();
   return new Promise((resolve) => {
     const id = nextId++;
-    active = { id, resolve, onOutput, onStatus };
+    active = { id, resolve, onOutput, onStatus, phase: 'queued' };
     getWorker().postMessage({ type: 'run', id, code, baseUrl: pyodideBase });
   });
 }
@@ -72,4 +67,16 @@ export function stopPython() {
   if (!active) return;
   resetWorker();
   finish({ error: 'Stopped. (Python restarts on the next run.)', images: [], elapsedMs: 0, stopped: true });
+}
+
+// Called when the page that started a run goes away. Student code that is already running is
+// stopped; a run still loading Python or packages is only cancelled, so the download is kept.
+export function releasePython() {
+  if (!active) return;
+  if (active.phase === 'running') {
+    stopPython();
+    return;
+  }
+  worker?.postMessage({ type: 'cancel', id: active.id });
+  active = null;
 }

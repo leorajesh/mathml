@@ -219,17 +219,18 @@ function LossCurveGraph({ values, mode }) {
   return <g>{mode === 'hinge' && <path className="zero-one-line" d={linePath(zeroOne)} />}<path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.margin, y: clamp(loss, 0, 4) }, 'active-dot', `loss ${loss.toFixed(2)}`)}</g>;
 }
 
-function descentPlot(path, theta) {
+// For J(theta) = (theta - 3)^2 each step multiplies the distance to 3 by (1 - 2 alpha), so alpha > 1 diverges.
+function descentPlot(path, theta, alpha) {
   const curve = Array.from({ length: 121 }, (_, index) => { const x = -4 + index * 0.1; return { x: x - 3, y: bowl(x) }; });
   const visible = path.filter((p) => Math.abs(p.x - 3) <= 5 && bowl(p.x) <= 5);
-  return <g><path className="loss-line" d={linePath(curve)} /><path className="descent-path" d={linePath(visible.map((p) => ({ x: p.x - 3, y: bowl(p.x) })))} />{visible.map((p, index) => <circle key={index} className={p === path[path.length - 1] ? 'active-dot' : 'muted-dot'} cx={sx(p.x - 3)} cy={sy(bowl(p.x))} r="5" />)}<text className="graph-note" x="44" y="48">{Math.abs(theta - 3) > 50 ? 'diverging: |theta| is exploding' : `final theta ${theta.toFixed(2)} (minimum at 3)`}</text></g>;
+  return <g><path className="loss-line" d={linePath(curve)} /><path className="descent-path" d={linePath(visible.map((p) => ({ x: p.x - 3, y: bowl(p.x) })))} />{visible.map((p, index) => <circle key={index} className={p === path[path.length - 1] ? 'active-dot' : 'muted-dot'} cx={sx(p.x - 3)} cy={sy(bowl(p.x))} r="5" />)}<text className="graph-note" x="44" y="48">{alpha > 1 ? `diverging: each step overshoots further (final theta ${theta.toFixed(1)})` : `final theta ${theta.toFixed(2)} (minimum at 3)${Math.abs(theta - 3) > 5 ? ', off the chart' : ''}`}</text></g>;
 }
 
 function GradientGraph({ values }) {
   let theta = values.start;
   const path = [{ x: theta }];
   for (let step = 0; step < values.steps; step += 1) { theta = theta - values.alpha * 2 * (theta - 3); path.push({ x: theta }); }
-  return { content: descentPlot(path, theta), readout: [`J(theta) = (theta - 3)^2 after ${values.steps} steps: ${((theta - 3) ** 2).toPrecision(3)}`] };
+  return { content: descentPlot(path, theta, values.alpha), readout: [`J(theta) = (theta - 3)^2 after ${values.steps} steps: ${((theta - 3) ** 2).toPrecision(3)}`] };
 }
 // Loss J(theta) = (theta - 3)^2 drawn centered on its minimum and scaled to fit the canvas.
 function bowl(theta) { return ((theta - 3) ** 2) / 4 - 3; }
@@ -245,7 +246,7 @@ function StochasticGradientGraph({ values }) {
     theta -= values.alpha * noisyGradient;
     path.push({ x: theta });
   }
-  return { content: descentPlot(path, theta), readout: ['start theta = -1', 'Each step = true gradient + random noise'] };
+  return { content: descentPlot(path, theta, values.alpha), readout: ['start theta = -1', 'Each step = true gradient + random noise'] };
 }
 
 function LinearRegressionGraph({ values }) {

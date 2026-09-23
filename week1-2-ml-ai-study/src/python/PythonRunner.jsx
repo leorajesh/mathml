@@ -2,13 +2,24 @@ import React from 'react';
 import { Copy, History, Play, RotateCcw, Square, Trash2 } from 'lucide-react';
 import { CodeEditor } from './CodeEditor.jsx';
 import { addVersion, loadCode, saveCurrent } from './codeStore.js';
-import { isPythonLoaded, runPython, stopPython } from './pythonRuntime.js';
+import { isPythonLoaded, releasePython, runPython, stopPython } from './pythonRuntime.js';
 
 const statusText = {
   loading: 'Starting Python in your browser. The first run downloads about 10 MB, then it is cached.',
   installing: 'Loading packages used by this code (numpy, sympy, ...).',
   running: 'Running...',
 };
+
+// Consecutive chunks from the same stream are merged so long output stays a handful of elements.
+function appendChunks(current, chunks) {
+  const next = current.slice();
+  chunks.forEach((chunk) => {
+    const last = next[next.length - 1];
+    if (last && last.stream === chunk.stream) next[next.length - 1] = { ...last, text: last.text + chunk.text };
+    else next.push(chunk);
+  });
+  return next;
+}
 
 function formatTime(timestamp) {
   return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -25,13 +36,14 @@ export function PythonRunner({ conceptId, original }) {
   const isEdited = code !== original;
   const isBusy = status === 'loading' || status === 'installing' || status === 'running';
 
-  // Saved on every change (a few KB), so nothing is lost if the tab closes right after an edit.
+  // Saved on every change so nothing is lost if the tab closes right after an edit. Unedited code
+  // is not stored, so students who never edited a page always get the latest example.
   React.useEffect(() => {
-    saveCurrent(conceptId, code, versions);
-  }, [conceptId, code, versions]);
+    saveCurrent(conceptId, code === original ? null : code, versions);
+  }, [conceptId, code, original, versions]);
 
-  // Leaving the page mid-run should not leave a stale run attached to an unmounted component.
-  React.useEffect(() => () => stopPython(), []);
+  // Leaving the page stops running code but keeps a Python download in progress.
+  React.useEffect(() => () => releasePython(), []);
 
   async function run() {
     if (isBusy) return;
@@ -41,7 +53,7 @@ export function PythonRunner({ conceptId, original }) {
     setStatus(isPythonLoaded() ? 'running' : 'loading');
     const finished = await runPython(code, {
       onStatus: setStatus,
-      onOutput: (chunk) => setOutput((current) => [...current, chunk]),
+      onOutput: (chunks) => setOutput((current) => appendChunks(current, chunks)),
     });
     setResult(finished);
     setStatus('idle');

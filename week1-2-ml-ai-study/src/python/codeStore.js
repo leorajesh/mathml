@@ -8,7 +8,7 @@ function read(conceptId) {
   try {
     const raw = window.localStorage.getItem(PREFIX + conceptId);
     const parsed = raw ? JSON.parse(raw) : null;
-    if (parsed && typeof parsed.current === 'string' && Array.isArray(parsed.versions)) return parsed;
+    if (parsed && (parsed.current === null || typeof parsed.current === 'string') && Array.isArray(parsed.versions)) return parsed;
   } catch {
     // Fall through to the empty state.
   }
@@ -28,7 +28,16 @@ export function loadCode(conceptId, original) {
   return { code: saved?.current ?? original, versions: saved?.versions ?? [] };
 }
 
+// `code` is null when the student has not edited the example.
 export function saveCurrent(conceptId, code, versions) {
+  if (code === null && versions.length === 0) {
+    try {
+      window.localStorage.removeItem(PREFIX + conceptId);
+    } catch {
+      // Nothing stored or storage unavailable; either way there is nothing to clear.
+    }
+    return;
+  }
   write(conceptId, { current: code, versions });
 }
 

@@ -199,6 +199,7 @@ export const workedExampleMath = {
     tex`\text{run 1: train on folds }2,3,4\text{ and validate on fold }1`,
     tex`\text{repeat until each fold is validation once}`, 
     tex`\text{choose the hyperparameter with the lowest average validation risk}`,
+    null,
   ],
   'logistic-regression': [
     tex`s=\theta\cdot x+\theta_0=2`,

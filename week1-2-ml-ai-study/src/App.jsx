@@ -12,8 +12,14 @@ import { normalizeDefinitionSymbol } from './utils/mathText.js';
 import { PythonRunner } from './python/PythonRunner.jsx';
 
 function conceptIdFromHash() {
-  const id = decodeURIComponent(window.location.hash.replace('#', ''));
-  return conceptMap[id] ? id : null;
+  let id;
+  try {
+    id = decodeURIComponent(window.location.hash.replace('#', ''));
+  } catch {
+    return null; // Malformed escapes such as "#%E0" fall back to the landing page.
+  }
+  // Own-property check so hashes like "#constructor" are not mistaken for concepts.
+  return Object.hasOwn(conceptMap, id) ? id : null;
 }
 
 export function App() {

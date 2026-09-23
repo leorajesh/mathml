@@ -20,10 +20,21 @@ npm run build
 The build uses relative asset paths (`base: './'` in `vite.config.js`), so the same `dist/` works at a
 domain root and under a sub-path such as GitHub Pages' `/mathml/`.
 
+## Topics and subtopics
+
+Titles that name several ideas are **topics** with one page per **subtopic** (58 concept pages, 12 topics),
+defined in `src/data/subtopics.js`. A topic keeps its original id, so the concept map, old links, and
+map edges point at its overview page, which lists the subtopics in order; each subtopic page shows a
+"Part of <topic>" bar with links to its siblings.
+
+After editing content, run `npm run check`. It verifies that every prerequisite / follow-on link
+resolves, every graph type exists, worked-example formulas line up with their steps, every concept has
+Python starter code, topics are consistent, all KaTeX renders, and the tracks respect prerequisites.
+
 ## Learning tracks
 
-Besides the concept map, the app has two step-by-step tracks: the **Math Track** (21 concepts) and the
-**ML Track** (22 concepts; Feature Vectors is in both). They reuse the same concept pages and leave the
+Besides the concept map, the app has two step-by-step tracks: the **Math Track** (33 concepts) and the
+**ML Track** (26 concepts; Feature Vectors is in both). They reuse the same concept pages and leave the
 map and the prerequisite / follow-on links unchanged; a track only adds an order, previous / next buttons,
 and "done" checkmarks saved in the browser. Links: `#track=math`, `#track=ml`, and
 `#<concept-id>?track=math` for a concept inside a track.

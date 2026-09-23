@@ -24,23 +24,6 @@ print("training error E_n =", train_error)
 
 # Try: set theta0 = -3.5 and see which email becomes a mistake.`,
 
-  'sets-functions': py`U = {1, 2, 3, 4, 5}
-A = {1, 2, 3}
-B = {3, 4}
-
-print("A union B        =", A | B)
-print("A intersection B =", A & B)
-print("A minus B        =", A - B)
-print("complement of A  =", U - A)
-
-# f(x) = x + 1 from {1, 2} to {2, 3}, stored as a dictionary
-f = {1: 2, 2: 3}
-is_bijective = len(set(f.values())) == len(f)
-f_inv = {output: x for x, output in f.items()}
-print("f is bijective:", is_bijective)
-print("f_inv(3) =", f_inv[3])
-
-# Try: set f = {1: 2, 2: 2}. Is it still invertible?`,
 
   'feature-vectors': py`import numpy as np
 
@@ -52,6 +35,9 @@ score = theta @ x
 print("per-feature contributions theta_i * x_i:", contributions)
 print("score theta . x =", score)
 print("predicted class:", "+1" if score > 0 else "-1")
+
+cos_angle = score / (np.linalg.norm(theta) * np.linalg.norm(x))
+print("cos(angle) =", round(cos_angle, 3), " angle =", round(np.degrees(np.arccos(cos_angle)), 1), "degrees")
 
 # Try: change theta[1] to -3. Which side does x land on now?`,
 
@@ -125,6 +111,10 @@ y = (M[1][3] - M[1][2] * z) / M[1][1]
 x = (M[0][3] - M[0][1] * y - M[0][2] * z) / M[0][0]
 print("x, y, z =", x, y, z)
 
+# Continuing to RREF gives the identity plus the answer column
+from sympy import Matrix
+print("RREF:", Matrix([[1, 2, 1, 4], [2, 1, 1, 5], [1, 1, 2, 5]]).rref()[0].tolist())
+
 # Try: change the last equation's right side from 5 to 6.`,
 
   'solution-structure': py`import sympy as sp
@@ -142,46 +132,25 @@ print("particular solution x_p =", list(x_p), " A x_p =", list(A * x_p))
 
 # Try: change b to [3, 7]. What does linsolve return, and why?`,
 
-  'vector-spaces-bases': py`import numpy as np
 
-e1 = np.array([1, 0])
-e2 = np.array([0, 1])
-v = 3 * e1 - 2 * e2
-print("v = 3 e1 - 2 e2 =", v)
-
-B = np.column_stack([e1, e2])
-print("rank of [e1 e2] =", np.linalg.matrix_rank(B), "-> e1, e2 form a basis of R^2")
-coeffs = np.linalg.solve(B, v)
-print("coordinates of v in this basis:", coeffs)
-
-# Try: use the basis [1, 1] and [1, -1] instead and find v's coordinates.`,
-
-  'linear-independence-subspaces': py`import sympy as sp
-
-v1, v2, v3 = sp.Matrix([1, 2, 1]), sp.Matrix([3, 8, 2]), sp.Matrix([5, 6, 7])
-V = sp.Matrix.hstack(v1, v2, v3)
-
-rref, pivots = V.rref()
-print("RREF:", rref.tolist())
-print("pivot columns:", pivots)
-print("rank =", V.rank(), "-> dependent?", V.rank() < V.shape[1])
-print("null space (the dependence coefficients):", [list(n) for n in V.nullspace()])
-print("-11 v1 + 2 v2 + v3 =", list(-11 * v1 + 2 * v2 + v3))
-
-# Try: change v3 to [5, 6, 8]. Are the vectors still dependent?`,
 
   'linear-transformations': py`import numpy as np
 
 T = np.array([[2, 0], [0, 1]])        # T(x, y) = (2x, y)
 print("T([1, 3]) =", T @ np.array([1, 3]))
 
-P = np.array([[2, 0], [0, 1]], dtype=float)   # basis vectors as columns
-v = np.array([4, 3], dtype=float)
-v_B = np.linalg.solve(P, v)
-print("[v]_B =", v_B)
-print("rebuild v from its B-coordinates:", P @ v_B)
+# Linearity: T(a v + b w) == a T(v) + b T(w)
+v, w, a, b = np.array([1, 2]), np.array([-3, 5]), 2.0, -1.5
+print("linear:", np.allclose(T @ (a * v + b * w), a * (T @ v) + b * (T @ w)))
 
-# Try: pick another basis for P and check that P @ v_B still gives v.`,
+def S(p):
+    return p + np.array([1, 0])        # a shift, not linear
+print("S(0) =", S(np.zeros(2)), "-> moves the origin, so S is not linear")
+
+# Kernel: solve T x = 0
+print("rank of T:", np.linalg.matrix_rank(T), "-> kernel is only the zero vector")
+
+# Try: T = [[1, 2], [2, 4]]. What is its rank, and which nonzero vector does it send to 0?`,
 
   'transformation-matrix': py`import numpy as np
 
@@ -248,31 +217,7 @@ print("solve(A, b) =", np.linalg.solve(A, b))
 
 # Try: set A = [[2, 4], [1, 2]]. What happens to det and inv?`,
 
-  'affine-dimensionality-reduction': py`import numpy as np
 
-x = np.array([3.0, 1.0])
-u = np.array([1.0, 1.0]) / np.sqrt(2)   # unit vector spanning the line
-
-z = u @ x               # encode: one number
-x_hat = z * u           # decode: back to 2D
-error = np.sum((x - x_hat) ** 2)
-print("z =", round(z, 4))
-print("reconstruction x_hat =", np.round(x_hat, 4))
-print("squared reconstruction error =", round(error, 4))
-
-# Try: use u = [1, 0]. Is the error bigger or smaller?`,
-
-  'rank-inverse-determinant': py`import numpy as np
-
-A = np.array([[2, 1], [1, 1]], dtype=float)
-n = A.shape[1]
-rank = np.linalg.matrix_rank(A)
-print("rank =", rank, " nullity =", n - rank)
-print("det =", round(np.linalg.det(A), 6))
-print("inverse =")
-print(np.linalg.inv(A))
-
-# Try: A = [[2, 1], [4, 2]]. Check rank, nullity, and det.`,
 
   'determinants-cofactor-row-ops': py`import sympy as sp
 
@@ -411,45 +356,7 @@ plt.xlabel("signed margin z"); plt.ylabel("loss"); plt.legend(); plt.title("Hing
 
 # Try: which margins give zero hinge loss? Add one to the array.`,
 
-  'convexity-surrogate-losses': py`import numpy as np
 
-z = np.array([-2.0, -0.4, 0.0, 0.7, 1.0, 2.0])
-zero_one = (z <= 0).astype(float)
-hinge = np.maximum(0, 1 - z)
-for zi, a, b in zip(z, zero_one, hinge):
-    print(f"z = {zi:5.1f}   zero-one = {a:.0f}   hinge = {b:.1f}")
-print("hinge >= zero-one everywhere:", np.all(hinge >= zero_one))
-
-# Chord test of convexity for hinge between a = -1 and b = 2
-f = lambda t: max(0, 1 - t)
-a, b = -1.0, 2.0
-print("chord test holds:", all(f(l * a + (1 - l) * b) <= l * f(a) + (1 - l) * f(b) + 1e-12 for l in np.linspace(0, 1, 11)))
-
-# Try: run the chord test on the zero-one loss with a = -1, b = 1.`,
-
-  'gradient-descent': py`import numpy as np
-import matplotlib.pyplot as plt
-
-def J(theta):
-    return (theta - 3) ** 2
-
-def grad(theta):
-    return 2 * (theta - 3)
-
-theta = 0.0
-alpha = 0.2
-path = [theta]
-for step in range(5):
-    theta = theta - alpha * grad(theta)
-    path.append(theta)
-    print(f"step {step + 1}: theta = {theta:.4f}, J = {J(theta):.4f}")
-
-ts = np.linspace(-1, 7, 200)
-plt.plot(ts, J(ts), label="J(theta) = (theta - 3)^2")
-plt.plot(path, [J(t) for t in path], "o--", label="gradient descent path")
-plt.xlabel("theta"); plt.legend(); plt.title(f"alpha = {alpha}")
-
-# Try: alpha = 0.9 (overshoots) and alpha = 1.1 (diverges).`,
 
   'stochastic-subgradient-descent': py`import numpy as np
 
@@ -547,23 +454,6 @@ for lam in [0.0, 0.5, 2.0, 10.0]:
 
 # Try: which lambda halves the least-squares slope 1.6?`,
 
-  'lasso-elastic-net': py`import numpy as np
-
-theta_A = np.array([3.0, 0.0])
-theta_B = np.array([1.5, 1.5])
-for name, t in [("A", theta_A), ("B", theta_B)]:
-    print(f"{name}: L1 = {np.abs(t).sum():.1f}, L2^2 = {(t ** 2).sum():.2f}")
-
-# One standardized feature with least-squares weight w. Minimizing
-#   lasso: 1/2 (theta - w)^2 + lambda |theta|        ->  soft-thresholding
-#   ridge: 1/2 (theta - w)^2 + lambda/2 theta^2      ->  w / (1 + lambda)
-w = 3.0
-for lam in [0.0, 1.0, 2.0, 3.0, 4.0]:
-    lasso = np.sign(w) * max(abs(w) - lam, 0.0) + 0.0
-    ridge = w / (1 + lam)
-    print(f"lambda = {lam}: lasso = {lasso:.3f}, ridge = {ridge:.3f}")
-
-# Try: w = -1.5. At which lambda does the lasso weight become exactly 0?`,
 
   'model-complexity-generalization': py`import numpy as np
 
@@ -583,38 +473,6 @@ for degree in (1, 3, 5, 9, 15):
 
 # Try: use 200 training points. Does the degree-15 gap shrink?`,
 
-  'validation-cross-validation': py`import numpy as np
-
-rng = np.random.default_rng(0)
-x = rng.uniform(-1, 1, 60)
-y = np.sin(3 * x) + 0.3 * rng.normal(size=x.size)
-
-# Hold out a test set first; it is used exactly once, at the end.
-order = rng.permutation(len(x))
-test, rest = order[:20], order[20:]
-K = 4
-folds = np.array_split(rest, K)
-
-def cv_score(degree):
-    scores = []
-    for k in range(K):
-        val = folds[k]
-        train = np.concatenate([folds[j] for j in range(K) if j != k])
-        coeffs = np.polyfit(x[train], y[train], degree)
-        scores.append(np.mean((np.polyval(coeffs, x[val]) - y[val]) ** 2))
-    return np.mean(scores)
-
-results = {d: cv_score(d) for d in range(1, 11)}
-for d, s in results.items():
-    print(f"degree {d:2d}: {K}-fold CV error {s:.3f}")
-best = min(results, key=results.get)
-print("chosen degree:", best)
-
-final = np.polyfit(x[rest], y[rest], best)        # refit on all non-test data
-test_error = np.mean((np.polyval(final, x[test]) - y[test]) ** 2)
-print(f"test error of the chosen model (reported once): {test_error:.3f}")
-
-# Try: set K = 8. Does the chosen degree change?`,
 
   'logistic-regression': py`import numpy as np
 import matplotlib.pyplot as plt
@@ -683,72 +541,553 @@ Aw = A @ w
 is_eigen = np.isclose(Aw[0] * w[1], Aw[1] * w[0])   # Aw parallel to w?
 print("A [1, 1] =", Aw, "->", "an eigenvector" if is_eigen else "not a multiple of [1, 1], so not an eigenvector")
 
+# A matrix that is not diagonal: solve det(B - lambda I) = 0
+B = np.array([[2.0, 1.0], [1.0, 2.0]])
+print("eigenvalues of B:", np.linalg.eigvalsh(B), " roots of (2 - l)^2 - 1:", np.roots([1, -4, 3]))
+print("B [1, 1] =", B @ np.array([1.0, 1.0]), " B [1, -1] =", B @ np.array([1.0, -1.0]))
+
 # Try: A = [[0, 1], [1, 0]]. Find its eigenvalues. Is one negative?`,
 
-  'diagonalization-pagerank': py`import numpy as np
 
-# Page example: A is already diagonal, so P = I and D = A
-A = np.diag([2.0, 3.0])
-print("A^3 [1, 1] =", np.linalg.matrix_power(A, 3) @ np.array([1.0, 1.0]))
 
-# A matrix that is not diagonal: diagonalize it, then use A^k = P D^k P^-1
+  'sets': py`U = {1, 2, 3, 4, 5}
+A = {1, 2, 3}
+B = {3, 4}
+
+print("A union B        =", A | B)
+print("A intersection B =", A & B)
+print("A minus B        =", A - B)
+print("complement of A  =", U - A)
+
+# Sets ignore order and repeats
+print("{1, 2, 2, 3} == {3, 2, 1}:", {1, 2, 2, 3} == {3, 2, 1})
+
+# Try: change U to {1, 2, 3, 4, 5, 6}. Which result changes, and why?`,
+
+  'functions': py`def describe(f, A, B):
+    outputs = [f[x] for x in A]
+    injective = len(set(outputs)) == len(outputs)       # no two inputs share an output
+    surjective = set(outputs) == set(B)                 # every output is reached
+    return injective, surjective
+
+A = [1, 2, 3]
+B = ["a", "b", "c"]
+f = {1: "a", 2: "a", 3: "b"}
+g = {1: "a", 2: "b", 3: "c"}
+
+for name, h in [("f", f), ("g", g)]:
+    inj, sur = describe(h, A, B)
+    print(f"{name}: injective={inj}, surjective={sur}, bijective={inj and sur}")
+
+# Try: add an input 4 to A with g[4] = "a". Is g still injective? Surjective?`,
+
+  'inverse-composition': py`def f(x):
+    return x + 1
+
+def g(x):
+    return 2 * x
+
+def f_inv(y):
+    return y - 1
+
+def g_inv(y):
+    return y / 2
+
+print("g(f(3)) =", g(f(3)))      # g after f
+print("f(g(3)) =", f(g(3)))      # f after g: a different answer
+print("undo g after f:", f_inv(g_inv(g(f(3)))))
+print("wrong order:   ", g_inv(f_inv(g(f(3)))))
+
+# Try: define h(x) = x ** 2. Why can h not have an inverse on all real numbers?`,
+
+  'vector-spaces': py`import numpy as np
+
+# Represent a + b x + c x^2 by its coefficients [a, b, c]
+p = np.array([1, 2, 0])      # 1 + 2x
+q = np.array([3, -1, 1])     # 3 - x + x^2
+
+print("p + q =", p + q, "-> 4 + x + x^2, still degree <= 2")
+print("3 p   =", 3 * p, "-> 3 + 6x")
+print("zero polynomial:", np.zeros(3, dtype=int))
+
+# A set that is NOT a vector space: polynomials with constant term 1
+r = np.array([1, 1, 0])      # 1 + x
+s = np.array([1, 0, 1])      # 1 + x^2
+print("r + s =", r + s, "-> constant term", (r + s)[0], "so the set is not closed")
+
+# Try: check that the set of polynomials with constant term 0 is closed under addition and scaling.`,
+
+  'span-linear-combinations': py`import numpy as np
+
+v1 = np.array([1.0, 2.0])
+v2 = np.array([2.0, 3.0])
+b = np.array([4.0, 7.0])
+
+V = np.column_stack([v1, v2])
+rank = np.linalg.matrix_rank(V)
+print("rank of [v1 v2] =", rank, "-> the span is", "all of R^2" if rank == 2 else "a line")
+
+c, *_ = np.linalg.lstsq(V, b, rcond=None)      # best amounts (exact when b is in the span)
+reached = np.allclose(V @ c, b)
+print("amounts c1, c2 =", np.round(c, 4), "-> c1 v1 + c2 v2 =", np.round(V @ c, 4))
+print("b is in the span:", reached)
+
+# Try: set v2 = [2, 4]. What is the rank now, and is b = [4, 7] still reachable?`,
+
+  'linear-independence': py`import sympy as sp
+
+v1, v2, v3 = sp.Matrix([1, 2, 1]), sp.Matrix([3, 8, 2]), sp.Matrix([5, 6, 7])
+V = sp.Matrix.hstack(v1, v2, v3)
+
+rref, pivots = V.rref()
+print("RREF:", rref.tolist())
+print("pivot columns:", pivots)
+print("rank =", V.rank(), "-> dependent?", V.rank() < V.shape[1])
+print("null space (the dependence coefficients):", [list(n) for n in V.nullspace()])
+print("-11 v1 + 2 v2 + v3 =", list(-11 * v1 + 2 * v2 + v3))
+
+# Try: change v3 to [5, 6, 8]. Are the vectors still dependent?`,
+
+  'subspaces': py`import sympy as sp
+
+A = sp.Matrix([[1, 1, 1]])                 # W = {x : x + y + z = 0} = Null(A)
+basis = A.nullspace()
+print("basis of W:", [list(v) for v in basis])
+
+u = sp.Matrix([1, -1, 0])
+w = sp.Matrix([2, 3, -5])
+print("u, w in W:", A * u == sp.zeros(1, 1), A * w == sp.zeros(1, 1))
+print("u + w in W:", A * (u + w) == sp.zeros(1, 1))
+print("7u in W:", A * (7 * u) == sp.zeros(1, 1))
+
+# The shifted plane x + y + z = 1 is not closed under addition
+p, q = sp.Matrix([1, 0, 0]), sp.Matrix([0, 1, 0])
+print("p + q =", list(p + q), "has sum", sum(p + q), "(not 1)")
+
+# Try: find the column space of A = [[1, 2], [2, 4]] with A.columnspace(). What shape is it?`,
+
+  'basis-coordinates': py`import numpy as np
+
+e1, e2 = np.array([1.0, 0.0]), np.array([0.0, 1.0])
+v = np.array([3.0, -2.0])
+print("coordinates in the standard basis:", np.linalg.solve(np.column_stack([e1, e2]), v))
+
+b1, b2 = np.array([1.0, 1.0]), np.array([1.0, -1.0])
+B = np.column_stack([b1, b2])
+c = np.linalg.solve(B, v)
+print("coordinates in the basis b1, b2:", c)
+print("check: c1 b1 + c2 b2 =", c[0] * b1 + c[1] * b2)
+
+# Try: use b2 = [2, 2]. Why does solve() fail? (Is {b1, b2} still a basis?)`,
+
+  'dimension': py`import numpy as np
+import sympy as sp
+
+vectors = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 1]]).T   # 4 vectors in R^3
+print("rank of 4 vectors in R^3:", np.linalg.matrix_rank(vectors), "-> at most 3, so they are dependent")
+
+plane = sp.Matrix([[1, 1, 1]]).nullspace()          # x + y + z = 0
+print("basis of the plane:", [list(v) for v in plane], "-> dimension", len(plane))
+
+# P2 = polynomials of degree <= 2: basis 1, x, x^2
+print("dim P2 =", len(["1", "x", "x^2"]))
+
+# Try: find the dimension of the null space of [[1, 2, 3], [2, 4, 6]].`,
+
+  'affine-maps': py`import numpy as np
+
+A = np.array([[2.0, 0.0], [0.0, 1.0]])
+b = np.array([1.0, -1.0])
+
+def f(x):
+    return A @ x + b
+
+e1, e2 = np.array([1.0, 0.0]), np.array([0.0, 1.0])
+print("f(0) =", f(np.zeros(2)), "-> not the origin, so f is not linear")
+print("f(e1) + f(e2) =", f(e1) + f(e2), " but f(e1 + e2) =", f(e1 + e2))
+
+# Homogeneous coordinates: one matrix does the whole affine map
+H = np.block([[A, b[:, None]], [np.zeros((1, 2)), np.ones((1, 1))]])
+x = np.array([3.0, 4.0])
+print("H @ [x, 1] =", H @ np.append(x, 1), " f(x) =", f(x))
+
+# Try: set b = [0, 0]. Do f(e1) + f(e2) and f(e1 + e2) agree now?`,
+
+  'dimensionality-reduction': py`import numpy as np
+
+x = np.array([3.0, 1.0])
+u = np.array([1.0, 1.0]) / np.sqrt(2)   # unit vector spanning the line
+
+z = u @ x               # encode: one number
+x_hat = z * u           # decode: back to 2D
+error = np.sum((x - x_hat) ** 2)
+print("z =", round(z, 4))
+print("reconstruction x_hat =", np.round(x_hat, 4))
+print("squared reconstruction error =", round(error, 4))
+
+# PCA picks the direction that keeps the most variance
+rng = np.random.default_rng(0)
+data = rng.normal(size=(200, 2)) @ np.array([[3.0, 0.0], [1.0, 0.5]])
+data -= data.mean(axis=0)
+values, vectors = np.linalg.eigh(np.cov(data.T))
+print("top principal direction:", np.round(vectors[:, -1], 3), "keeps", f"{values[-1] / values.sum():.1%}", "of the variance")
+
+# Try: use u = [1, 0] for x. Is the error bigger or smaller?`,
+
+  'rank-nullity': py`import sympy as sp
+
+A = sp.Matrix([[1, 2, 3], [2, 4, 6]])
+rank = A.rank()
+null_basis = A.nullspace()
+print("rank(A) =", rank)
+print("column space basis:", [list(v) for v in A.columnspace()])
+print("null space basis:", [list(v) for v in null_basis])
+print("nullity(A) =", len(null_basis))
+print("rank + nullity =", rank + len(null_basis), "= number of columns", A.shape[1])
+
+# Try: change the second row to [2, 4, 7]. How do rank and nullity change?`,
+
+  'determinant-geometry': py`import numpy as np
+
+A = np.array([[2.0, 1.0], [1.0, 1.0]])
+B = np.array([[2.0, 1.0], [4.0, 2.0]])
+F = np.array([[1.0, 0.0], [0.0, -1.0]])
+
+for name, M in [("A", A), ("B", B), ("F", F)]:
+    print(f"det({name}) = {np.linalg.det(M):.3f}")
+
+print("det(A F) =", round(np.linalg.det(A @ F), 6), "= det(A) det(F)")
+
+# Area of the image of the unit square = |det|
+corners = np.array([[0, 0], [1, 0], [1, 1], [0, 1]], dtype=float)
+image = corners @ A.T
+area = 0.5 * abs(sum(image[i, 0] * image[i - 1, 1] - image[i - 1, 0] * image[i, 1] for i in range(4)))
+print("area of A(unit square) =", round(area, 6))
+
+# Try: compute det(2 * A). Is it 2 det(A) or 4 det(A)?`,
+
+  'convex-functions': py`import numpy as np
+
+def chord_test(f, a, b, steps=11):
+    """True if the chord from (a, f(a)) to (b, f(b)) never dips below f."""
+    return all(f(l * a + (1 - l) * b) <= l * f(a) + (1 - l) * f(b) + 1e-12 for l in np.linspace(0, 1, steps))
+
+square = lambda x: x ** 2
+cube = lambda x: x ** 3
+
+print("x^2 midpoint: f(1) =", square(1), " chord value =", (square(-1) + square(3)) / 2)
+print("x^2 chord test on [-1, 3]:", chord_test(square, -1, 3))
+print("x^3 chord test on [-2, 0]:", chord_test(cube, -2, 0))
+
+# Second-derivative test with a finite difference
+h = 1e-3
+for x in [-2.0, 0.0, 2.0]:
+    second = (cube(x + h) - 2 * cube(x) + cube(x - h)) / h ** 2
+    print(f"x^3: f''({x}) ~ {second:.2f}")
+
+# Try: run chord_test on abs and on np.sin over several intervals.`,
+
+  'surrogate-losses': py`import numpy as np
+import matplotlib.pyplot as plt
+
+z = np.array([-2.0, -0.4, 0.0, 0.7, 1.0, 2.0])
+zero_one = (z <= 0).astype(float)
+hinge = np.maximum(0, 1 - z)
+logistic = np.log2(1 + np.exp(-z))
+for row in zip(z, zero_one, hinge, logistic):
+    print("z = {:5.1f}   zero-one = {:.0f}   hinge = {:.2f}   logistic = {:.2f}".format(*row))
+print("both surrogates >= zero-one:", np.all(hinge >= zero_one) and np.all(logistic >= zero_one))
+
+grid = np.linspace(-3, 3, 400)
+plt.plot(grid, (grid <= 0).astype(float), "--", label="zero-one")
+plt.plot(grid, np.maximum(0, 1 - grid), label="hinge")
+plt.plot(grid, np.log2(1 + np.exp(-grid)), label="logistic (base 2)")
+plt.xlabel("signed margin z"); plt.ylabel("loss"); plt.legend(); plt.title("Surrogate losses")
+
+# Try: for which z is the hinge loss exactly 0 but the logistic loss still positive?`,
+
+  'gradient-descent-method': py`import numpy as np
+import matplotlib.pyplot as plt
+
+def J(theta):
+    return (theta - 3) ** 2
+
+def grad(theta):
+    return 2 * (theta - 3)
+
+theta = 0.0
+alpha = 0.2
+path = [theta]
+for step in range(5):
+    theta = theta - alpha * grad(theta)
+    path.append(theta)
+    print(f"step {step + 1}: theta = {theta:.4f}, distance to 3 = {abs(theta - 3):.4f}")
+
+ts = np.linspace(-1, 7, 200)
+plt.plot(ts, J(ts), label="J(theta) = (theta - 3)^2")
+plt.plot(path, [J(t) for t in path], "o--", label="gradient descent path")
+plt.xlabel("theta"); plt.legend(); plt.title(f"alpha = {alpha}")
+
+# Try: alpha = 0.5 (one step), 0.9 (overshoots), and 1.1 (diverges).`,
+
+  'subgradients': py`def f(theta):
+    return abs(theta - 2)
+
+def subgradient(theta, at_corner=0.0):
+    if theta > 2:
+        return 1.0
+    if theta < 2:
+        return -1.0
+    return at_corner          # any value in [-1, 1] is valid at the corner
+
+theta, alpha = 0.0, 0.5
+for step in range(6):
+    g = subgradient(theta)
+    theta = theta - alpha * g
+    print(f"step {step + 1}: g = {g:+.0f}, theta = {theta:.2f}, f = {f(theta):.2f}")
+
+# Try: call subgradient(theta, at_corner=1.0) instead. What happens after theta reaches 2?`,
+
+  'lasso': py`import numpy as np
+
+theta_A = np.array([3.0, 0.0])
+theta_B = np.array([1.5, 1.5])
+for name, t in [("A", theta_A), ("B", theta_B)]:
+    print(f"{name}: L1 = {np.abs(t).sum():.1f}, L2^2 = {(t ** 2).sum():.2f}")
+
+# One standardized feature with least-squares weight w. Minimizing
+#   lasso: 1/2 (theta - w)^2 + lambda |theta|        ->  soft-thresholding
+#   ridge: 1/2 (theta - w)^2 + lambda/2 theta^2      ->  w / (1 + lambda)
+w = 3.0
+for lam in [0.0, 1.0, 2.0, 3.0, 4.0]:
+    lasso = np.sign(w) * max(abs(w) - lam, 0.0) + 0.0
+    ridge = w / (1 + lam)
+    print(f"lambda = {lam}: lasso = {lasso:.3f}, ridge = {ridge:.3f}")
+
+# Try: w = -1.5 and add 1.5 to the lambda list. At which lambda does the lasso weight become exactly 0?`,
+
+  'elastic-net': py`import numpy as np
+
+def elastic_net_1d(w, lam1, lam2):
+    """Minimizer of 1/2 (theta - w)^2 + lam1 |theta| + lam2/2 theta^2."""
+    return np.sign(w) * max(abs(w) - lam1, 0.0) / (1 + lam2) + 0.0
+
+w = 3.0
+print("lasso only  (lam2 = 0):", elastic_net_1d(w, 1.0, 0.0))
+print("ridge only  (lam1 = 0):", elastic_net_1d(w, 0.0, 1.0))
+print("elastic net (1, 1):    ", elastic_net_1d(w, 1.0, 1.0))
+print("large lam1 (3, 1):     ", elastic_net_1d(w, 3.0, 1.0))
+
+# Check the formula against a brute-force search
+grid = np.linspace(-5, 5, 200001)
+objective = 0.5 * (grid - w) ** 2 + 1.0 * np.abs(grid) + 0.5 * 1.0 * grid ** 2
+print("brute-force minimizer:", round(grid[np.argmin(objective)], 4))
+
+# Try: keep lam1 = 1 and raise lam2 to 3. How much does the weight shrink?`,
+
+  'train-validation-test': py`import numpy as np
+
+rng = np.random.default_rng(0)
+n = 1000
+x = rng.uniform(-1, 1, (n, 5))
+y = x @ np.array([2.0, -1.0, 0.0, 0.0, 0.5]) + 0.5 * rng.normal(size=n)
+
+order = rng.permutation(n)
+train, val, test = order[:600], order[600:800], order[800:]
+print("sizes:", len(train), len(val), len(test))
+
+# The page's example: choose the lambda with the lowest validation error
+page_scores = {0.01: 0.30, 0.1: 0.22, 1.0: 0.25}
+print("page example -> chosen lambda:", min(page_scores, key=page_scores.get))
+
+# The same procedure on simulated data
+
+def fit_ridge(idx, lam):
+    X = x[idx]
+    return np.linalg.solve(X.T @ X + len(idx) * lam * np.eye(5), X.T @ y[idx])
+
+def mse(theta, idx):
+    return np.mean((x[idx] @ theta - y[idx]) ** 2)
+
+scores = {lam: mse(fit_ridge(train, lam), val) for lam in [0.01, 0.1, 1.0]}
+for lam, s in scores.items():
+    print(f"lambda = {lam:<5} validation MSE = {s:.3f}")
+best = min(scores, key=scores.get)
+final = fit_ridge(np.concatenate([train, val]), best)
+print("chosen lambda:", best, " test MSE (reported once):", round(mse(final, test), 3))
+
+# Try: pick lambda by the TEST score instead. Why is that number no longer honest?`,
+
+  'cross-validation': py`import numpy as np
+
+rng = np.random.default_rng(0)
+x = rng.uniform(-1, 1, 60)
+y = np.sin(3 * x) + 0.3 * rng.normal(size=x.size)
+
+order = rng.permutation(len(x))
+test, rest = order[:20], order[20:]       # the test set is held out first
+K = 4
+folds = np.array_split(rest, K)
+
+def cv_score(degree):
+    scores = []
+    for k in range(K):
+        val = folds[k]
+        train = np.concatenate([folds[j] for j in range(K) if j != k])
+        coeffs = np.polyfit(x[train], y[train], degree)
+        scores.append(np.mean((np.polyval(coeffs, x[val]) - y[val]) ** 2))
+    return np.mean(scores)
+
+print("page example: CV =", round(np.mean([0.22, 0.25, 0.20, 0.24]), 4))
+results = {d: cv_score(d) for d in range(1, 9)}
+for d, s in results.items():
+    print(f"degree {d}: {K}-fold CV error {s:.3f}")
+best = min(results, key=results.get)   # near-ties: many prefer the simpler model (one-standard-error rule)
+final = np.polyfit(x[rest], y[rest], best)
+print("chosen degree:", best, " test error (once):", round(np.mean((np.polyval(final, x[test]) - y[test]) ** 2), 3))
+
+# Try: set K = 8. Does the chosen degree change?`,
+
+  'diagonalization': py`import numpy as np
+
 B = np.array([[4.0, 1.0], [2.0, 3.0]])
-values, P = np.linalg.eig(B)
-D = np.diag(values)
-print("eigenvalues:", values)
-print("P D P^-1 equals B:", np.allclose(P @ D @ np.linalg.inv(P), B))
-k = 5
-print(f"B^{k} via P D^{k} P^-1 matches matrix_power:", np.allclose(P @ np.diag(values ** k) @ np.linalg.inv(P), np.linalg.matrix_power(B, k)))
+P = np.array([[1.0, 1.0], [1.0, -2.0]])      # eigenvectors as columns
+D = np.diag([5.0, 2.0])                        # matching eigenvalues
 
-# PageRank-style: column j lists where page j links (each column sums to 1)
+print("B P == P D:", np.allclose(B @ P, P @ D))
+print("P D P^-1 == B:", np.allclose(P @ D @ np.linalg.inv(P), B))
+
+k = 3
+Bk = P @ np.diag(np.diag(D) ** k) @ np.linalg.inv(P)
+print(f"B^{k} via P D^{k} P^-1 =")
+print(np.round(Bk, 6))
+print("matches matrix_power:", np.allclose(Bk, np.linalg.matrix_power(B, k)))
+
+# Not every matrix is diagonalizable:
+J = np.array([[1.0, 1.0], [0.0, 1.0]])
+values, vectors = np.linalg.eig(J)
+print("eigenvalues of [[1,1],[0,1]]:", values, " rank of eigenvector matrix:", np.linalg.matrix_rank(vectors, tol=1e-8))
+
+# Try: set k = 10. Which eigenvalue dominates B^k?`,
+
+  'pagerank': py`import numpy as np
+
+# Column j lists where page j links; each column sums to 1
 M = np.array([[0.0, 0.5, 1/3],
               [0.5, 0.0, 1/3],
               [0.5, 0.5, 1/3]])
+print("column sums:", M.sum(axis=0))
+
 r = np.ones(3) / 3
 for _ in range(50):
     r = M @ r
-print("ranks after 50 steps:", np.round(r, 4))
-print("eigenvalues of M:", np.round(np.linalg.eigvals(M), 4), "-> the others fade as powers of |lambda| < 1")
+print("steady state:", np.round(r, 4), " (2/7, 2/7, 3/7 =", np.round([2/7, 2/7, 3/7], 4), ")")
 
-# Try: set k = 10, or change a column of M (keep it summing to 1). Which page ranks highest?`,
+values, vectors = np.linalg.eig(M)
+top = np.real(vectors[:, np.argmax(np.real(values))])
+print("eigenvector for eigenvalue 1, scaled to sum 1:", np.round(top / top.sum(), 4))
 
-  'orthogonality-spectral-theorem': py`import numpy as np
+d = 0.85
+G = d * M + (1 - d) / 3 * np.ones((3, 3))
+r = np.ones(3) / 3
+for _ in range(50):
+    r = G @ r
+print("with damping 0.85:", np.round(r, 4))
+
+# Try: make page 1 link only to page 3 (column 0 = [0, 0, 1]). How do the ranks change?`,
+
+  'orthogonality': py`import numpy as np
 
 u = np.array([1.0, 1.0])
 v = np.array([1.0, -1.0])
 print("u . v =", u @ v)
-Q = np.column_stack([u / np.linalg.norm(u), v / np.linalg.norm(v)])
+
+q1, q2 = u / np.linalg.norm(u), v / np.linalg.norm(v)
+x = np.array([3.0, 1.0])
+c1, c2 = q1 @ x, q2 @ x
+print("coordinates by dot products:", round(c1, 4), round(c2, 4))
+print("rebuild x:", c1 * q1 + c2 * q2)
+
+Q = np.column_stack([q1, q2])
 print("Q^T Q =")
 print(np.round(Q.T @ Q, 6) + 0.0)
+print("|Qx| == |x|:", np.isclose(np.linalg.norm(Q @ x), np.linalg.norm(x)))
 
-A = np.array([[2.0, 1.0], [1.0, 2.0]])      # symmetric
-values, vectors = np.linalg.eigh(A)
+# Try: use v = [1, -2] (not orthogonal to u). Do dot products still give the right coordinates?`,
+
+  'spectral-theorem': py`import numpy as np
+
+A = np.array([[2.0, 1.0], [1.0, 2.0]])
+values, Q = np.linalg.eigh(A)            # eigh is for symmetric matrices
 print("eigenvalues:", values)
-print("Q Lambda Q^T equals A:", np.allclose(vectors @ np.diag(values) @ vectors.T, A))
+print("eigenvectors (columns):")
+print(np.round(Q, 4))
+print("orthogonal? Q^T Q = I:", np.allclose(Q.T @ Q, np.eye(2)))
+print("A == Q Lambda Q^T:", np.allclose(Q @ np.diag(values) @ Q.T, A))
 
-# Try: a non-symmetric A = [[1, 1], [0, 2]]. Are its eigenvectors orthogonal?`,
+outer_sum = sum(values[i] * np.outer(Q[:, i], Q[:, i]) for i in range(2))
+print("A == sum of lambda_i q_i q_i^T:", np.allclose(outer_sum, A))
 
-  'matrix-decompositions': py`import numpy as np
+# Try: A = [[1, 1], [0, 2]] (not symmetric) with np.linalg.eig. Are its eigenvectors orthogonal?`,
+
+  'lu-decomposition': py`import numpy as np
 import scipy.linalg as la
 
-A = np.array([[4, 2], [2, 3]], dtype=float)
+A = np.array([[2.0, 1.0], [4.0, 5.0]])
+b = np.array([3.0, 9.0])
+
+if A[0, 0] == 0:
+    print("first pivot is 0: elimination without a row swap is impossible")
+else:
+    m = A[1, 0] / A[0, 0]                          # the elimination multiplier
+    L = np.array([[1.0, 0.0], [m, 1.0]])
+    U = np.array([A[0], A[1] - m * A[0]])
+    print("L =", L.tolist(), " U =", U.tolist())
+    print("L U == A:", np.allclose(L @ U, A))
+    y = la.solve_triangular(L, b, lower=True)  # forward substitution
+    x = la.solve_triangular(U, y)              # back substitution
+    print("y =", y, " x =", x)
+
+P, L2, U2 = la.lu(A)                           # scipy pivots: A = P L U
+print("scipy (with pivoting): P^T A == L U:", np.allclose(P.T @ A, L2 @ U2))
+
+# Try: A = [[0, 1], [1, 1]]. The hand-made L U cannot start; does scipy's pivoted version still work?`,
+
+  'cholesky-decomposition': py`import numpy as np
+
+A = np.array([[4.0, 2.0], [2.0, 3.0]])
+L = np.linalg.cholesky(A)
+print("L =")
+print(np.round(L, 4))
+print("L L^T == A:", np.allclose(L @ L.T, A))
+
+# By hand for a 2 by 2 matrix [[a, b], [b, d]]
+a, b, d = 4.0, 2.0, 3.0
+l11 = np.sqrt(a); l21 = b / l11; l22 = np.sqrt(d - l21 ** 2)
+print("by hand:", round(l11, 4), round(l21, 4), round(l22, 4))
 
 try:
-    L = np.linalg.cholesky(A)          # needs A symmetric positive definite
-    print("Cholesky L =")
-    print(np.round(L, 4))
-    print("L L^T equals A:", np.allclose(L @ L.T, A))
+    np.linalg.cholesky(np.array([[1.0, 2.0], [2.0, 1.0]]))
 except np.linalg.LinAlgError as err:
-    print("Cholesky failed:", err)
+    print("[[1, 2], [2, 1]]:", err)
 
-P, L_lu, U = la.lu(A)                  # scipy returns A = P L U, i.e. P^T A = L U
-print("U (upper triangular) =")
-print(np.round(U, 4))
-print("P^T A equals L U:", np.allclose(P.T @ A, L_lu @ U))
+# Try: check the eigenvalues of [[1, 2], [2, 1]] with np.linalg.eigvalsh. Why does Cholesky fail?`,
 
-W, s, Vt = np.linalg.svd(A)
-print("singular values:", np.round(s, 4))
-print("W diag(s) V^T equals A:", np.allclose(W @ np.diag(s) @ Vt, A))
+  'svd': py`import numpy as np
 
-# Try: A = [[0, 1], [1, 0]]. Cholesky fails (not positive definite) but LU and SVD still work.`,
+A = np.array([[3.0, 0.0], [4.0, 5.0]])
+W, s, Vt = np.linalg.svd(A, full_matrices=False)   # also works for non-square A
+print("singular values:", np.round(s, 4), " (sqrt 45, sqrt 5 =", np.round([np.sqrt(45), np.sqrt(5)], 4), ")")
+print("eigenvalues of A^T A:", np.round(np.linalg.eigvalsh(A.T @ A)[::-1], 4))
+if A.shape[0] == A.shape[1]:
+    print("product of singular values:", round(s.prod(), 4), " |det A| =", round(abs(np.linalg.det(A)), 4))
+print("W diag(s) V^T == A:", np.allclose(W @ np.diag(s) @ Vt, A))
+
+A1 = s[0] * np.outer(W[:, 0], Vt[0])
+print("best rank-1 approximation:")
+print(np.round(A1, 4))
+print("approximation error (Frobenius):", round(np.linalg.norm(A - A1), 4), "= sigma_2")
+
+# Try: a 3 by 2 matrix such as [[1, 0], [0, 1], [1, 1]]. SVD still works; how many singular values?`,
+
 };

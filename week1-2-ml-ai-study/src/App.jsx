@@ -4,7 +4,7 @@ import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { MindMap } from './components/MindMap.jsx';
 import { codeExamples } from './data/codeExamples.js';
-import { concepts, conceptMap, notCovered } from './data/concepts.js';
+import { concepts, conceptMap, entryFor, notCovered, topicMap, topicOf } from './data/concepts.js';
 import { learningObjectives, selfChecksByConcept } from './data/learningObjectives.js';
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
@@ -27,8 +27,9 @@ function routeFromHash() {
   const [path, query = ''] = raw.split('?');
   const params = new URLSearchParams(path.startsWith('track=') ? path : query);
   const trackId = isTrackId(params.get('track')) ? params.get('track') : null;
-  // Own-property check so hashes like "#constructor" are not mistaken for concepts.
+  // Own-property checks so hashes like "#constructor" are not mistaken for concepts or topics.
   const conceptId = Object.hasOwn(conceptMap, path) ? path : null;
+  if (!conceptId && Object.hasOwn(topicMap, path)) return { topicId: path };
   return {
     conceptId,
     // A concept keeps its track only if the track actually contains it.
@@ -39,6 +40,7 @@ function routeFromHash() {
 export function App() {
   const [route, setRoute] = React.useState(routeFromHash);
   const selectedConcept = route.conceptId ? conceptMap[route.conceptId] : null;
+  const selectedTopic = route.topicId ? topicMap[route.topicId] : null;
 
   React.useEffect(() => {
     function syncFromUrl() {
@@ -55,10 +57,10 @@ export function App() {
 
   React.useEffect(() => {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
-    document.title = selectedConcept
-      ? `${selectedConcept.title} | ML + Math Study Map`
+    document.title = selectedConcept || selectedTopic
+      ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
       : trackTitle ? `${trackTitle} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
-  }, [selectedConcept, route.trackId]);
+  }, [selectedConcept, selectedTopic, route.trackId]);
 
   function go(hash) {
     window.location.hash = hash;
@@ -69,7 +71,7 @@ export function App() {
   // Opening a concept keeps the current track when the concept belongs to it, so prerequisite and
   // follow-on links still work as before inside a track.
   function selectConcept(id, trackId = route.trackId) {
-    const keepTrack = trackId && trackOrder(trackId).includes(id);
+    const keepTrack = trackId && conceptMap[id] && trackOrder(trackId).includes(id);
     go(keepTrack ? `${id}?track=${trackId}` : id);
   }
 
@@ -98,6 +100,8 @@ export function App() {
 
       {selectedConcept ? (
         <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} />
+      ) : selectedTopic ? (
+        <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
         <Landing trackId={route.trackId} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} />
       )}
@@ -143,6 +147,7 @@ function ConceptIndex({ onSelect }) {
             <button key={concept.id} onClick={() => onSelect(concept.id)}>
               <span>{concept.group} / {conceptLevel(concept.id)}</span>
               {concept.title}
+              {topicOf(concept.id) && <small className="concept-topic">in {topicOf(concept.id).title}</small>}
             </button>
           ))}
         </div>
@@ -166,6 +171,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
           <TrackMembership conceptId={concept.id} onOpen={onSelect} />
         </div>
       )}
+      <TopicBreadcrumb conceptId={concept.id} onSelect={onSelect} />
       <section className="concept-hero">
         <p className="eyebrow">{concept.group} / {conceptLevel(concept.id)} / Source context: {concept.week}</p>
         <h1>{concept.title}</h1>
@@ -248,7 +254,7 @@ function LearningObjectives({ onSelect }) {
               <div className="objective-item" key={item.objective}>
                 <p>{item.objective}</p>
                 <div className="objective-links">
-                  {item.concepts.map((id) => <button key={id} onClick={() => onSelect(id)}>{conceptMap[id]?.title ?? id}</button>)}
+                  {item.concepts.map((id) => <button key={id} onClick={() => onSelect(id)}>{entryFor(id)?.title ?? id}</button>)}
                 </div>
                 <small>{item.check}</small>
               </div>
@@ -320,9 +326,66 @@ function LinkGroup({ label, ids, onSelect, fallback }) {
       <h3>{label}</h3>
       {ids.length ? (
         <div className="pill-row">
-          {ids.map((id) => <button key={id} onClick={() => onSelect(id)}>{conceptMap[id].title}</button>)}
+          {ids.map((id) => <button key={id} onClick={() => onSelect(id)}>{entryFor(id).title}</button>)}
         </div>
       ) : <p>{fallback}</p>}
     </div>
+  );
+}
+
+// A subtopic page shows which topic it belongs to and its neighbours within that topic.
+function TopicBreadcrumb({ conceptId, onSelect }) {
+  const topic = topicOf(conceptId);
+  if (!topic) return null;
+  const index = topic.children.indexOf(conceptId);
+  return (
+    <nav className="topic-breadcrumb" aria-label={`${topic.title} subtopics`}>
+      <span>Part of</span>
+      <button className="topic-link" onClick={() => onSelect(topic.id, null)}>{topic.title}</button>
+      <span>· subtopic {index + 1} of {topic.children.length}:</span>
+      <div className="topic-siblings">
+        {topic.children.map((id, position) => (
+          <button key={id} className={id === conceptId ? 'current' : ''} aria-current={id === conceptId ? 'page' : undefined} onClick={() => onSelect(id)}>{position + 1}. {conceptMap[id].title}</button>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// Overview page for a topic that was split into subtopics.
+function TopicPage({ topic, onBack, onSelect }) {
+  return (
+    <main className="concept-page topic-page">
+      <div className="concept-page-top">
+        <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to mind map</button>
+      </div>
+      <section className="concept-hero">
+        <p className="eyebrow">{topic.group} / Topic overview / Source context: {topic.week}</p>
+        <h1>{topic.title}</h1>
+      </section>
+      <section className="ordered-section topic-summary">
+        <div className="section-number">i</div>
+        <div>
+          <h2>What this topic covers</h2>
+          <p className="problem-sentence">{topic.summary}</p>
+          <p>{topic.overview}</p>
+          <button className="track-primary" onClick={() => onSelect(topic.children[0])}>Start with {conceptMap[topic.children[0]].title}</button>
+        </div>
+      </section>
+      <section className="topic-children" aria-label="Subtopics">
+        <h2>Subtopics, in order</h2>
+        <ol>
+          {topic.children.map((id, index) => (
+            <li key={id}>
+              <span className="track-step" aria-hidden="true">{index + 1}</span>
+              <div>
+                <button className="track-item-title" onClick={() => onSelect(id)}>{conceptMap[id].title}</button>
+                <p>{conceptMap[id].problem}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </main>
   );
 }

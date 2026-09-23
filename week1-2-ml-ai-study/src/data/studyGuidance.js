@@ -1,4 +1,17 @@
 export const advancedConceptIds = new Set([
+  'lasso',
+  'elastic-net',
+  'train-validation-test',
+  'cross-validation',
+  'affine-maps',
+  'dimensionality-reduction',
+  'diagonalization',
+  'pagerank',
+  'orthogonality',
+  'spectral-theorem',
+  'lu-decomposition',
+  'cholesky-decomposition',
+  'svd',
   'lasso-elastic-net',
   'classification-metrics',
   'validation-cross-validation',
@@ -24,6 +37,82 @@ export const recommendedPaths = {
 };
 
 export const guidedSelfChecks = {
+  functions: [
+    { question: 'Is f(x) = x^2 from the real numbers to the real numbers injective? Surjective?', answer: 'Neither. f(2) = f(-2) = 4, so it is not injective, and no real x gives a negative output such as -1, so it is not surjective.' },
+  ],
+  'inverse-composition': [
+    { question: 'Why is (g after f) inverse equal to f inverse after g inverse, not g inverse after f inverse?', answer: 'The last step applied must be undone first. g acted last, so undo g first, then undo f, like taking off shoes before socks.' },
+  ],
+  'span-linear-combinations': [
+    { question: 'How do you check whether b is in the span of some vectors?', answer: 'Put the vectors as columns of a matrix and solve Ax = b. If the system is consistent, the solution gives the amounts; if it is inconsistent, b is not in the span.' },
+  ],
+  'linear-independence': [
+    { question: 'Can three vectors in R^2 be independent?', answer: 'No. R^2 has dimension 2, so any three vectors in it are dependent: elimination leaves at most two pivots for three columns.' },
+  ],
+  subspaces: [
+    { question: 'Is the set of solutions of Ax = b a subspace?', answer: 'Only when b = 0. For b not zero it does not contain the origin; it is an affine set, a particular solution plus the null space.' },
+  ],
+  'vector-spaces': [
+    { question: 'Is the set of 2 by 2 matrices a vector space?', answer: 'Yes. Adding two 2 by 2 matrices or scaling one gives another 2 by 2 matrix, the zero matrix is included, and the arithmetic rules hold entry by entry.' },
+  ],
+  dimension: [
+    { question: 'What is the dimension of the null space of a 3 by 5 matrix with rank 3?', answer: 'By rank-nullity, nullity = 5 - 3 = 2, so the null space is a plane inside R^5.' },
+  ],
+  'affine-maps': [
+    { question: 'How can an affine map f(x) = Ax + b be written as a single matrix product?', answer: 'Append a 1 to x. Then [f(x); 1] = [[A, b], [0, 1]] [x; 1]. This is the same trick as adding a constant feature to absorb the bias.' },
+  ],
+  'dimensionality-reduction': [
+    { question: 'Why can a projection onto fewer dimensions never be undone exactly?', answer: 'Different points with the same projection, such as points along the discarded direction, get the same compressed coordinates, so the map is not injective.' },
+  ],
+  'rank-nullity': [
+    { question: 'A 4 by 6 matrix has rank 4. What is its nullity, and can Ax = b always be solved?', answer: 'Nullity = 6 - 4 = 2. Rank 4 equals the number of rows, so the columns span R^4 and every b has solutions (infinitely many, because of the 2 free directions).' },
+  ],
+  'determinant-geometry': [
+    { question: 'If det(A) = 3, what is det(2A) for a 2 by 2 matrix A?', answer: 'Scaling a 2 by 2 matrix by 2 scales each of its 2 rows, so det(2A) = 2^2 * 3 = 12.' },
+  ],
+  'surrogate-losses': [
+    { question: 'Why not train directly on the zero-one loss?', answer: 'It is flat almost everywhere, so its gradient gives no direction to move, and minimizing it exactly is computationally hard. A convex surrogate gives useful slopes and still upper-bounds the error.' },
+  ],
+  'gradient-descent-method': [
+    { question: 'For J(theta) = (theta - 3)^2, which learning rates converge?', answer: 'Each step multiplies the distance to 3 by (1 - 2 alpha). It converges when |1 - 2 alpha| < 1, that is 0 < alpha < 1; alpha = 0.5 lands on the minimum in one step.' },
+  ],
+  subgradients: [
+    { question: 'What are the subgradients of hinge loss max(0, 1 - z) at z = 1?', answer: 'Every slope between -1 and 0. The left piece has slope -1 and the right piece slope 0, and any value between them gives a line that stays below the loss.' },
+  ],
+  lasso: [
+    { question: 'Why does lasso set weights exactly to zero while ridge does not?', answer: 'The L1 penalty pulls with constant strength lambda no matter how small the weight is, so small weights are pulled all the way to zero. The L2 pull is proportional to the weight and fades near zero.' },
+  ],
+  'elastic-net': [
+    { question: 'When would you prefer elastic net over lasso?', answer: 'When groups of features are strongly correlated. Lasso tends to keep one of them arbitrarily; elastic net\'s L2 part spreads weight across the group while still allowing exact zeros.' },
+  ],
+  'train-validation-test': [
+    { question: 'Why can\'t the validation score be reported as the final performance?', answer: 'The validation set was used to choose the hyperparameter, so the chosen model is slightly tuned to it. Its score is optimistic; only the untouched test set gives an honest estimate.' },
+  ],
+  'cross-validation': [
+    { question: 'What does increasing k in k-fold cross-validation change?', answer: 'Each run trains on more data (a fraction (k - 1)/k), so the estimate is closer to the full-data model, but you train k times, which costs more.' },
+  ],
+  diagonalization: [
+    { question: 'Why do distinct eigenvalues guarantee diagonalizability?', answer: 'Eigenvectors for different eigenvalues are linearly independent, so n distinct eigenvalues give n independent eigenvectors, enough to form an invertible P.' },
+  ],
+  pagerank: [
+    { question: 'What does the damping factor d do?', answer: 'With probability 1 - d the surfer jumps to a random page. This makes every page reachable, guarantees one steady state, and speeds up convergence.' },
+  ],
+  orthogonality: [
+    { question: 'Why is solving Qx = b easy when Q is orthogonal?', answer: 'Q inverse equals Q transpose, so x = Q^T b: just dot products with the columns, no elimination needed.' },
+  ],
+  'spectral-theorem': [
+    { question: 'Are the eigenvalues of a real symmetric matrix always real?', answer: 'Yes. The spectral theorem guarantees real eigenvalues and an orthonormal set of eigenvectors for every real symmetric matrix.' },
+  ],
+  'lu-decomposition': [
+    { question: 'Why factor A = LU instead of running elimination each time?', answer: 'Elimination costs about n^3 operations, but two triangular solves cost about n^2. With many right-hand sides b, you pay for elimination once and reuse L and U.' },
+  ],
+  'cholesky-decomposition': [
+    { question: 'How can Cholesky tell you whether a symmetric matrix is positive definite?', answer: 'Run the algorithm: it succeeds with positive diagonal entries exactly when the matrix is positive definite, and fails with a non-positive number under a square root otherwise.' },
+  ],
+  svd: [
+    { question: 'How are singular values related to eigenvalues?', answer: 'The singular values of A are the square roots of the eigenvalues of A^T A. For a symmetric positive semidefinite A they equal its eigenvalues.' },
+  ],
+
   'ml-workflow': [
     { question: 'Can you explain why memorizing the training set is not the same as learning?', answer: 'Memorization can make training error zero without giving a rule that works on unseen examples. Learning means finding a hypothesis that generalizes beyond the sample.' },
     { question: 'Can you name the six ML design choices in order?', answer: 'Problem/input-output definition, feature representation, hypothesis class, loss, optimization method, and generalization/evaluation strategy.' },
@@ -43,7 +132,7 @@ export const guidedSelfChecks = {
   'hinge-loss': [
     { question: 'Why can a correct prediction still have positive hinge loss?', answer: 'Hinge loss is zero only when the signed margin is at least 1. Correct predictions with margin between 0 and 1 are still too close to the boundary.' },
   ],
-  'convexity-surrogate-losses': [
+  'convex-functions': [
     { question: 'How can you check convexity in practice?', answer: 'Use the chord definition, check f"(x) >= 0 for one-variable twice-differentiable functions, or check the Hessian is positive semidefinite in multiple dimensions.' },
   ],
   'stochastic-subgradient-descent': [
@@ -61,13 +150,13 @@ export const guidedSelfChecks = {
   'logistic-loss': [
     { question: 'Why does taking logs preserve the maximizer but make optimization easier?', answer: 'Log is increasing, so it does not change which theta maximizes likelihood. It turns products into sums and improves numerical stability.' },
   ],
-  'sets-functions': [
+  sets: [
     { question: 'What extra properties does a function need before an inverse exists?', answer: 'It must be bijective: injective so no two inputs share an output, and surjective so every target output is reached.' },
   ],
   'gaussian-elimination': [
     { question: 'What do pivot columns tell you?', answer: 'Pivot columns identify basic variables and independent directions. Missing pivots create free variables.' },
   ],
-  'vector-spaces-bases': [
+  'basis-coordinates': [
     { question: 'Why does a basis make coordinates unique?', answer: 'A basis spans the space and is linearly independent, so every vector has exactly one linear-combination representation.' },
   ],
   'composition-of-transformations': [

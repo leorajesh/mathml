@@ -165,7 +165,14 @@ function DotProductGraph({ values }) {
   const theta = { x: values.theta1, y: values.theta2 };
   const point = { x: values.x1, y: values.x2 };
   const score = values.theta1 * values.x1 + values.theta2 * values.x2;
-  return <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(theta.x)} ${sy(theta.y)}`} /><path className="vector-b" d={`M ${sx(0)} ${sy(0)} L ${sx(point.x)} ${sy(point.y)}`} />{circlePoint(point, 'point-b', 'x')}{circlePoint(theta, 'point-a', 'theta')}<text className="graph-note" x="44" y="48">theta dot x = {score.toFixed(2)}</text></g>;
+  const nameA = values.labelA ?? 'theta';
+  const nameB = values.labelB ?? 'x';
+  const lengths = Math.hypot(theta.x, theta.y) * Math.hypot(point.x, point.y);
+  const angle = lengths > 0 ? (Math.acos(clamp(score / lengths, -1, 1)) * 180) / Math.PI : null;
+  return {
+    content: <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(theta.x)} ${sy(theta.y)}`} /><path className="vector-b" d={`M ${sx(0)} ${sy(0)} L ${sx(point.x)} ${sy(point.y)}`} />{circlePoint(point, 'point-b', nameB)}{circlePoint(theta, 'point-a', nameA)}<text className="graph-note" x="44" y="48">{nameA} dot {nameB} = {score.toFixed(2)}</text></g>,
+    readout: [`|${nameA}| = ${Math.hypot(theta.x, theta.y).toFixed(2)}, |${nameB}| = ${Math.hypot(point.x, point.y).toFixed(2)}`, angle === null ? 'angle undefined (a zero vector)' : `angle = ${angle.toFixed(1)} degrees: ${Math.abs(score) < 1e-9 ? 'perpendicular' : score > 0 ? 'under 90, positive' : 'over 90, negative'}`],
+  };
 }
 
 function LinearSystemGraph({ values }) {

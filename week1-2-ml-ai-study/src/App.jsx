@@ -10,7 +10,9 @@ import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { normalizeDefinitionSymbol } from './utils/mathText.js';
 import { PythonRunner } from './python/PythonRunner.jsx';
-import { TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
+import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
+import { Quiz, QuizBadge } from './components/Quiz.jsx';
+import { quizzes } from './data/quizzes.js';
 import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
 
 // Routes live in the URL hash so Back/Forward and shared links work:
@@ -221,8 +223,14 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
         <div className="misconception">{concept.misconception}</div>
       </OrderedSection>
 
-      <OrderedSection number="8" title="Self-Check Questions">
-        <SelfChecks conceptId={concept.id} />
+      <OrderedSection number="8" title="Quiz: Check Your Understanding">
+        <Quiz quizId={concept.id} questions={quizzes[concept.id] ?? []}>
+          <DoneToggle conceptId={concept.id} />
+        </Quiz>
+        <details className="more-questions">
+          <summary>More questions to think about</summary>
+          <SelfChecks conceptId={concept.id} />
+        </details>
       </OrderedSection>
 
       <OrderedSection number="9" title="Prerequisites and Follow-On Concepts">
@@ -379,12 +387,20 @@ function TopicPage({ topic, onBack, onSelect }) {
             <li key={id}>
               <span className="track-step" aria-hidden="true">{index + 1}</span>
               <div>
-                <button className="track-item-title" onClick={() => onSelect(id)}>{conceptMap[id].title}</button>
+                <button className="track-item-title" onClick={() => onSelect(id)}>{conceptMap[id].title}</button> <QuizBadge quizId={id} />
                 <p>{conceptMap[id].problem}</p>
               </div>
             </li>
           ))}
         </ol>
+      </section>
+      <section className="ordered-section topic-quiz">
+        <div className="section-number">?</div>
+        <div>
+          <h2>Topic Quiz</h2>
+          <p>All {topic.children.reduce((count, id) => count + (quizzes[id]?.length ?? 0), 0)} questions from the {topic.children.length} subtopics, to check the whole topic at once.</p>
+          <Quiz quizId={`topic:${topic.id}`} questions={topic.children.flatMap((id) => quizzes[id] ?? [])} />
+        </div>
       </section>
     </main>
   );

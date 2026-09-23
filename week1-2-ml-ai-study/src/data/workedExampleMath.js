@@ -7,11 +7,18 @@ export const workedExampleMath = {
     tex`\theta=[2,1],\quad \theta_0=-2\quad \Rightarrow\quad s=\theta\cdot x+\theta_0`,
     tex`\operatorname{sign}(2),\operatorname{sign}(-2),\operatorname{sign}(1)=(+,-,+),\quad E_n=\frac{0}{3}=0`,
   ],
-  'feature-vectors': [
-    tex`x=\begin{bmatrix}2\\3\end{bmatrix},\quad \theta=\begin{bmatrix}4\\-1\end{bmatrix}`,
-    tex`\theta\cdot x=4\cdot2+(-1)\cdot3=8-3=5`,
-    tex`\operatorname{sign}(\theta\cdot x)=\operatorname{sign}(5)=+1`,
-    tex`\cos\varphi=\frac{\theta\cdot x}{\lVert\theta\rVert\lVert x\rVert}=\frac{5}{\sqrt{17}\sqrt{13}}\approx0.336,\quad \varphi\approx70^\circ`,
+  'vectors-dot-product': [
+    tex`u=\begin{bmatrix}2\\3\end{bmatrix},\quad v=\begin{bmatrix}4\\-1\end{bmatrix}`,
+    tex`u\cdot v=2\cdot4+3\cdot(-1)=8-3=5`,
+    tex`\lVert u\rVert=\sqrt{13},\quad \lVert v\rVert=\sqrt{17}`,
+    tex`\cos\varphi=\frac{5}{\sqrt{13}\sqrt{17}}\approx0.336,\quad \varphi\approx70^\circ`,
+    tex`u\cdot w=2\cdot3+3\cdot(-2)=0\Rightarrow u\perp w`,
+  ],
+  'feature-representation': [
+    tex`x=\begin{bmatrix}2\\3\end{bmatrix}`,
+    tex`\theta=\begin{bmatrix}4\\-1\end{bmatrix}:\quad 4\cdot2=8,\quad (-1)\cdot3=-3`,
+    tex`\theta\cdot x=8-3=5\Rightarrow\operatorname{sign}(5)=+1`,
+    tex`\text{work}\mapsto\begin{bmatrix}0\\1\\0\end{bmatrix}`,
   ],
   'matrix-operations': [
     tex`A=\begin{bmatrix}1&2\\3&4\end{bmatrix}`,

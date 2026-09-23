@@ -10,7 +10,7 @@ export const tracks = {
     short: 'Math',
     description: 'Linear algebra from sets and vectors to eigenvectors and matrix decompositions, in an order where each page only needs the ones before it.',
     sections: [
-      { title: 'Foundations', concepts: ['sets', 'functions', 'inverse-composition', 'feature-vectors'] },
+      { title: 'Foundations', concepts: ['sets', 'functions', 'inverse-composition', 'vectors-dot-product'] },
       { title: 'Matrices and linear systems', concepts: ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure'] },
       { title: 'Vector spaces', concepts: ['vector-spaces', 'span-linear-combinations', 'linear-independence', 'subspaces', 'basis-coordinates', 'dimension'] },
       { title: 'Linear transformations', concepts: ['linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'change-of-basis', 'affine-maps'] },
@@ -25,7 +25,7 @@ export const tracks = {
     short: 'ML',
     description: 'Machine learning from the supervised workflow through classifiers, losses, optimization, regression, generalization and logistic regression.',
     sections: [
-      { title: 'The learning problem', concepts: ['ml-workflow', 'feature-vectors'] },
+      { title: 'The learning problem', concepts: ['ml-workflow', 'feature-representation'] },
       { title: 'Linear classification', concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence'] },
       { title: 'Losses and convexity', concepts: ['empirical-risk-zero-one', 'hinge-loss', 'convex-functions', 'surrogate-losses'] },
       { title: 'Optimization', concepts: ['gradient-descent-method', 'subgradients', 'stochastic-subgradient-descent'] },
@@ -46,7 +46,7 @@ export function isTrackId(value) {
   return Object.hasOwn(tracks, value);
 }
 
-// Tracks that include a concept (feature vectors belong to both).
+// Tracks that include a concept (a concept may be listed in both when both genuinely need it).
 export function tracksContaining(conceptId) {
   return trackIds.filter((trackId) => trackOrder(trackId).includes(conceptId));
 }

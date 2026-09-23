@@ -6,6 +6,15 @@ const tex = String.raw;
 
 export const topics = [
   {
+    id: 'feature-vectors',
+    title: 'Feature Vectors and Dot Products',
+    group: 'Problem',
+    week: 'Production ML W1 + Math W1',
+    summary: 'The arithmetic of vectors and dot products, and how machine learning uses it to turn real examples into numbers a model can score.',
+    overview: 'The dot product is pure math: it measures how much two vectors point the same way and gives lengths and angles. Feature vectors are how machine learning puts it to work: describe each example as a list of numbers, then score it with a dot product against learned weights. The math page is in the Math Track and the feature page in the ML Track.',
+    children: ['vectors-dot-product', 'feature-representation'],
+  },
+  {
     id: 'sets-functions',
     title: 'Sets, Functions, Inverses, and Composition',
     group: 'Problem',
@@ -116,6 +125,46 @@ export const topics = [
 ];
 
 export const subtopicConcepts = [
+  // ---------- Vectors, dot products, feature vectors ----------
+  {
+    id: 'vectors-dot-product',
+    title: 'Vectors and the Dot Product',
+    group: 'Representation',
+    week: 'Math W1C1',
+    problem: 'It measures how long a vector is and how much two vectors point the same way, the arithmetic behind angles, projections, and every linear model.',
+    intuition: 'A vector is an arrow, or equally an ordered list of numbers, one for each direction. The dot product multiplies matching entries and adds them up. It is large and positive when two arrows point the same way, zero when they are perpendicular, and negative when they point apart. The dot product of a vector with itself is its length squared, and dividing a dot product by both lengths gives the cosine of the angle between the vectors.',
+    formulas: [
+      { tex: tex`u=[u_1,\ldots,u_d]^T\in\mathbb{R}^d`, definitions: [tex`d: number of entries (the dimension)`, tex`u_i: entry i of u`, tex`\mathbb{R}^d: all lists of d real numbers`] },
+      { tex: tex`u\cdot v=\sum_{i=1}^{d}u_iv_i=\lVert u\rVert\,\lVert v\rVert\cos\varphi`, definitions: [tex`u\cdot v: dot product, a single number`, tex`\varphi: angle between u and v`] },
+      { tex: tex`\lVert u\rVert=\sqrt{u\cdot u},\qquad u\cdot v=0\iff u\perp v\ \ (u,v\ne0)`, definitions: [tex`\lVert u\rVert: length (norm)`, tex`\perp: perpendicular (orthogonal)`] },
+    ],
+    example: ['Let u = [2, 3] and v = [4, -1].', 'u dot v = 2*4 + 3*(-1) = 8 - 3 = 5.', 'Lengths: ||u|| = sqrt(4 + 9) = sqrt(13) and ||v|| = sqrt(16 + 1) = sqrt(17).', 'cos(angle) = 5 / sqrt(221) = 0.336, so the angle is about 70 degrees: under 90, which is why the dot product is positive.', 'For w = [3, -2], u dot w = 6 - 6 = 0, so u and w are perpendicular.'],
+    graph: { type: 'dotProduct', title: 'Dot product, lengths, and angle', caption: 'The dot product is positive when the angle is under 90 degrees, zero at exactly 90, and negative beyond.', fixed: { labelA: 'u', labelB: 'v' }, sliders: [{ key: 'theta1', label: 'u_1', min: -4, max: 4, step: 0.25, value: 2 }, { key: 'theta2', label: 'u_2', min: -4, max: 4, step: 0.25, value: 3 }, { key: 'x1', label: 'v_1', min: -4, max: 4, step: 0.25, value: 4 }, { key: 'x2', label: 'v_2', min: -4, max: 4, step: 0.25, value: -1 }] },
+    misconception: 'A dot product of zero does not mean one of the vectors is zero: two nonzero vectors have dot product 0 exactly when they are perpendicular.',
+    prerequisites: ['sets'],
+    followOns: ['matrix-operations', 'vector-spaces', 'orthogonality', 'feature-representation'],
+    sources: ['W1C1.pdf'],
+  },
+  {
+    id: 'feature-representation',
+    title: 'Feature Vectors: Turning Examples into Numbers',
+    group: 'Problem',
+    week: 'Production ML W1',
+    problem: 'They turn real things (an email, a house, a photo) into lists of numbers, so a model can compare and score them.',
+    intuition: 'A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age]. Choosing features is a design decision: yes/no facts become 0 or 1, categories become one-hot lists with a single 1, and features on very different scales are often standardized. To score an example, give each feature a weight that says how much it matters and whether it helps or hurts, then add up weight times value. That sum is the dot product theta dot x: a big positive total means "strong yes", negative means "lean no".',
+    formulas: [
+      { tex: tex`x=\varphi(\text{example})\in\mathbb{R}^d`, definitions: [tex`\varphi: feature map, the rule that turns an example into numbers`, tex`d: number of features`] },
+      { tex: tex`\theta\cdot x=\sum_{i=1}^{d}\theta_ix_i`, definitions: [tex`\theta_i: weight on feature i, learned from data`, tex`\theta\cdot x: model score before thresholding`] },
+      { tex: tex`\text{color}\in\{\text{red},\text{green},\text{blue}\}:\quad \text{green}\mapsto[0,1,0]`, definitions: [tex`\text{one-hot encoding}: one entry per category, a 1 marks the category present`] },
+    ],
+    example: ['Describe an email by x = [contains_free, link_count] = [2, 3] (the word "free" appears twice, 3 links).', 'With weights theta = [4, -1], the contributions are 4*2 = 8 and -1*3 = -3.', 'The score is theta dot x = 8 - 3 = 5, so a classifier using sign(theta dot x) predicts the positive class.', 'A category such as the sender type {personal, work, unknown} is one-hot encoded: "work" becomes [0, 1, 0], never the single number 2.'],
+    graph: { type: 'dotProduct', title: 'Score as a weighted vote of features', caption: 'The weight vector theta and the feature vector x; the score is their dot product.', sliders: [{ key: 'theta1', label: 'theta_1', min: -4, max: 4, step: 0.25, value: 4 }, { key: 'theta2', label: 'theta_2', min: -4, max: 4, step: 0.25, value: -1 }, { key: 'x1', label: 'x_1', min: -4, max: 4, step: 0.25, value: 2 }, { key: 'x2', label: 'x_2', min: -4, max: 4, step: 0.25, value: 3 }] },
+    misconception: 'A feature vector is not the original object; it is a representation whose usefulness depends on what information the chosen features keep. Encoding categories as 1, 2, 3 wrongly suggests an order and distances between them.',
+    prerequisites: ['ml-workflow', 'vectors-dot-product'],
+    followOns: ['linear-classifier', 'linear-regression', 'polynomial-regression'],
+    sources: ['Week1_01-Introduction.pdf'],
+  },
+
   // ---------- Sets, functions, inverses, composition ----------
   {
     id: 'sets',
@@ -132,7 +181,7 @@ export const subtopicConcepts = [
     graph: { type: 'venn', title: 'Which elements does each operation keep?', caption: 'Elements of U are placed by membership. Pick an operation to highlight the elements it keeps.', sliders: [{ key: 'operation', label: 'operation (0 union, 1 intersection, 2 A minus B, 3 complement of A)', min: 0, max: 3, step: 1, value: 0 }] },
     misconception: 'A set has no order and no repeats: {1,2,2,3} and {3,2,1} are the same set, and the complement depends on which universe U you are working in.',
     prerequisites: [],
-    followOns: ['functions', 'feature-vectors'],
+    followOns: ['functions', 'vectors-dot-product'],
     sources: ['W0.pdf'],
   },
   {
@@ -245,7 +294,7 @@ export const subtopicConcepts = [
     example: ['Let P2 be all polynomials a + bx + cx^2 with real coefficients.', 'Adding (1 + 2x) and (3 - x + x^2) gives 4 + x + x^2, still in P2; scaling 1 + 2x by 3 gives 3 + 6x, still in P2.', 'The zero polynomial 0 + 0x + 0x^2 is in P2, and the arithmetic rules hold because they hold for numbers.', 'So P2 is a vector space, even though its "vectors" are polynomials. The set of polynomials with constant term 1 is not: adding two of them gives constant term 2.'],
     graph: { type: 'basis', title: 'Adding and scaling never leaves the plane', caption: 'Any mix of vectors in the plane is still in the plane: that closure is what makes R^2 a vector space.', sliders: [{ key: 'c1', label: 'amount of vector 1', min: -4, max: 4, step: 0.25, value: 2 }, { key: 'c2', label: 'amount of vector 2', min: -4, max: 4, step: 0.25, value: 1 }, { key: 'tilt', label: 'tilt of vector 2', min: -2, max: 2, step: 0.25, value: 0.5 }] },
     misconception: 'Vectors do not have to be arrows or lists of numbers; anything that can be added and scaled under the rules, such as polynomials or matrices, forms a vector space.',
-    prerequisites: ['sets', 'feature-vectors'],
+    prerequisites: ['sets', 'vectors-dot-product'],
     followOns: ['subspaces', 'basis-coordinates'],
     sources: ['W1C1.pdf', 'W1C2.pdf'],
   },
@@ -575,7 +624,7 @@ export const subtopicConcepts = [
     example: ['Let u = [1, 1] and v = [1, -1]; u dot v = 1 - 1 = 0, so they are orthogonal.', 'Normalize: q1 = [1, 1]/sqrt(2) and q2 = [1, -1]/sqrt(2).', 'Coordinates of x = [3, 1] are dot products: q1 dot x = 4/sqrt(2) = 2sqrt(2) and q2 dot x = 2/sqrt(2) = sqrt(2).', 'Check: 2sqrt(2) q1 + sqrt(2) q2 = [2, 2] + [1, -1] = [3, 1].'],
     graph: { type: 'lineProjection', title: 'A coordinate is a projection', caption: 'For a unit direction, the compressed coordinate z is exactly the dot product; the leftover (dashed) is orthogonal to the line.', sliders: [{ key: 'theta', label: 'direction angle', min: 0, max: 180, step: 5, value: 45 }, { key: 'px', label: 'point x', min: -5, max: 5, step: 0.25, value: 3 }, { key: 'py', label: 'point y', min: -5, max: 5, step: 0.25, value: 1 }] },
     misconception: 'Orthogonal matrices are not matrices with many zeros; their columns are orthonormal, and their inverse is their transpose.',
-    prerequisites: ['basis-coordinates', 'feature-vectors'],
+    prerequisites: ['basis-coordinates', 'vectors-dot-product'],
     followOns: ['spectral-theorem', 'dimensionality-reduction', 'svd'],
     sources: ['W3C2.pdf'],
   },

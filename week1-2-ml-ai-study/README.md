@@ -22,7 +22,7 @@ domain root and under a sub-path such as GitHub Pages' `/mathml/`.
 
 ## Topics and subtopics
 
-Titles that name several ideas are **topics** with one page per **subtopic** (58 concept pages, 12 topics),
+Titles that name several ideas are **topics** with one page per **subtopic** (59 concept pages, 13 topics),
 defined in `src/data/subtopics.js`. A topic keeps its original id, so the concept map, old links, and
 map edges point at its overview page, which lists the subtopics in order; each subtopic page shows a
 "Part of <topic>" bar with links to its siblings.
@@ -31,10 +31,21 @@ After editing content, run `npm run check`. It verifies that every prerequisite 
 resolves, every graph type exists, worked-example formulas line up with their steps, every concept has
 Python starter code, topics are consistent, all KaTeX renders, and the tracks respect prerequisites.
 
+## Quizzes
+
+Section 8 of every concept page is a multiple-choice quiz (3 questions per concept, 177 in all) with a
+score, per-question feedback, and an explanation for every answer. Options are shuffled so the correct
+answer is not always first, and "Try again" reshuffles. Topic overview pages have a combined quiz of
+their subtopics. The best score is saved in the browser and shown in the track lists.
+
+Questions live in `src/data/quizzes.js` as `{ question, answer, wrong: [3 options], why }`;
+`npm run check` verifies every concept has at least 3 well-formed questions.
+
 ## Learning tracks
 
 Besides the concept map, the app has two step-by-step tracks: the **Math Track** (33 concepts) and the
-**ML Track** (26 concepts; Feature Vectors is in both). They reuse the same concept pages and leave the
+**ML Track** (26 concepts). No concept is in both: where a page mixed math and ML (Feature Vectors and
+Dot Products) it is split into a math page and an ML page, and ML pages link to the math they rely on. They reuse the same concept pages and leave the
 map and the prerequisite / follow-on links unchanged; a track only adds an order, previous / next buttons,
 and "done" checkmarks saved in the browser. Links: `#track=math`, `#track=ml`, and
 `#<concept-id>?track=math` for a concept inside a track.

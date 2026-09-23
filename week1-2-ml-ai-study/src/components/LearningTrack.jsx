@@ -4,6 +4,7 @@ import { conceptMap } from '../data/concepts.js';
 import { conceptLevel } from '../data/studyGuidance.js';
 import { trackIds, trackOrder, tracks, tracksContaining } from '../data/learningTracks.js';
 import { useProgress } from '../progress.js';
+import { QuizBadge } from './Quiz.jsx';
 
 function otherTrack(trackId) {
   return trackIds.find((id) => id !== trackId);
@@ -19,7 +20,7 @@ export function DoneToggle({ conceptId, compact = false }) {
   const { isDone, toggleDone } = useProgress();
   const done = isDone(conceptId);
   return (
-    <button className={`done-toggle${done ? ' is-done' : ''}${compact ? ' compact' : ''}`} onClick={() => toggleDone(conceptId)} aria-pressed={done}>
+    <button type="button" className={`done-toggle${done ? ' is-done' : ''}${compact ? ' compact' : ''}`} onClick={() => toggleDone(conceptId)} aria-pressed={done}>
       <Check size={compact ? 14 : 16} /> {done ? 'Done' : compact ? 'Mark done' : 'Mark as done'}
     </button>
   );
@@ -72,6 +73,7 @@ export function TrackView({ trackId, onOpen, onShowTrack }) {
                     <p>{concept.problem}</p>
                     <div className="track-item-meta">
                       <span className={`level-tag ${conceptLevel(id).toLowerCase()}`}>{conceptLevel(id)}</span>
+                      <QuizBadge quizId={id} />
                       {shared && <span className="shared-tag">In both tracks</span>}
                       {needs.length > 0 && (
                         <span className="uses-from">

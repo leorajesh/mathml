@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "check:tracks": "node scripts/check-tracks.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",

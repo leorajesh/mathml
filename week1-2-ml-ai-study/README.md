@@ -20,6 +20,17 @@ npm run build
 The build uses relative asset paths (`base: './'` in `vite.config.js`), so the same `dist/` works at a
 domain root and under a sub-path such as GitHub Pages' `/mathml/`.
 
+## Learning tracks
+
+Besides the concept map, the app has two step-by-step tracks: the **Math Track** (21 concepts) and the
+**ML Track** (22 concepts; Feature Vectors is in both). They reuse the same concept pages and leave the
+map and the prerequisite / follow-on links unchanged; a track only adds an order, previous / next buttons,
+and "done" checkmarks saved in the browser. Links: `#track=math`, `#track=ml`, and
+`#<concept-id>?track=math` for a concept inside a track.
+
+Tracks are defined in `src/data/learningTracks.js`. After editing them, run `npm run check:tracks`: it
+fails if a concept is missing from both tracks or appears before a prerequisite from its own track.
+
 ## Runnable Python
 
 Section 6 of every concept page ("Try It in Python") is an editable, runnable Python cell:

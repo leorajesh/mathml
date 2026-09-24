@@ -149,7 +149,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W1C1',
     problem: 'They let us store a whole table of numbers, like a dataset or an image, and work on it all at once.',
-    intuition: 'A matrix is a grid of numbers where the shape (rows by columns) matters, like a spreadsheet. Adding two matrices or multiplying by a number happens cell by cell, so both grids must be the same shape. Transposing flips the grid so rows become columns, like turning a spreadsheet on its side. That flip shows up everywhere, from dot products to symmetric tables where the grid equals its own flip.',
+    intuition: 'A matrix is a grid of numbers, like a spreadsheet, where the shape (rows by columns) matters. It lets us store a whole dataset or image and work on all of it at once.',
     formulas: [
       { tex: tex`A=\begin{bmatrix}a_{11}&\cdots&a_{1n}\\ \vdots& &\vdots\\ a_{m1}&\cdots&a_{mn}\end{bmatrix}\in\mathbb{R}^{m\times n}`, definitions: [tex`A: matrix`, tex`a_{ij}: entry in row i and column j`, tex`m: number of rows`, tex`n: number of columns`] },
       { tex: tex`(A+B)_{ij}=a_{ij}+b_{ij},\quad (cA)_{ij}=ca_{ij},\quad (A^T)_{ji}=a_{ij}`, definitions: [tex`B: second matrix with the same shape as A`, tex`c: scalar`, tex`A^T: transpose of A`] },
@@ -167,7 +167,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W1C1',
     problem: 'It performs many dot products in one go, and it is how we chain one transformation after another.',
-    intuition: 'To get the entry in row i, column j of AB, pair row i of A with column j of B, multiply matching numbers, and add them up. That is why the inside sizes must agree: an m by k grid can only multiply a k by n grid. An outer product goes the other way. It takes two plain lists and builds a whole grid in which every row is a scaled copy of the same row, the simplest possible (rank-one) matrix. Any matrix product is a sum of such simple pieces, which is why this arithmetic powers neural-network layers and image compression.',
+    intuition: 'Matrix multiplication is many dot products done at once. It is also how one transformation is chained after another.',
     formulas: [
       { tex: tex`(AB)_{ij}=\sum_{\ell=1}^{k}a_{i\ell}b_{\ell j}`, definitions: [tex`A: m by k matrix`, tex`B: k by n matrix`, tex`k: shared inner dimension`, tex`(AB)_{ij}: row-column dot product`] },
       { tex: tex`a b^T=\begin{bmatrix}a_1b_1&\cdots&a_1b_n\\ \vdots& &\vdots\\ a_mb_1&\cdots&a_mb_n\end{bmatrix}`, definitions: [tex`a: column vector`, tex`b^T: row vector`, tex`ab^T: outer product, a rank-one matrix when a and b are nonzero`] },
@@ -185,7 +185,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W1C1',
     problem: 'It lets us write many linear equations as one compact statement, Ax = b, and solve them all together.',
-    intuition: 'Picture a machine A that mixes the ingredients in x to produce the result b. Solving Ax = b asks: what ingredients must I feed in to get exactly this result? Gaussian elimination is a tidy way to untangle the equations step by step, rewriting them into simpler equations that have exactly the same answers.',
+    intuition: 'Picture a machine A that mixes the ingredients in x to produce a result b. Solving Ax = b asks: which ingredients give exactly this result?',
     formulas: [
       { tex: 'A x = b', definitions: ['A: coefficient matrix', 'x: unknown vector', 'b: right-hand-side vector'] },
       { tex: tex`R_i \leftarrow R_i + cR_j\quad (i\ne j)`, definitions: ['R_i: row i of a matrix', 'c: scalar multiplier', 'elementary row operation that preserves solutions (the rows must be different)'] },
@@ -204,7 +204,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Math W1C1',
     problem: 'It is a step-by-step recipe that simplifies any system of linear equations so you can read off whether it has a solution, and what it is.',
-    intuition: 'You may swap two equations, multiply one by a nonzero number, or add a multiple of one equation to a different one. None of these moves changes the answers, and each can be undone. Using them, you clear out numbers below a diagonal to form a staircase (row echelon form). Each staircase step is a pivot. Going further to make each pivot 1 and clear the numbers above it (reduced row echelon form) lets you read the solution straight off the page.',
+    intuition: 'A step-by-step recipe that turns a tangle of linear equations into a staircase you can read the answer from.',
     formulas: [
       { tex: tex`R_i\leftrightarrow R_j,\quad R_i\leftarrow cR_i\ (c\ne0),\quad R_i\leftarrow R_i+cR_j\ (i\ne j)`, definitions: [tex`R_i: row i`, tex`c: scalar multiplier`, tex`\leftrightarrow: row swap`] },
       { tex: tex`\begin{bmatrix}p_1&*&*\\0&p_2&*\\0&0&p_3\end{bmatrix}`, definitions: [tex`p_k: pivot`, tex`*: any entry`, tex`\text{RREF}: pivots are 1 and cleared above and below`] },
@@ -222,7 +222,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Math W1C1-W2C1',
     problem: 'It tells you whether a system has no answer, exactly one answer, or infinitely many, before you trust any answer you compute.',
-    intuition: 'After elimination, the pivots tell the whole story. A pivot in the answer column means the equations contradict each other (like 0 = 1), so there is no solution. A pivot in every unknown\'s column means there is at most one solution; if the equations are consistent, there is exactly one. Each unknown without a pivot is free to take any value, and each free unknown adds a direction you can slide along and still solve the equations. So when solutions exist, the full set is one particular answer plus every combination of those slide directions (the null space).',
+    intuition: 'Before trusting any answer, ask how many answers there are: none, exactly one, or infinitely many. After elimination, the pivots tell you.',
     formulas: [
       { tex: tex`\{x:Ax=b\}=\{x_p+x_h:Ax_h=0\}`, definitions: [tex`x_p: particular solution`, tex`x_h: homogeneous solution`, tex`\{x_h\}: null space`] },
       { tex: tex`\operatorname{rank}(A)+\operatorname{nullity}(A)=n`, definitions: [tex`\operatorname{rank}(A): pivot directions`, tex`\operatorname{nullity}(A): free directions`, tex`n: number of columns`] },
@@ -240,7 +240,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W1C2 + W2C2',
     problem: 'They describe the "fair" ways a matrix can reshape space, stretching, rotating, reflecting, or shearing, and what such a map keeps or destroys.',
-    intuition: 'A linear transformation reshapes space fairly: it keeps straight lines straight and the origin fixed, and adding or scaling inputs adds or scales outputs the same way. Because of that, knowing where the basic directions go tells you where everything goes, which is why every linear map can be written as a matrix. Two sets describe what it does: the kernel (inputs squashed to zero) and the image (outputs it can reach).',
+    intuition: 'A linear transformation reshapes space fairly: straight lines stay straight, the origin stays put, and combinations of inputs give the same combinations of outputs.',
     formulas: [
       { tex: 'T(av + bw) = aT(v) + bT(w)', definitions: ['T: transformation', 'a,b: scalars', 'v,w: vectors'] },
       { tex: tex`T(0)=0`, definitions: [tex`0: the zero vector; a map that moves the origin is not linear`] },
@@ -259,7 +259,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Math W1C2',
     problem: 'It turns a transformation described in words into a grid of numbers a computer can apply to any vector.',
-    intuition: 'Because a linear transformation treats combinations fairly, you only need to know where it sends the basic directions, such as \'one step right\' and \'one step up\'. Write where each one lands as a column, and those columns form the transformation\'s matrix. Multiplying that matrix by any vector gives where the vector lands.',
+    intuition: 'To turn a transformation into numbers, just track where the basic directions land, such as one step right and one step up.',
     formulas: [
       { tex: tex`[T]=\big[T(e_1)\;T(e_2)\;\cdots\;T(e_n)\big],\quad T(x)=[T]x`, definitions: [tex`T: linear transformation`, tex`e_j: j-th standard basis vector`, tex`[T]: transformation matrix`] },
       { tex: tex`[T]_{CB}=\big[[T(v_1)]_C\;[T(v_2)]_C\;\cdots\;[T(v_n)]_C\big]`, definitions: [tex`B=\{v_j\}: source basis`, tex`C: target basis`, tex`[\cdot]_C: coordinates in basis C`] },
@@ -277,7 +277,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Math W1C2',
     problem: 'It explains why matrix multiplication follows its row-times-column rule and why the order you apply steps in matters.',
-    intuition: 'Doing one transformation and then another is like putting on socks and then shoes; the order changes the result. In the product AB, the right-hand matrix B acts first and A acts second. The row-times-column rule is exactly the bookkeeping needed to track where each direction ends up after both steps. It also explains why stacking purely linear layers in a neural network gains nothing: the whole stack collapses into a single matrix.',
+    intuition: 'Doing one transformation and then another is like socks then shoes: the order changes the result.',
     formulas: [
       { tex: tex`(T_2\circ T_1)(u)=T_2(T_1(u)),\quad [T_2\circ T_1]=[T_2][T_1]`, definitions: [tex`T_1: first map applied`, tex`T_2: second map applied`, tex`\circ: composition`] },
       { tex: tex`(AB)_{ij}=\sum_{\ell=1}^{k}a_{i\ell}b_{\ell j}`, definitions: [tex`A: matrix for the second map`, tex`B: matrix for the first map`, tex`k: intermediate dimension`] },
@@ -295,7 +295,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W2C2',
     problem: 'It converts the coordinates of a vector from one grid to another without moving the vector itself.',
-    intuition: 'Put the new grid\'s direction arrows side by side as the columns of a matrix P. Multiplying by P turns new-grid coordinates into ordinary ones, and multiplying by P^{-1} turns them back. Picking a clever grid can make a messy transformation look simple, such as pure stretching along each axis. That idea underlies diagonalization and PCA.',
+    intuition: 'Change of basis rewrites a vector\'s coordinates in a new grid without moving the vector itself.',
     formulas: [
       { tex: tex`P=\big[b_1\;b_2\;\cdots\;b_n\big],\quad [v]_{\text{std}}=P[v]_B,\quad [v]_B=P^{-1}[v]_{\text{std}}`, definitions: [tex`P: change-of-basis matrix`, tex`b_i: i-th basis vector`, tex`[v]_B: coordinates in basis B`] },
       { tex: tex`[T]_B=P^{-1}AP`, definitions: [tex`A: matrix in standard coordinates`, tex`[T]_B: same transformation in basis B`, tex`P^{-1}AP: similarity transform`] },
@@ -313,7 +313,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Math W1C2-W2C1',
     problem: 'It tells us when a transformation loses no information, so we can always undo it and recover the exact input.',
-    intuition: 'A transformation can be undone when every output comes from exactly one input: nothing gets squashed together, and every possible output is reached. For a square matrix, all of these say the same thing: a pivot in every column, a nonzero determinant, independent columns, and only the zero vector mapping to zero. In practice we use this as a check that the answer is uniquely pinned down; to actually solve Ax = b we use elimination rather than computing the inverse.',
+    intuition: 'A transformation can be undone when every output comes from exactly one input: nothing is squashed together, and every output is reached.',
     formulas: [
       { tex: tex`T^{-1}(T(v))=v,\quad T(T^{-1}(w))=w`, definitions: [tex`T: transformation`, tex`T^{-1}: inverse transformation`, tex`v,w: vectors in the source and target spaces`] },
       { tex: tex`AA^{-1}=A^{-1}A=I,\quad \det(A)\ne0`, definitions: [tex`A^{-1}: inverse matrix`, tex`I: identity matrix`, tex`\det(A): determinant`] },
@@ -332,7 +332,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Math W2C2',
     problem: 'They give practical ways to compute a determinant, the single number that tells you whether a square matrix can be undone.',
-    intuition: 'The determinant measures how much a matrix stretches area or volume, with a sign for whether it flips orientation. Cofactor expansion breaks a big determinant into smaller ones. Row operations can simplify the matrix first, as long as you track their effect: swapping two rows flips the sign, multiplying a row by c multiplies the determinant by c, and adding a multiple of one row to a different row changes nothing.',
+    intuition: 'The determinant says how much a matrix stretches area or volume, with a sign for flips. These are the practical ways to compute it.',
     formulas: [
       { tex: tex`\det(A)=\sum_{j=1}^{n}(-1)^{1+j}a_{1j}M_{1j}`, definitions: [tex`M_{1j}: minor determinant after deleting row 1 and column j`, tex`(-1)^{1+j}: cofactor sign`] },
       { tex: tex`R_i\leftrightarrow R_j:\det\mapsto-\det,\quad R_i\leftarrow cR_i:\det\mapsto c\det,\quad R_i\leftarrow R_i+cR_j\ (i\ne j):\det\mapsto\det`, definitions: [tex`R_i: row i`, tex`c: scalar`, tex`\det: determinant`] },
@@ -658,7 +658,7 @@ const baseConcepts = [
     group: 'Representation',
     week: 'Math W3C1',
     problem: 'They find the special directions a matrix only stretches, shrinks, or flips, without turning them.',
-    intuition: 'Most arrows get knocked to a new direction when a matrix acts on them. An eigenvector is a nonzero arrow that stays on its own line: the matrix only multiplies it by a number, the eigenvalue (Av = lambda v). An eigenvalue of 2 doubles the arrow, 0.5 halves it, and a negative eigenvalue flips it to point backwards. These directions reveal a matrix\'s natural axes, which is why they show up in PCA and in long-run behavior like PageRank.',
+    intuition: 'Most arrows get knocked to a new direction when a matrix acts on them. An eigenvector is a special arrow that stays on its own line: the matrix only stretches, shrinks, or flips it.',
     formulas: [
       { tex: tex`A v = \lambda v`, definitions: ['A: square matrix', 'v: nonzero eigenvector', 'lambda: eigenvalue or stretch factor'] },
       { tex: tex`\det(A-\lambda I)=0`, definitions: ['characteristic equation used to find eigenvalues', 'I: identity matrix'] },

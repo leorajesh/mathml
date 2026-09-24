@@ -331,7 +331,7 @@ function FormulaDefinition({ definition }) {
 }
 
 // ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
-// A short hook, then labelled key ideas, then (collapsed) the details tied to the course notes and slides.
+// A short hook, then labelled key ideas, then (collapsed) notes tied to the course materials.
 function IntuitionBody({ concept }) {
   const details = intuitionDetails[concept.id];
   if (!details) return <p>{concept.intuition}</p>;
@@ -345,7 +345,7 @@ function IntuitionBody({ concept }) {
       </ul>
       {details.courseNotes && (
         <details className="course-notes">
-          <summary>From the course notes and slides ({details.courseNotes.length})</summary>
+          <summary>{details.notesTitle ?? 'From the course notes and slides'} ({details.courseNotes.length})</summary>
           <ul>
             {details.courseNotes.map((note) => <li key={note}>{note}</li>)}
           </ul>

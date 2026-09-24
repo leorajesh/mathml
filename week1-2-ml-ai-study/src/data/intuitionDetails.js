@@ -1,6 +1,6 @@
-// The structured part of "Plain-Language Intuition" on the machine learning pages. The short hook
+// The structured part of "Plain-Language Intuition" on every page. The short hook
 // stays in each concept's `intuition`; here each page gets two to five labelled key ideas and,
-// optionally, notes tied to the course notes and slides (shown collapsed). Lengths are checked by
+// optionally, notes on the course notes, slides, or book notation (shown collapsed). Lengths are checked by
 // scripts/check-content.mjs so the section stays quick to read.
 
 const idea = (label, text) => ({ label, text });
@@ -308,6 +308,331 @@ export const intuitionDetails = {
       idea("Drift", "Inputs can move away from the training data (covariate shift), or the link between inputs and labels can change (concept drift). Accuracy then decays quietly unless monitored."),
       idea("Technical debt", "Entangled features, glue code, tangled pipelines, and predictions that feed back into their own future training data (Sculley et al.)."),
       idea("Good practice", "Start from the business objective, keep a simple baseline, version data and models, monitor inputs and outputs, and retrain on a schedule or when drift appears."),
+    ],
+  },
+  "sets": {
+    keyIdeas: [
+      idea("Union", "Everything in either bag."),
+      idea("Intersection", "Only what is in both bags."),
+      idea("Difference", "What is in the first bag but not the second."),
+      idea("Complement", "Everything in the universe (the big bag you are working inside) that is not in the set."),
+    ],
+  },
+  "functions": {
+    keyIdeas: [
+      idea("Injective (one-to-one)", "No two buttons give the same snack, so nothing gets mixed up."),
+      idea("Surjective (onto)", "Every snack can be bought with some button, so nothing is missed."),
+      idea("Bijective", "Both at once: every snack comes from exactly one button."),
+    ],
+  },
+  "inverse-composition": {
+    keyIdeas: [
+      idea("Order matters", "g after f is usually not f after g, just as washing then drying differs from drying then washing."),
+      idea("Undoing", "Running f and then its inverse returns you to where you started."),
+      idea("Only bijections can be undone", "If two inputs share an output, the output cannot tell you which one to go back to."),
+    ],
+  },
+  "vectors-dot-product": {
+    keyIdeas: [
+      idea("How to compute it", "Multiply matching entries and add them up."),
+      idea("How to read it", "Large and positive: same direction. Zero: perpendicular. Negative: pointing apart."),
+      idea("Length and angle", "A vector dotted with itself is its length squared; dividing a dot product by both lengths gives the cosine of the angle between them."),
+    ],
+  },
+  "norms": {
+    keyIdeas: [
+      idea("Three common norms", "L2 is straight-line length; L1 adds the absolute coordinates, like walking city blocks; L-infinity keeps only the largest coordinate."),
+      idea("What makes a norm", "Only the zero vector has length 0, doubling a vector doubles its length, and a detour is never shorter than the direct route (triangle inequality)."),
+      idea("Unit balls", "The vectors of length 1 form a circle for L2, a diamond for L1, and a square for L-infinity."),
+      idea("Why it matters in ML", "The L1 diamond's corners are why a lasso penalty often sets some weights exactly to zero."),
+    ],
+  },
+  "matrix-operations": {
+    keyIdeas: [
+      idea("Adding and scaling", "Both happen cell by cell, so the grids must have the same shape."),
+      idea("Transposing", "Flip the grid so rows become columns, like turning a spreadsheet on its side."),
+      idea("Symmetric matrices", "A grid that equals its own flip. The transpose shows up everywhere, from dot products to covariance matrices."),
+    ],
+  },
+  "matrix-multiplication-outer-product": {
+    keyIdeas: [
+      idea("Row times column", "Entry (i, j) of AB pairs row i of A with column j of B: multiply matching numbers and add."),
+      idea("Sizes must match inside", "An m by k grid can only multiply a k by n grid."),
+      idea("The outer product", "Two plain lists build a whole grid in which every row is a scaled copy of the same row: the simplest (rank-one) matrix."),
+      idea("Why it matters", "Any matrix product is a sum of such rank-one pieces, which powers neural-network layers and image compression."),
+    ],
+  },
+  "matrix-systems": {
+    keyIdeas: [
+      idea("One compact statement", "Many linear equations become a single matrix equation, solved all together."),
+      idea("How to solve it", "Gaussian elimination untangles the equations step by step into simpler ones with exactly the same answers."),
+    ],
+  },
+  "gaussian-elimination": {
+    keyIdeas: [
+      idea("Three safe moves", "Swap two equations, multiply one by a nonzero number, or add a multiple of one to another. None changes the answers, and each can be undone."),
+      idea("Build a staircase", "Clear the numbers below the diagonal to reach row echelon form. Each step of the staircase is a pivot."),
+      idea("Read it off", "Make each pivot 1 and clear above it too (reduced row echelon form), and the solution can be read straight off the page."),
+    ],
+  },
+  "solution-structure": {
+    keyIdeas: [
+      idea("No solution", "A pivot in the answer column means the equations contradict each other, like 0 = 1."),
+      idea("Exactly one", "A pivot in every unknown's column (and no contradiction) pins down a single solution."),
+      idea("Infinitely many", "Each unknown without a pivot is free, and adds a direction you can slide along while still solving the equations."),
+      idea("The full picture", "When solutions exist, they are one particular answer plus every combination of those slide directions (the null space)."),
+    ],
+  },
+  "vector-spaces": {
+    keyIdeas: [
+      idea("Not just arrows", "Lists of features, matrices of one shape, and polynomials of degree at most 2 are all vector spaces."),
+      idea("Why it matters", "Once something is a vector space, span, basis, and dimension all apply to it."),
+    ],
+  },
+  "span-linear-combinations": {
+    keyIdeas: [
+      idea("Lines and planes", "One arrow spans a line through the origin; two arrows in different directions span a plane."),
+      idea("Is b reachable?", "Asking whether b is in the span means solving for the recipe amounts."),
+    ],
+  },
+  "linear-independence": {
+    keyIdeas: [
+      idea("The test", "Is there a mix of them, with amounts not all zero, that adds up to the zero vector? If so, they are dependent."),
+      idea("A subtle case", "With three or more vectors, the set can be dependent even though no two are copies of each other."),
+      idea("Row reduction answers it", "A column without a pivot is a mix of the pivot columns before it."),
+    ],
+  },
+  "subspaces": {
+    keyIdeas: [
+      idea("Must contain the origin", "A line through the origin is a subspace; the same line shifted off the origin is not."),
+      idea("Two from every matrix", "The column space (every output Ax can produce) and the null space (every input sent to zero)."),
+    ],
+  },
+  "basis-coordinates": {
+    keyIdeas: [
+      idea("Spans", "You can reach any point by combining the basis vectors."),
+      idea("Independent", "None of them repeats the others, which is why each address is unique."),
+    ],
+  },
+  "dimension": {
+    keyIdeas: [
+      idea("Well defined", "Every basis of a space has the same number of vectors, and that number is the dimension."),
+      idea("Limits", "In n dimensions, more than n vectors must be dependent, and fewer than n cannot span."),
+      idea("Inside bigger spaces", "A line through the origin has dimension 1 and a plane dimension 2, even inside a larger space."),
+    ],
+  },
+  "linear-transformations": {
+    keyIdeas: [
+      idea("Basis directions decide everything", "Knowing where the basic directions go tells you where every vector goes, so every linear map is a matrix."),
+      idea("Kernel", "The inputs squashed to zero."),
+      idea("Image", "The outputs the map can reach."),
+    ],
+  },
+  "transformation-matrix": {
+    keyIdeas: [
+      idea("Columns are landing spots", "Write where each basic direction lands as a column; those columns form the matrix."),
+      idea("Apply it", "Multiplying the matrix by any vector gives where that vector lands."),
+    ],
+  },
+  "composition-of-transformations": {
+    keyIdeas: [
+      idea("Right acts first", "In the product AB, B acts first and A acts second."),
+      idea("Why row times column", "It is exactly the bookkeeping that tracks where each direction ends up after both steps."),
+      idea("Stacked linear layers collapse", "A stack of purely linear neural-network layers is just one matrix, which is why networks need nonlinear activations."),
+    ],
+  },
+  "change-of-basis": {
+    keyIdeas: [
+      idea("The converter", "Put the new grid's arrows as the columns of P. P turns new-grid coordinates into ordinary ones; P^-1 turns them back."),
+      idea("Why bother", "A clever grid can make a messy transformation look simple, such as pure stretching along each axis. That idea underlies diagonalization and PCA."),
+    ],
+  },
+  "affine-maps": {
+    keyIdeas: [
+      idea("Why models need it", "The shift lets a line or decision boundary sit anywhere, instead of always passing through the origin."),
+      idea("Affine sets", "A subspace slid away from the origin, like the solutions of Ax = b."),
+    ],
+  },
+  "rank-nullity": {
+    keyIdeas: [
+      idea("Rank", "The dimension of the column space: how many independent directions come out."),
+      idea("Nullity", "The dimension of the null space: how many input directions are squashed to zero."),
+      idea("The theorem", "Rank plus nullity equals the number of columns."),
+    ],
+  },
+  "determinant-geometry": {
+    keyIdeas: [
+      idea("In 3D", "It is the volume scale factor."),
+      idea("Zero means flattened", "Some direction was squashed, so information is lost and the matrix cannot be undone."),
+      idea("Multiplies", "Doing two maps in a row multiplies their area scales: det(AB) = det(A) det(B)."),
+    ],
+  },
+  "determinants-cofactor-row-ops": {
+    keyIdeas: [
+      idea("Cofactor expansion", "Breaks a big determinant into smaller ones."),
+      idea("Row operations", "Simplify the matrix first, tracking the effect: a swap flips the sign, scaling a row by c scales the determinant by c, and adding a multiple of one row to another changes nothing."),
+    ],
+  },
+  "invertible-transformations": {
+    keyIdeas: [
+      idea("Many tests, one answer", "For a square matrix these all agree: a pivot in every column, a nonzero determinant, independent columns, and only 0 maps to 0."),
+      idea("In practice", "Use invertibility to check that the answer is uniquely pinned down, but solve Ax = b by elimination rather than computing the inverse."),
+    ],
+  },
+  "inner-products": {
+    keyIdeas: [
+      idea("The rules", "Symmetric, linear in each vector, and positive definite: a nonzero vector combined with itself always gives a positive number."),
+      idea("In R^n", "Every inner product is x^T A y for a symmetric positive definite matrix A. A = I gives the ordinary dot product."),
+      idea("A stretched ruler", "Any other A measures some directions more than others, so the unit circle becomes an ellipse and orthogonality changes meaning."),
+    ],
+  },
+  "orthogonality": {
+    keyIdeas: [
+      idea("Orthonormal basis", "Mutually perpendicular directions of length 1. In such a basis, each coordinate is just a dot product, with no equations to solve."),
+      idea("Orthogonal matrices", "A square Q with orthonormal columns rotates or reflects without stretching, and Q^T undoes it."),
+    ],
+  },
+  "orthogonal-complement": {
+    keyIdeas: [
+      idea("Together they rebuild the space", "Every vector splits in exactly one way into a part in U and a part perpendicular to U, and their dimensions add up to n."),
+      idea("In the input space", "The row space and the null space are complements, because Ax = 0 says x is perpendicular to every row."),
+      idea("In the output space", "The column space and the left null space (solutions of A^T y = 0) are complements."),
+      idea("What A does", "It maps the row space one-to-one onto the column space and sends the null space to zero."),
+    ],
+  },
+  "orthogonal-projections": {
+    keyIdeas: [
+      idea("One condition finds it", "The leftover error must be perpendicular to the subspace."),
+      idea("Onto a line", "For a line spanned by b, the projection is (b . x / b . b) b."),
+      idea("Onto a subspace", "For the columns of B, perpendicular error gives the normal equation B^T B lambda = B^T x, and the projection is B lambda."),
+      idea("Projecting twice", "Changes nothing, so the projection matrix satisfies P^2 = P."),
+    ],
+  },
+  "gram-schmidt": {
+    keyIdeas: [
+      idea("One vector at a time", "Keep the first. From each next one, subtract its projections onto the directions already chosen; what is left is perpendicular to all of them."),
+      idea("Normalize", "Scale each vector to length 1, at the end or as you go."),
+      idea("QR factorization", "Applied to the columns of A, it gives A = QR: Q has orthonormal columns and the upper triangular R records the coefficients."),
+    ],
+  },
+  "eigenvalues-eigenvectors": {
+    keyIdeas: [
+      idea("The equation", "Av = lambda v, where the number lambda is the eigenvalue."),
+      idea("Reading lambda", "2 doubles the arrow, 0.5 halves it, and a negative value flips it backwards."),
+      idea("Why they matter", "They reveal a matrix's natural axes, which is why they appear in PCA and in long-run behaviour such as PageRank."),
+    ],
+  },
+  "trace": {
+    keyIdeas: [
+      idea("With the determinant", "The determinant is the product of the eigenvalues, so for a 2 by 2 matrix trace and determinant pin down both eigenvalues."),
+      idea("Stable under change of basis", "tr(P^-1 A P) = tr(A), and products can be rotated inside it: tr(AB) = tr(BA)."),
+      idea("In machine learning", "The trace of a covariance matrix is the total variance of the data, which PCA divides among its components."),
+    ],
+  },
+  "diagonalization": {
+    keyIdeas: [
+      idea("The factorization", "A = P D P^-1: change into eigen-coordinates, stretch by the eigenvalues, change back. It needs n independent eigenvectors."),
+      idea("Powers are cheap", "A^k = P D^k P^-1, and D^k just raises each eigenvalue to the power k."),
+      idea("Long-run behaviour", "Directions with eigenvalues larger than 1 in size grow; those smaller than 1 fade."),
+    ],
+  },
+  "pagerank": {
+    keyIdeas: [
+      idea("The link matrix", "M holds the chance of moving from each page to each other page; its columns add up to 1."),
+      idea("The steady state", "For well-connected graphs, applying M again and again settles to r with Mr = r: the eigenvector with eigenvalue 1."),
+      idea("Damping", "With probability 1 - d the surfer jumps to a random page. This guarantees a single steady state for every graph, even ones that would otherwise cycle."),
+    ],
+  },
+  "spectral-theorem": {
+    keyIdeas: [
+      idea("The guarantee", "Real eigenvalues and a full set of perpendicular eigenvectors, so A = Q Lambda Q^T."),
+      idea("Why PCA works", "Covariance matrices are symmetric, which is why PCA always finds perpendicular principal directions."),
+    ],
+  },
+  "lu-decomposition": {
+    keyIdeas: [
+      idea("The factors", "Elimination turns A into an upper triangular U; the multipliers used form a lower triangular L with 1s on the diagonal, and A = LU."),
+      idea("Two easy solves", "Solve Ly = b from the top down, then Ux = y from the bottom up."),
+      idea("Row swaps", "If a zero pivot appears, rows are swapped first, recorded as a permutation: PA = LU."),
+    ],
+  },
+  "cholesky-decomposition": {
+    keyIdeas: [
+      idea("When it applies", "A must be symmetric with x^T A x > 0 for every nonzero x, such as X^T X in least squares when the features are independent."),
+      idea("Why use it", "About half the work of LU, and no row swaps are ever needed."),
+      idea("A built-in test", "If the algorithm meets a zero or negative number under a square root, the matrix was not positive definite."),
+    ],
+  },
+  "svd": {
+    keyIdeas: [
+      idea("The steps", "V^T rotates (or reflects) the input, Sigma stretches along the axes by the singular values, and W rotates into the output space."),
+      idea("Singular values", "The square roots of the eigenvalues of A^T A, listed from largest to smallest."),
+      idea("Low-rank approximation", "Keeping only the largest few gives the best low-rank approximation: the idea behind image compression and PCA."),
+    ],
+  },
+  "derivatives": {
+    keyIdeas: [
+      idea("Where it comes from", "The slope of a short chord from x to x + h (the difference quotient), as h shrinks toward 0."),
+      idea("Reading the sign", "Positive: rising. Negative: falling. Zero: a flat spot, such as the bottom of a valley."),
+      idea("Rules, not limits", "Sum, product, quotient, and chain rules differentiate almost anything built from simple pieces."),
+      idea("The chain rule matters most", "The rate of change of g(f(x)) is the rate of g at f(x) times the rate of f at x."),
+    ],
+  },
+  "partial-derivatives-gradient": {
+    keyIdeas: [
+      idea("Steepest ascent", "The gradient points where f increases fastest, and its length is that fastest rate."),
+      idea("Perpendicular to contours", "It is perpendicular to the level curve through the point."),
+      idea("Gradient descent", "Walking against the gradient is the steepest way down."),
+      idea("Any direction", "The slope along a unit direction u is the dot product of the gradient with u."),
+    ],
+    notesTitle: "Notes on the book's notation",
+    courseNotes: [
+      "The MML book writes the gradient as a row vector, which makes the chain rule a plain matrix product; update steps use the matching column vector.",
+    ],
+  },
+  "jacobian-chain-rule": {
+    keyIdeas: [
+      idea("Local linear map", "A tiny input step dx moves the output by about J dx. For f(x) = Ax the Jacobian is just A."),
+      idea("Area scaling", "For a map from R^2 to R^2, the absolute value of det J says how much a tiny square's area is stretched."),
+      idea("Chain rule = matrix product", "The Jacobian of g after f is the Jacobian of g (at f(x)) times the Jacobian of f."),
+    ],
+  },
+  "loss-gradients": {
+    keyIdeas: [
+      idea("Two key identities", "The gradient of a^T x is a^T, and the gradient of x^T A x is x^T (A + A^T)."),
+      idea("Least squares", "With the chain rule they give the gradient of ||y - X theta||^2; setting it to zero gives the normal equation."),
+      idea("Logistic loss", "The same steps give a memorable shape: prediction error times input, averaged over the data."),
+      idea("Check your work", "A numerical check (one difference quotient per coordinate) catches most algebra slips."),
+    ],
+  },
+  "backpropagation": {
+    keyIdeas: [
+      idea("Forward pass", "Compute and store every intermediate value of the computation graph."),
+      idea("Backward pass", "Start at the output with derivative 1. Each node multiplies the incoming derivative by its local derivative (the chain rule) and passes it on."),
+      idea("Branches add up", "Where a value feeds several later steps, their contributions are summed."),
+      idea("Cheap and exact", "One backward pass costs about as much as a forward pass or two, and automatic differentiation is exact up to rounding, unlike finite differences."),
+    ],
+  },
+  "taylor-hessian": {
+    keyIdeas: [
+      idea("More terms, better fit", "Each extra term matches one more derivative at the point, so the approximation stays close over a wider range."),
+      idea("The Hessian", "The matrix of all second partial derivatives. For smooth functions it is symmetric, and its eigenvalues are the curvatures along its eigenvectors."),
+      idea("Classifying flat points", "All eigenvalues positive: a bowl (local minimum). All negative: a dome. Mixed signs: a saddle."),
+      idea("Links", "A positive semidefinite Hessian everywhere means convex; Newton's method jumps to the minimum of the quadratic approximation."),
+    ],
+  },
+  "dimensionality-reduction": {
+    keyIdeas: [
+      idea("How it works", "Project each point onto a few chosen directions (an orthonormal basis U), store only those coordinates, and rebuild an approximation from them."),
+      idea("The skill", "Choose directions that lose the least, dropping those in which the data barely varies. That is what PCA does, using eigenvectors."),
+    ],
+  },
+  "pca": {
+    keyIdeas: [
+      idea("Center first", "Subtract the mean from every point."),
+      idea("Most spread", "The first principal component is the direction of largest variance: the top eigenvector of the covariance matrix, with the eigenvalue as the variance kept."),
+      idea("Then the next", "Each further component is the most-spread direction perpendicular to the ones before."),
+      idea("Two views agree", "Maximizing kept variance is the same as minimizing reconstruction error, because by Pythagoras total variance = kept variance + reconstruction error."),
     ],
   },
 };

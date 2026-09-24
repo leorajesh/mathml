@@ -13,7 +13,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.1',
     problem: 'It measures how fast a function\'s output changes when its input changes, which is exactly what an optimizer needs to know to decide which way to move.',
-    intuition: 'Zoom in far enough on a smooth curve and it looks like a straight line; the derivative is the slope of that line. To find it, take the slope of a short chord from x to x + h (the difference quotient) and let h shrink toward 0. A positive derivative means the function rises as x grows, a negative one means it falls, and a zero derivative marks a flat spot, such as the bottom of a valley. You rarely need the limit itself: a few rules (sum, product, quotient, and the chain rule for a function inside a function) differentiate almost anything built from simple pieces. The chain rule matters most in machine learning: the rate of change of g(f(x)) is the rate of g at f(x) times the rate of f at x.',
+    intuition: 'Zoom in far enough on a smooth curve and it looks like a straight line. The derivative is the slope of that line: how fast the output changes as the input changes.',
     formulas: [
       { tex: tex`f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}`, definitions: [tex`f'(x): derivative, the slope of the tangent line at x`, tex`h: a small step; the fraction is the difference quotient, the slope of a chord`] },
       { tex: tex`(f+g)'=f'+g',\qquad (fg)'=f'g+fg',\qquad \left(\frac{f}{g}\right)'=\frac{f'g-fg'}{g^2}`, definitions: [tex`f,g: differentiable functions (g not zero in the quotient rule)`] },
@@ -33,7 +33,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.2',
     problem: 'It extends the derivative to functions of many inputs. The result, the gradient, is the direction of steepest increase that gradient descent steps against.',
-    intuition: 'With several inputs, change one at a time: hold the others fixed and take the ordinary derivative. That is a partial derivative, the slope along one coordinate axis. Collect all of them and you have the gradient. It points in the direction in which f increases fastest, its length is that fastest rate, and it is perpendicular to the level curve (contour) through the point. So walking against the gradient is the steepest way down, which is the whole idea of gradient descent. The slope in any other unit direction u is the dot product of the gradient with u. The MML book writes the gradient as a row vector, which makes the chain rule a plain matrix product; update steps use the matching column vector.',
+    intuition: 'With several inputs, change one at a time: hold the others fixed and take the ordinary derivative. Collect all these slopes and you have the gradient.',
     formulas: [
       { tex: tex`\frac{\partial f}{\partial x_i}=\lim_{h\to0}\frac{f(x+h\,e_i)-f(x)}{h}`, definitions: [tex`e_i: the i-th unit vector, so only coordinate i moves`] },
       { tex: tex`\nabla f(x)=\frac{df}{dx}=\left[\frac{\partial f}{\partial x_1}\ \cdots\ \frac{\partial f}{\partial x_n}\right]\in\mathbb{R}^{1\times n}`, definitions: [tex`\nabla f: gradient; the MML book writes it as a row vector, and update steps use its transpose`] },
@@ -52,7 +52,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.2.2-5.3',
     problem: 'It describes how a function with several outputs responds to small changes in its inputs, and it passes gradients through chains of functions, as in neural networks.',
-    intuition: 'For a function f from R^n to R^m, each output has its own gradient. Stack those rows and you get the m by n Jacobian matrix. Near a point, f behaves like the linear map given by its Jacobian: a tiny input step dx moves the output by about J dx. For a linear function f(x) = Ax the Jacobian is just A. For a map from R^2 to R^2, the absolute value of the Jacobian\'s determinant says how much a tiny square\'s area is stretched, as on the determinant page. The chain rule becomes matrix multiplication: the Jacobian of g after f is the Jacobian of g (taken at f(x)) times the Jacobian of f.',
+    intuition: 'For a function with several outputs, each output has its own gradient. Stack them as rows and you get the Jacobian: the best linear approximation of the function near a point.',
     formulas: [
       { tex: tex`J=\frac{\partial f}{\partial x}=\begin{bmatrix}\frac{\partial f_1}{\partial x_1}&\cdots&\frac{\partial f_1}{\partial x_n}\\ \vdots&&\vdots\\ \frac{\partial f_m}{\partial x_1}&\cdots&\frac{\partial f_m}{\partial x_n}\end{bmatrix}\in\mathbb{R}^{m\times n}`, definitions: [tex`f_i: the i-th output of f`, tex`J: Jacobian; row i is the gradient of f_i`] },
       { tex: tex`f(x+dx)\approx f(x)+J\,dx,\qquad f(x)=Ax\ \Rightarrow\ J=A`, definitions: [tex`dx: a small change of the input`] },
@@ -71,7 +71,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.3-5.5',
     problem: 'It gives the handful of vector derivative rules needed to compute the gradients of common machine learning losses, such as least squares and logistic loss, by hand.',
-    intuition: 'Differentiating a loss one coordinate at a time works but gets messy. A few identities do the same job in one line, just as x^2 differentiates to 2x: the gradient of a linear function a^T x is a^T, and the gradient of a quadratic x^T A x is x^T (A + A^T). With the chain rule they give the gradient of the least-squares loss ||y - X theta||^2, and setting it to zero gives the normal equation. The same steps give the gradient of logistic loss, which has a memorable shape: prediction error times input, averaged over the data. A numerical check (one difference quotient per coordinate) catches most algebra slips.',
+    intuition: 'Differentiating a loss one coordinate at a time works but gets messy. A few vector identities do the job in one line, just as x^2 differentiates to 2x.',
     formulas: [
       { tex: tex`\frac{\partial\,a^Tx}{\partial x}=a^T,\qquad \frac{\partial\,x^TAx}{\partial x}=x^T\left(A+A^T\right)`, definitions: [tex`a: a constant vector`, tex`A: a constant square matrix; when A is symmetric the gradient is 2 x^T A`] },
       { tex: tex`L(\theta)=\lVert y-X\theta\rVert^2\ \Rightarrow\ \frac{dL}{d\theta}=-2\,(y-X\theta)^TX`, definitions: [tex`X: data matrix, one example per row`, tex`y-X\theta: residual vector`] },
@@ -91,7 +91,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.6',
     problem: 'It computes the gradient of a long chain of functions, such as a neural network\'s loss, exactly and efficiently, by reusing the intermediate results.',
-    intuition: 'Write the computation as a graph of small steps, each with a simple derivative. The forward pass computes and stores every intermediate value. The backward pass starts at the output, whose derivative with respect to itself is 1, and walks the graph in reverse: each node multiplies the derivative arriving from later steps by its own local derivative (the chain rule) and passes the result to its inputs. Where a value feeds several later steps, the contributions add up. One backward pass gives the derivative with respect to every input for about the cost of a forward pass or two, which is what makes training networks with millions of weights possible. Software does this automatically (automatic differentiation): the result is exact up to rounding, unlike finite differences.',
+    intuition: 'Backpropagation computes every gradient of a long chain of functions, such as a neural network\'s loss, by walking the chain backwards once and reusing what the forward pass stored.',
     formulas: [
       { tex: tex`v_i=g_i(\text{parents of }v_i),\qquad \frac{\partial f}{\partial v_i}=\sum_{j\,:\,v_i\to v_j}\frac{\partial f}{\partial v_j}\,\frac{\partial g_j}{\partial v_i}`, definitions: [tex`v_i: intermediate values of the computation graph, computed in the forward pass`, tex`g_j: the simple function computed at node j`, tex`\frac{\partial f}{\partial v_i}: computed in the backward pass, from the output toward the inputs`] },
       { tex: tex`z=wx+b,\quad m=yz,\quad L=\log\left(1+e^{-m}\right)`, definitions: [tex`y: label in {-1, +1}`, tex`m: signed margin; L is the logistic loss written with plus-minus labels`, tex`\tilde y: with ỹ = (y + 1)/2 in {0, 1} this is the same loss as the cross-entropy on the logistic-loss page, and dL/dz = sigma(z) - ỹ, the same prediction-error gradient`] },
@@ -111,7 +111,7 @@ export const calculusConcepts = [
     group: 'Optimization',
     week: 'MML book §5.1.1, §5.7-5.8',
     problem: 'It approximates a complicated function near a point by a simple polynomial, and uses second derivatives (the Hessian) to measure curvature, which decides whether a flat point is a minimum.',
-    intuition: 'Near a point x0, a smooth function looks like its tangent line; add a curvature term and it looks like a parabola. Each extra term of the Taylor polynomial matches one more derivative at x0, so the approximation stays close over a wider range. In several dimensions, the first-order term uses the gradient and the second-order term uses the Hessian, the matrix of all second partial derivatives. For smooth functions the Hessian is symmetric, and its eigenvalues are the curvatures along its eigenvectors: all positive means a bowl (a local minimum, if the gradient is zero there), all negative a dome, mixed signs a saddle. A positive semidefinite Hessian everywhere is exactly the convexity test on the convex-functions page, and Newton\'s method jumps straight to the minimum of the quadratic approximation.',
+    intuition: 'Near a point, a smooth function looks like its tangent line; add a curvature term and it looks like a parabola. Taylor polynomials make this precise, and the Hessian measures the curvature.',
     formulas: [
       { tex: tex`T_n(x)=\sum_{k=0}^{n}\frac{f^{(k)}(x_0)}{k!}\,(x-x_0)^k`, definitions: [tex`f^{(k)}(x_0): the k-th derivative of f at x_0`, tex`T_n: Taylor polynomial of degree n`] },
       { tex: tex`H=\nabla^2f=\left[\frac{\partial^2f}{\partial x_i\,\partial x_j}\right],\qquad f(x_0+\delta)\approx f(x_0)+\nabla f(x_0)\,\delta+\tfrac12\,\delta^TH\,\delta`, definitions: [tex`H: Hessian, a symmetric n by n matrix for smooth f`, tex`\delta: a small step away from x_0 (a column vector)`] },

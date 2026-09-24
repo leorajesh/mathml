@@ -120,7 +120,7 @@ const baseConcepts = [
     group: 'Problem',
     week: 'Production ML W1',
     problem: 'It turns a vague goal like \'spot spam emails\' into a clear recipe a computer can follow and improve on.',
-    intuition: 'Think of teaching a new employee to sort mail. You decide what they look at (the words, the number of links), what answers they give (spam or not spam), what kind of rule they may use, how you will score their mistakes, and how they will practise. The real test is not the practice pile they have already seen but tomorrow\'s mail. In ML terms: inputs and labels, features, a hypothesis class, a loss, an optimizer, and generalization. Mitchell\'s classic definition says the same thing: a program learns from experience E for a task T, measured by performance P, if its performance at T improves with E. In production the loop continues after training: the model is deployed, monitored, and retrained as the data changes.',
+    intuition: 'Think of training a new employee to sort mail. You decide what they look at, what answers they give, what rules they may use, how you score their mistakes, and how they practise. The real test is tomorrow\'s mail, not the practice pile.',
     formulas: [
       {
         tex: tex`S_n = \{(x^{(t)}, y^{(t)})\}_{t=1}^{n}`,
@@ -350,7 +350,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W1',
     problem: 'It sorts examples into two groups by drawing a straight line (or flat plane) between them.',
-    intuition: 'Each example gets a score: theta dot x + theta_0. A positive score puts it on one side of the line, a negative score on the other, and the line itself is where the score is exactly zero. The weights theta point perpendicular to the line and set its tilt, while theta_0 slides it. A point with score exactly 0 needs a tie-break rule (the code uses +1), but during training a margin of 0 always counts as a mistake.',
+    intuition: 'Draw a straight line between two groups of points: everything on one side is +1, everything on the other is -1. In more dimensions the line becomes a flat plane.',
     formulas: [
       { tex: tex`h(x;\theta,\theta_0)=\operatorname{sign}(\theta \cdot x + \theta_0)`, definitions: ['h: predicted class', 'theta: normal vector to the boundary', 'theta_0: intercept or bias', 'x: feature vector'] },
       { tex: tex`X^+(\theta,\theta_0)=\{x:\theta\cdot x+\theta_0\ge0\},\qquad X^-(\theta,\theta_0)=\{x:\theta\cdot x+\theta_0<0\}`, definitions: [tex`X^+,X^-: the two half-spaces the classifier predicts as +1 and -1, separated by the decision boundary`] },
@@ -369,7 +369,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W1',
     problem: 'It is the simplest linear classifier: the dividing line must pass through the origin, before we add a bias term to let it move.',
-    intuition: 'Without theta_0, the boundary is every point where theta dot x = 0, and that always includes the origin. Think of a clock hand pinned at the center: it can rotate to any angle but cannot move sideways. Adding theta_0 un-pins it and lets the line slide parallel to itself. That extra freedom can separate data the pinned version cannot.',
+    intuition: 'Picture a clock hand pinned at the centre: it can rotate to any angle but cannot move sideways. Without theta_0, the dividing line is pinned to the origin in the same way.',
     formulas: [
       { tex: tex`h(x;\theta)=\operatorname{sign}(\theta\cdot x)`, definitions: [tex`h: predicted class`, tex`\theta: weight vector`, tex`x: feature vector`] },
       { tex: tex`\theta\cdot x=0`, definitions: [tex`\theta: normal vector`, tex`\theta\cdot x: score`, tex`0: origin-constrained threshold`] },
@@ -387,7 +387,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W1',
     problem: 'It tells us whether a perfect straight dividing line even exists, before we ask an algorithm to find one.',
-    intuition: 'Data are linearly separable if some line (or flat plane) puts every positive example on one side and every negative one on the other. Whether that is possible depends on both the data and the features you chose. The margin measures how much breathing room the best separator has: the distance from the line to the closest point. When the classes overlap, no line works, and the perceptron can never settle. Separable through the origin is a stricter condition than separable: in the example below, a negative point at x = 1 and a positive point at x = 3 can be separated only with an offset, because without theta_0 the score theta x has the same sign at both points.',
+    intuition: 'Before asking an algorithm to find a perfect dividing line, ask whether one exists. Data are linearly separable if some line puts every positive on one side and every negative on the other.',
     formulas: [
       { tex: tex`\exists\hat\theta:\quad y^{(t)}(\hat\theta\cdot x^{(t)})>0\quad\forall t`, definitions: ['separable through the origin: Definition 1.1 of the Week 1 notes; when this holds, the setting is called the realizable case (some classifier in the class makes zero training errors)'] },
       { tex: tex`\exists\theta,\theta_0:\quad y^{(t)}(\theta\cdot x^{(t)}+\theta_0)>0\quad\forall t`, definitions: [tex`\theta: normal vector`, tex`\theta_0: offset`, tex`y^{(t)}: label`] },
@@ -406,7 +406,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It is a simple learning rule that finds a separating line whenever one exists.',
-    intuition: 'Go through the examples one at a time. Whenever the current line gets one wrong (or it sits exactly on the line), nudge the weights toward that example\'s correct answer by adding y times x to theta, and adjust theta_0 by y. Each nudge raises that example\'s score in the right direction. Correct examples cause no change. On separable data, these nudges eventually stop because every example ends up on the right side. The notes start from theta = 0; the Lesson 2 slides start from random weights, and different starting points can end at different separators, since a separable dataset usually has many. The offset update theta_0 <- theta_0 + y is the same rule applied to an extra feature that is always 1, and theta^(k) in the notes means the parameters after k mistakes, not after k examples.',
+    intuition: 'Learn by fixing mistakes. Walk through the examples, and whenever the line gets one wrong, nudge it toward the right answer. Examples it already gets right change nothing.',
     formulas: [
       { tex: tex`\text{if } y^{(t)}(\theta \cdot x^{(t)} + \theta_0) \le 0,\quad \theta \leftarrow \theta + y^{(t)}x^{(t)}`, definitions: ['y^(t): true label, either +1 or -1', 'x^(t): current example', 'theta: weight vector before update'] },
       { tex: tex`\theta_0 \leftarrow \theta_0 + y^{(t)}`, definitions: ['theta_0: bias term updated in the general-case perceptron'] },
@@ -424,7 +424,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It explains why the perceptron is guaranteed to stop on separable data, and why it can loop forever when the classes overlap.',
-    intuition: 'Each correction raises the mistaken example\'s score by the square of its length (plus 1 when theta_0 is also updated). The Week 1 notes state the theorem as: on linearly separable data the perceptron makes only finitely many mistakes. A sharper form, Novikoff\'s bound (beyond the notes, which define the margin later), says that if a separator has breathing room, the margin gamma, and every example has length at most R, there are at most (R/gamma)^2 mistakes in total. Wide gaps mean few mistakes; tight gaps mean many. If the classes overlap, fixing one example can break another, so the corrections can go on forever.',
+    intuition: 'Why does the perceptron ever stop? Each correction makes real progress toward a good separator, and when there is a gap between the classes, there is only so much progress to make.',
     formulas: [
       { tex: tex`y^{(t)}(\theta^{(k+1)}\cdot x^{(t)})=y^{(t)}(\theta^{(k)}\cdot x^{(t)})+\lVert x^{(t)}\rVert^2`, definitions: [tex`k: update index`, tex`\lVert x^{(t)}\rVert^2: squared feature length (through-origin update; with an offset the gain is ||x||^2 + 1)`] },
       { tex: tex`\text{finite mistakes}\quad\Leftarrow\quad\text{linear separability}`, definitions: [tex`\text{finite mistakes}: algorithm eventually stops updating`] },
@@ -443,7 +443,7 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It measures the simplest possible report card: the fraction of training examples the classifier gets wrong.',
-    intuition: 'Zero-one loss is a strict right-or-wrong grader: 0 for a correct answer, 1 for a wrong one, with no partial credit. Averaging it over the training set gives the training error. Its weakness is that it cannot tell a near miss from a disaster, so it gives the learning algorithm no hint about which way to improve.',
+    intuition: 'The strictest possible grader: one point off for every wrong answer, nothing for a right one, and no partial credit. Average it over the training set and you get the training error.',
     formulas: [
       { tex: tex`E_n(\theta)=\frac{1}{n}\sum_{t=1}^{n}\mathbb{1}\{y^{(t)}(\theta \cdot x^{(t)})\le 0\}`, definitions: ['E_n: training error', '1{...}: indicator equal to 1 when the condition is true', 'y^(t)(theta dot x^(t)): signed margin'] },
       { tex: tex`L_{0/1}(z)=\mathbb{1}\{z\le 0\}`, definitions: ['z: signed score y(theta dot x)', 'L_0/1: zero-one loss'] },
@@ -461,7 +461,7 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It replaces the strict right-or-wrong score with one that also rewards being confidently right, which makes learning much easier.',
-    intuition: 'Hinge loss is like a teacher who wants correct answers with room to spare. Being wrong costs a lot, being barely right still costs a little, and only answers that clear the margin (a signed margin of at least 1) cost nothing. The cost falls in a straight line as the margin grows until it reaches 1, then stays at zero, and that slope tells the algorithm which way to move. Why demand a margin of 1? Combined with a penalty on ||theta||, it makes the classifier prefer the boundary with the widest gap between the classes: the support vector machine.',
+    intuition: 'A teacher who wants correct answers with room to spare. Wrong answers cost a lot, barely-right answers cost a little, and only confident right answers (a margin of at least 1) cost nothing.',
     formulas: [
       { tex: tex`L_{\text{hinge}}(z)=\max(0,1-z)`, definitions: ['z: signed margin y(theta dot x)', '1-z: margin shortfall', 'max: keeps loss nonnegative'] },
       { tex: tex`R_n(\theta)=\frac{1}{n}\sum_{t=1}^{n}L_{\text{hinge}}(y^{(t)}\theta \cdot x^{(t)})`, definitions: ['R_n: empirical hinge risk', ...Object.values(commonSymbols).slice(0, 4)] },
@@ -479,7 +479,7 @@ const baseConcepts = [
     group: 'Optimization',
     week: 'Production ML W1-W2',
     problem: 'It makes training on huge datasets affordable by learning from one random example at a time instead of all of them.',
-    intuition: 'Computing the exact downhill direction means looking at every example, which is slow. Instead, pick one random example and step based on it alone. Each step is noisy, like asking one random person for directions, but on average the steps point the right way, and they are far cheaper. For the hinge loss the update looks like the perceptron with three differences: it also learns from correct-but-unconfident examples (agreement at most 1, not at most 0), it uses step sizes that shrink over time, and it picks examples at random rather than cycling through them in order, which stops the updates from oscillating. Because the loss only falls noisily, keep the best theta seen so far and report that one when you stop. With a regularization penalty added (the SVM objective), every step also shrinks theta slightly.',
+    intuition: 'Computing the exact downhill direction means looking at every example. Instead, step using one random example: like asking one random person for directions. Each step is noisy, but right on average and far cheaper.',
     formulas: [
       { tex: tex`\text{pick }t\text{ at random; if }y^{(t)}(\theta^{(k)}\cdot x^{(t)})\le1:\quad \theta^{(k+1)}=\theta^{(k)}+\eta_k\,y^{(t)}x^{(t)}`, definitions: [tex`\eta_k: learning rate at step k, for example 1/(k + 1); a fixed 0.1 is also popular in practice`, tex`t: randomly chosen example; examples with agreement above 1 cause no update`] },
       { tex: tex`\sum_{k=1}^{\infty}\eta_k=\infty,\quad \sum_{k=1}^{\infty}\eta_k^2<\infty`, definitions: [tex`\eta_k: step sizes that satisfy both conditions (such as 1/(k + 1)) make the method converge to the minimum of R_n`] },
@@ -498,7 +498,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W2',
     problem: 'It predicts a number, such as a price or a temperature, from input features using a straight-line relationship.',
-    intuition: 'Linear regression draws the best straight line (or flat plane, with more features) through the data, so predictions land as close as possible to the real numbers. It sounds limited, but you control the features: feed in transformed inputs, such as squares, and the same method fits curves. Learning means choosing theta to make the average squared error small, either in closed form (the normal equation) or with stochastic gradient updates theta <- theta + eta (y - theta . x) x. That update is self-correcting: if the prediction is too low, theta moves toward x so the next prediction for x is higher, and even small errors cause (small) updates, unlike the perceptron. The Lesson 3 slides frame every ML problem by its elements: the task, the inputs and outputs, the model with its trainable parameters, and the loss. For the apartment toy data the task is supervised regression, the input is the floor area, the output is the price, the model is y ≈ a x + b with parameters a and b, and the loss is the mean squared error. Squaring stops positive and negative errors from cancelling and punishes big misses much more than small ones. Whether a task is regression depends on the output: predicting a stock\'s future price is regression, deciding to buy, sell, or hold is classification. With several features the model becomes y ≈ a_1 x_1 + ... + a_K x_K + b, and with one feature its graph y = a x + b is a line, a hyperplane of the (x, y) plane (one dimension less than the space; strictly an affine one, since it need not pass through the origin). Gradient descent can also stop early: quit when a and b change by less than a small threshold delta between iterations, or after a maximum number of iterations.',
+    intuition: 'Draw the best straight line through the data, so predictions land as close as possible to the real numbers: a price from a floor area, say. With more features, the line becomes a flat plane.',
     formulas: [
       { tex: tex`f(x;\theta,\theta_0)=\theta \cdot x + \theta_0`, definitions: ['f: predicted numeric response', 'theta: feature weights', 'theta_0: intercept', 'x: feature vector'] },
       { tex: tex`\hat{y}=\theta_1x+\theta_0`, definitions: ['single-feature case of linear regression', 'theta_1: slope', 'theta_0: intercept'] },
@@ -520,7 +520,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W2',
     problem: 'It fits curved relationships while still using the simple machinery of linear regression.',
-    intuition: 'Add new features made from the old one: x, x^2, x^3, and so on up to degree K. The model is still a weighted sum of features (linear in its weights), yet as a function of x it can bend. The degree works like a flexibility dial: too low and the curve is too stiff to follow the pattern (underfitting), too high and it wiggles through every noisy point (overfitting). In code, as in the Lesson 3 slides with scikit-learn\'s PolynomialFeatures, you build a new input matrix whose columns are x, x^2, ..., x^K and run ordinary multi-feature linear regression on it. A too-high degree can match the training points yet behave wildly outside their range, for example when asked about an apartment larger than any in the training set.',
+    intuition: 'Want a curve, but only know how to fit lines? Add new features made from the old one: x, x^2, x^3, and so on. The model is still a weighted sum, yet as a function of x it bends.',
     formulas: [
       { tex: tex`\varphi(x)=[x,x^2,\ldots,x^K]^T`, definitions: [tex`\varphi: feature map`, tex`K: polynomial degree`] },
       { tex: tex`\hat y=b+\sum_{k=1}^{K}a_kx^k`, definitions: [tex`a_k: coefficient of x^k`, tex`b: intercept`] },
@@ -538,7 +538,7 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W2',
     problem: 'It picks the regression line that makes the average squared prediction error as small as possible.',
-    intuition: 'Measure each miss (residual), square it so big misses count much more than small ones, and average. The line with the smallest average is the least-squares fit. Because this total is a smooth bowl, there is a direct formula for the bottom: the normal equation. Geometrically, the model can only produce vectors of predictions in the column space of X, and least squares picks the one closest to the true answers y: the orthogonal projection of y onto that space, which leaves a residual perpendicular to every feature column.',
+    intuition: 'Measure each miss, square it, and average. The line with the smallest average is the least-squares fit, and because this loss is a smooth bowl, there is a direct formula for its bottom: the normal equation.',
     formulas: [
       { tex: tex`R_n(\theta)=\frac{1}{n}\sum_{t=1}^{n}\frac{(y^{(t)}-\theta\cdot x^{(t)})^2}{2}`, definitions: ['R_n: mean squared empirical risk (with the 1/2 of the Week 2 notes, which does not change the minimizer)', 'y^(t): true response', 'theta dot x^(t): prediction'] },
       { tex: tex`R^{\text{test}}_{n'}(\theta)=\frac{1}{n'}\sum_{t=n+1}^{n+n'}\frac{(y^{(t)}-\theta\cdot x^{(t)})^2}{2}`, definitions: [tex`R^{\text{test}}_{n'}: error on n' new examples, what we really care about; minimizing the training risk R_n is only a surrogate for it, since test data are not available when training`] },
@@ -560,7 +560,7 @@ const baseConcepts = [
     group: 'Complexity',
     week: 'Production ML W2',
     problem: 'It stops a regression model from over-reacting to noise by discouraging very large weights.',
-    intuition: 'Ridge adds a gentle penalty for big weights, like a spring pulling every weight back toward zero. The model fits the training data slightly less exactly, but it usually predicts new data better because it stops chasing random noise. It also fixes the case where the normal equation fails: when A = (1/n) X^T X is not invertible, the data give no guidance about some parameter directions and the problem is ill-posed. (Starting stochastic gradient descent at theta = 0 keeps those directions at zero, but does not solve the broader problem.) The penalty sets them to zero on purpose. Beyond the notes, in practice the intercept theta_0 is usually left unpenalized, features are standardized first, and lambda is chosen on validation data. As lambda grows the training error always rises, while the test error typically falls at first and then rises again: a U-shaped curve, so lambda is chosen on validation data.',
+    intuition: 'Ridge attaches a gentle spring to every weight, pulling it back toward zero. The model fits the training data a little less exactly, but usually predicts new data better, because it stops chasing noise.',
     formulas: [
       { tex: tex`J_{n,\lambda}(\theta)=\frac{\lambda}{2}\lVert\theta\rVert^2+\frac{1}{n}\sum_{t=1}^{n}\frac{(y^{(t)}-\theta\cdot x^{(t)})^2}{2}`, definitions: ['J: regularized objective, as in the Week 2 notes', 'lambda: regularization strength (lambda >= 0)', '||theta||^2: sum of squared weights'] },
       { tex: tex`\theta^{(k+1)}=(1-\lambda\eta_k)\,\theta^{(k)}+\eta_k\bigl(y^{(t)}-\theta^{(k)}\cdot x^{(t)}\bigr)\,x^{(t)}`, definitions: [tex`(1-\lambda\eta_k): shrinks theta toward zero at every stochastic gradient step`] },
@@ -580,7 +580,7 @@ const baseConcepts = [
     group: 'Generalization',
     week: 'Production ML W1-W2',
     problem: 'It explains why the model that scores best on its training data can still predict new data badly.',
-    intuition: 'A model that is too simple misses the pattern, like a student who never studied (underfitting). A model that is too flexible memorizes the practice questions, including their mistakes, and fails the real exam (overfitting). Because doing well on new data is the goal, we judge models on data they did not train on, and watch the gap between training and test error. The Week 1 notes give an extreme case: with 50 face images of 128 x 128 pixels, some single pixel probably has a different value in every image, so a classifier that just looks up that pixel\'s value gets every training label right and is useless on new faces. Effective learning requires constraints: the hypothesis class must not be so large that it contains such memorizers, nor so small that nothing fits. Choosing it well is the model selection problem. The notes add a subtle point: any one fixed classifier does about as well on new data as on the training set; the danger comes from choosing among very many. At the other extreme, a class with a single classifier learns nothing, but its training error honestly predicts its test error. Lesson 3 lists typical causes. Overfitting: too many features, imbalanced data, or a model far more complex than the pattern in the data (such as a high polynomial degree), so it memorizes the noise instead of the pattern. Underfitting: too few features, or a model not powerful enough for the task (such as a straight line for a cubic trend). The slides also list too little data as a cause of underfitting; in practice little data forces you to choose a simple model, while a flexible model trained on little data tends to overfit.',
+    intuition: 'A model that is too simple misses the pattern, like a student who never studied. One that is too flexible memorizes the practice questions, mistakes included, and fails the real exam. We want the one in between.',
     formulas: [
       { tex: tex`E_{\text{test}}(h)=\mathbb{E}_{(x,y)\sim P}[L(h(x),y)]`, definitions: ['E_test: expected unseen error', 'P: data-generating distribution', 'L: task loss'] },
       { tex: tex`\text{gap}=E_{\text{test}}-E_{\text{train}}`, definitions: ['gap: difference between unseen and training error', 'large positive gap: common overfitting warning'] },
@@ -598,7 +598,7 @@ const baseConcepts = [
     group: 'Model',
     week: 'Production ML W2',
     problem: 'It predicts the probability of a yes/no outcome while still dividing the classes with a straight line.',
-    intuition: 'A linear score can be any number, from very negative to very positive, but a probability must be between 0 and 1. The sigmoid function squashes the score into that range like a dimmer switch: very negative gives almost 0, zero gives exactly 0.5, very positive gives almost 1. Higher scores always mean higher probability, and thresholding at 0.5 gives a class. Why not just run linear regression on labels 0 and 1 and cut at 0.5? Lesson 4 shows the problem: adding one far-away but clearly positive example tilts the fitted line, moves the point where it crosses 0.5, and misclassifies examples that were right before. Logistic regression reads its output as a probability: h(x) = p(y = 1 | x; theta), so p(y = 0 | x; theta) = 1 - h(x), and an output of 0.7 for a tumour means an estimated 70% chance that it is malignant. Since sigma(z) >= 0.5 exactly when z >= 0, predicting 1 when h(x) >= 0.5 is the same as predicting 1 when theta . x + theta_0 >= 0: the decision boundary is still a straight line (a hyperplane). Add squared features and the boundary can curve. Logistic regression is discriminative: it learns only how to tell the classes apart, whereas a generative model learns what each class looks like, well enough to generate new examples. For more than two classes, one-vs-rest trains one classifier per class (cat vs not cat, dog vs not dog, fish vs not fish) and predicts the class whose classifier gives the highest probability.',
+    intuition: 'A linear score can be any number, but a probability must lie between 0 and 1. The sigmoid squashes the score into that range like a dimmer switch: very negative gives almost 0, zero gives 0.5, very positive gives almost 1.',
     formulas: [
       { tex: tex`h(x)=\sigma(\theta\cdot x+\theta_0)`, definitions: ['h(x): predicted probability that y = 1 (labels here are y in {0, 1}; y = 1 plays the role of +1 in the perceptron pages)', 'sigma: sigmoid/logistic function', 'theta dot x + theta_0: linear score', 'notation: Lesson 4 writes h_theta(x) = g(theta^T x), with a constant feature x_0 = 1 standing in for theta_0'] },
       { tex: tex`\sigma(s)=\frac{e^s}{1+e^s}=\frac{1}{1+e^{-s}}`, definitions: ['s: real-valued score', 'e: base of natural logarithms'] },
@@ -618,7 +618,7 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W2',
     problem: 'It is how logistic regression learns: it rewards putting high probability on the right answer and heavily punishes confident wrong answers.',
-    intuition: 'If the true answer is yes and the model says 80% yes, the loss is small. If it says 20% yes, the loss is much bigger. Near 0%, the loss shoots toward infinity, a harsh penalty for being confidently wrong. This loss is convex (bowl-shaped), unlike squared error on probabilities. Minimizing it is the same as choosing the most likely parameters, and using logs turns a huge product of probabilities into a manageable sum. Learning means running gradient descent on this loss, and its gradient is strikingly simple: the prediction error h - y times the input, averaged over the examples. Why not reuse linear regression\'s squared error? With the sigmoid inside, (1/m) sum (h - y)^2 / 2 is not convex in theta, so gradient descent may stall in a poor local minimum. The cross-entropy loss below is convex, although, unlike linear regression, it has no closed-form solution. Case by case, the cost is -log h when y = 1 and -log(1 - h) when y = 0: zero for a perfect confident answer, growing without bound for a confident wrong one. The minus sign turns maximizing the log-likelihood into minimizing a non-negative loss. The update theta_j <- theta_j - (alpha/m) sum (h - y) x_j looks identical to linear regression\'s; only the definition of h has changed (Lesson 4 calls this a surprising fact). Lesson 4 also asks whether MSE or R^2 make sense here: they measure how far the probabilities are from the 0/1 labels, not how many classes come out right, so classifiers are usually judged with the confusion-matrix metrics.',
+    intuition: 'If the answer is yes and the model says 80% yes, the loss is small; at 20% it is much bigger; near 0% it shoots toward infinity. Logistic loss rewards confidence only when it is right.',
     formulas: [
       { tex: tex`L(y,h)= -y\log(h)-(1-y)\log(1-h)`, definitions: ['y: binary target encoded as 0 or 1', 'h: predicted probability of y=1', 'log: natural logarithm'] },
       { tex: tex`\operatorname{Cost}(h,y)=\begin{cases}-\log h,&y=1\\-\log(1-h),&y=0\end{cases}`, definitions: ['Cost: the same loss written case by case, as in Lesson 4; the one-line form above combines both cases because y is 0 or 1'] },
@@ -639,7 +639,7 @@ const baseConcepts = [
     group: 'Generalization',
     week: 'Production ML W2',
     problem: 'They show what kinds of mistakes a classifier makes, which a single accuracy number can hide, especially when one class is rare.',
-    intuition: 'A confusion matrix sorts every prediction into four boxes: correct yes (TP), false alarm (FP), correct no (TN), and missed yes (FN). Precision asks: when the model says yes, how often is it right? Recall asks: of all the real yeses, how many did it catch? Specificity asks: of all the real nos, how many did it correctly reject? Raising the decision threshold usually means fewer false alarms but more misses, so the right balance depends on which mistake costs more. Lesson 4 writes the four cases with y and y_hat in {0, 1}: y = 1, y_hat = 1 is a true positive; y = 1, y_hat = 0 a false negative; y = 0, y_hat = 1 a false positive; y = 0, y_hat = 0 a true negative. Recall (sensitivity) says how good the model is at detecting positives; specificity says how good it is at avoiding false alarms. With more than two classes the confusion matrix has one row and one column per class, the diagonal holds the correct predictions, and each class gets its own precision and recall by treating it as positive and all the others as negative.',
+    intuition: 'Accuracy alone can hide what kind of mistakes a model makes. A confusion matrix sorts every prediction into four boxes: correct yes (TP), false alarm (FP), correct no (TN), and missed yes (FN).',
     formulas: [
       { tex: tex`\operatorname{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}`, definitions: [tex`TP: true positives`, tex`TN: true negatives`, tex`FP: false positives`, tex`FN: false negatives`] },
       { tex: tex`\operatorname{Precision}=\frac{TP}{TP+FP},\quad \operatorname{Recall}=\frac{TP}{TP+FN},\quad \operatorname{Specificity}=\frac{TN}{TN+FP}`, definitions: [tex`\operatorname{Precision}: reliability of positive predictions`, tex`\operatorname{Recall}: sensitivity`, tex`\operatorname{Specificity}: true-negative rate`] },

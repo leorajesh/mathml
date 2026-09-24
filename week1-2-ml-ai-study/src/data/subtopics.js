@@ -178,7 +178,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Production ML W1',
     problem: 'They turn real things (an email, a house, a photo) into lists of numbers, so a model can compare and score them.',
-    intuition: 'A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age]. Choosing features is a design decision: yes/no facts become 0 or 1, categories become one-hot lists with a single 1, and features on very different scales are often standardized. To score an example, give each feature a weight that says how much it matters and whether it helps or hurts, then add up weight times value. That sum is the dot product theta dot x: a big positive total means "strong yes", negative means "lean no". Good features make the information about the label easy to reach: the notes\' face example describes images by the outputs of simple detectors (edges, colour patches, textures) rather than raw pixel values. The same recipe must be used for training examples and for every new example, or new examples will "look" different to the classifier; and the training examples must be representative of the ones the model will see later (a tumour classifier trained on one tumour type has little reason to work on another).',
+    intuition: 'A model cannot read an email or look at a house: it needs numbers. A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age].',
     formulas: [
       { tex: tex`x=\varphi(\text{example})\in\mathbb{R}^d`, definitions: [tex`\varphi: feature map, the rule that turns an example into numbers`, tex`d: number of features`] },
       { tex: tex`\theta\cdot x=\sum_{i=1}^{d}\theta_ix_i`, definitions: [tex`\theta_i: weight on feature i, learned from data`, tex`\theta\cdot x: model score before thresholding`] },
@@ -450,7 +450,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It identifies bowl-shaped functions, where walking downhill can never get stuck in a false valley: any low point you reach is the lowest.',
-    intuition: 'A function is convex if the straight line (chord) between any two points on its graph never dips below the graph, like a bowl. Bowls have no false valleys: any local minimum is the global minimum, so an optimizer cannot get stuck in the wrong dip. For smooth functions of one variable, convex means the second derivative is never negative, so the slope only increases. Sums and maximums of convex functions are convex, which is why losses built from them are too. Non-convex functions are harder: an optimizer can get stuck in a local minimum, or slow down at a saddle point, a flat "pass" where the function curves up in one direction and down in another. One precision: convexity guarantees that every local minimum has the same, globally lowest value, but that value can be reached at several parameter settings (a flat-bottomed bowl), as the Week 1 notes point out.',
+    intuition: 'A convex function is shaped like a bowl. Walk downhill from anywhere and you reach the bottom: there are no false valleys to get stuck in.',
     formulas: [
       { tex: tex`f(\lambda a+(1-\lambda)b)\le \lambda f(a)+(1-\lambda)f(b)\quad \forall a,b,\ \lambda\in[0,1]`, definitions: [tex`\lambda: position along the chord, between 0 and 1`] },
       { tex: tex`f''(x)\ge0\ \ \forall x\quad\text{or}\quad \nabla^2 f(x)\succeq0\ \ \forall x`, definitions: [tex`f'': second derivative (test for twice-differentiable f on a convex domain)`, tex`\nabla^2 f: Hessian, the matrix of second derivatives`, tex`\succeq0: positive semidefinite`] },
@@ -469,7 +469,7 @@ export const subtopicConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It explains why we train with a convex, easier-to-optimize stand-in loss, such as hinge or logistic loss, instead of directly counting mistakes.',
-    intuition: 'Counting mistakes gives a staircase-shaped loss: flat almost everywhere, so there is no slope to follow downhill. A surrogate loss is a convex stand-in that sits on or above the mistake count and still pushes decisions the right way. Hinge loss charges for being wrong or barely right; logistic loss charges smoothly and never quite reaches zero. Lowering the surrogate tends to lower the real error. Why not minimize the mistake count directly? The zero-one loss is non-convex, and when the data are not linearly separable, finding the classifier with the fewest training mistakes is computationally hard (NP-hard), as the Lesson 2 slides point out. Convex problems can be solved efficiently, so we minimize a convex upper bound instead.',
+    intuition: 'Counting mistakes is what we care about, but it is a staircase: flat almost everywhere, with no slope to follow. So we train on a smooth, convex stand-in that pushes in the same direction.',
     formulas: [
       { tex: tex`L_{0/1}(z)=\mathbb{1}\{z\le0\}\le L_{\text{hinge}}(z)=\max(0,1-z)`, definitions: [tex`z: signed margin y(theta dot x)`, tex`L_{\text{hinge}}: convex surrogate`] },
       { tex: tex`L_{\text{logistic}}(z)=\log_2(1+e^{-z})\ \ge L_{0/1}(z)`, definitions: [tex`L_{\text{logistic}}: logistic loss in base 2, which equals 1 at z = 0`] },
@@ -489,7 +489,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1-W2',
     problem: 'It finds good parameters by repeatedly taking small steps downhill on the loss, useful when there is no direct formula for the answer.',
-    intuition: 'Imagine standing on a foggy hillside and wanting to reach the valley. You feel which way the ground slopes (the gradient points uphill) and take a step the opposite way, then repeat. The learning rate is your step size: too small is slow, too large overshoots or even climbs out of the valley. On a smooth convex loss, small enough steps keep going downhill toward the bottom. Gradient descent is a first-order method: it only uses slopes, so in general it finds a local minimum, which is the global one when the function is convex. Stochastic gradient descent estimates the gradient from one random example: each step is much cheaper and it often gets close faster, but its path is erratic.',
+    intuition: 'You are on a foggy hillside and want to reach the valley. Feel which way the ground slopes, step the opposite way, and repeat. That is gradient descent.',
     formulas: [
       { tex: tex`\theta^{(k+1)}=\theta^{(k)}-\alpha\nabla J(\theta^{(k)})`, definitions: [tex`\alpha: learning rate (step size)`, tex`\nabla J: gradient, the direction of steepest increase`, tex`k: step number`] },
       { tex: tex`J(\theta)=(\theta-3)^2:\quad \theta^{(k+1)}-3=(1-2\alpha)(\theta^{(k)}-3)`, definitions: [tex`1-2\alpha: shrink factor; converges when |1 - 2 alpha| < 1, that is 0 < alpha < 1`] },
@@ -507,7 +507,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It lets us run gradient descent on losses with sharp corners, such as hinge loss and absolute value, where the ordinary slope does not exist.',
-    intuition: 'At a corner, like the bottom of |x|, there is no single slope. A subgradient is any slope g whose straight line through that point stays on or below the whole function. For a convex function such lines always exist. Away from corners the only choice is the ordinary slope; at a corner there is a whole range of valid slopes, and any one of them can be used for the descent step.',
+    intuition: 'At a sharp corner, like the bottom of |x|, there is no single slope. A subgradient is any slope whose line through that point stays on or below the whole function.',
     formulas: [
       { tex: tex`g\in\partial f(x_0)\iff f(x)\ge f(x_0)+g\,(x-x_0)\ \ \forall x`, definitions: [tex`g: a subgradient at x_0`, tex`\partial f(x_0): subdifferential, the set of all subgradients`] },
       { tex: tex`\partial|x|=\begin{cases}\{-1\},&x<0\\ [-1,1],&x=0\\ \{1\},&x>0\end{cases}`, definitions: [tex`[-1,1]: every slope between -1 and 1 works at the corner`] },
@@ -528,7 +528,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Production ML W2',
     problem: 'It keeps models simple by pushing unhelpful feature weights to exactly zero, which also tells you which features matter.',
-    intuition: 'Lasso adds a penalty equal to the total absolute size of the weights. Unlike ridge, whose pull toward zero weakens as a weight gets small, lasso\'s pull stays the same size, so small weights are pulled all the way to zero. Geometrically, the L1 penalty\'s diamond shape has corners on the axes, and the best fit often lands on a corner, where some weights are exactly zero.',
+    intuition: 'Lasso penalizes the total absolute size of the weights. Its pull toward zero never weakens, so unhelpful weights are pulled all the way to exactly zero, and the model tells you which features it does not need.',
     formulas: [
       { tex: tex`J(\theta)=\frac{1}{2n}\sum_{t=1}^{n}(y^{(t)}-\theta\cdot x^{(t)})^2+\lambda\lVert\theta\rVert_1,\qquad \lVert\theta\rVert_1=\sum_i|\theta_i|`, definitions: [tex`\lambda: regularization strength`, tex`\lVert\theta\rVert_1: L1 norm`, tex`\tfrac{1}{2n}: the half makes the formulas below exact (the same convention as scikit-learn); it only rescales lambda`] },
       { tex: tex`\hat\theta=\operatorname{sign}(w)\max(|w|-\lambda,0)`, definitions: [tex`w: least-squares weight for one standardized feature, meaning (1/n) sum of x^2 = 1, so w = (1/n) sum of x y`, tex`\text{soft-thresholding}: shrink by lambda, stop at 0`] },
@@ -547,7 +547,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Production ML W2',
     problem: 'It combines lasso\'s ability to drop features with ridge\'s stability, which matters when several features carry the same information.',
-    intuition: 'Elastic net charges both penalties at once: an L1 part that can set weights exactly to zero and an L2 part that shrinks everything smoothly. When two features are strongly correlated, lasso tends to pick one of them almost at random; the L2 part makes elastic net share the weight between them more evenly (the grouping effect). With one feature, the rule is simple: soft-threshold like lasso, then shrink like ridge.',
+    intuition: 'Elastic net charges both penalties at once: lasso\'s L1 part, which can drop features, and ridge\'s L2 part, which shrinks everything smoothly.',
     formulas: [
       { tex: tex`J(\theta)=\frac{1}{2n}\sum_{t}(y^{(t)}-\theta\cdot x^{(t)})^2+\lambda_1\lVert\theta\rVert_1+\frac{\lambda_2}{2}\lVert\theta\rVert_2^2`, definitions: [tex`\lambda_1: L1 strength (sparsity)`, tex`\lambda_2: L2 strength (stability)`] },
       { tex: tex`\hat\theta=\frac{\operatorname{sign}(w)\max(|w|-\lambda_1,0)}{1+\lambda_2}`, definitions: [tex`w: least-squares weight for one standardized feature ((1/n) sum of x^2 = 1); the halves in J make this formula exact`] },
@@ -567,7 +567,7 @@ export const subtopicConcepts = [
     group: 'Generalization',
     week: 'Production ML W2',
     problem: 'It keeps learning, choosing settings, and final grading separate, so the reported score is an honest estimate for new data.',
-    intuition: 'Split the data three ways, like a course: homework to learn from (training), practice tests to choose settings such as polynomial degree or lambda (validation), and one final exam taken only once (test). If you keep peeking at the final exam while tuning, you slowly tune to it, and its score stops predicting how you will do on truly new data. All three sets should come from the same kind of data the model will see in use.',
+    intuition: 'Split the data like a course: homework to learn from (training), practice tests to choose settings (validation), and one final exam taken only once (test).',
     formulas: [
       { tex: tex`\hat\theta_\lambda=\arg\min_\theta J_{\text{train}}(\theta;\lambda),\qquad \lambda^*=\arg\min_\lambda E_{\text{val}}(\hat\theta_\lambda)`, definitions: [tex`\lambda: a hyperparameter, a setting not learned from training data`, tex`E_{\text{val}}: error on the validation set`] },
       { tex: tex`\text{report } E_{\text{test}}(\hat\theta_{\lambda^*})\text{ once}`, definitions: [tex`E_{\text{test}}: error on the untouched test set`] },
@@ -585,7 +585,7 @@ export const subtopicConcepts = [
     group: 'Generalization',
     week: 'Production ML W2',
     problem: 'It gives a more reliable validation score from limited data by letting every example take a turn in the validation set.',
-    intuition: 'Cut the non-test data into k equal chunks (folds). Train k times, each time holding out a different fold for validation and training on the rest, then average the k validation scores. Every example is used for validation exactly once, so the estimate wastes less data and depends less on one lucky or unlucky split. Pick the setting with the best average, refit on all the non-test data, and test once.',
+    intuition: 'Do not trust one lucky or unlucky split. Cut the non-test data into k folds and let each fold take a turn as the validation set.',
     formulas: [
       { tex: tex`\operatorname{CV}_k(\lambda)=\frac{1}{k}\sum_{j=1}^{k}E_{\text{val}}^{(j)}(\lambda)`, definitions: [tex`k: number of folds`, tex`E_{\text{val}}^{(j)}: validation error when fold j is held out`] },
       { tex: tex`\lambda^*=\arg\min_\lambda\operatorname{CV}_k(\lambda)`, definitions: [tex`\lambda^*: chosen hyperparameter`] },

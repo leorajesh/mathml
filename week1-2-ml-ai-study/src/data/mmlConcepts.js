@@ -149,7 +149,7 @@ export const mmlConcepts = [
     group: 'Optimization',
     week: 'MML book §7.1',
     problem: 'It speeds up gradient descent in long, narrow valleys, where plain steps zig-zag across the valley instead of moving along it.',
-    intuition: 'When a loss is shaped like a stretched bowl, the gradient points mostly across the narrow direction. Plain gradient descent must use a small step so it does not bounce off the steep walls, and so it crawls along the gentle direction while zig-zagging. Momentum gives the optimizer a memory, like a heavy ball rolling downhill: each step adds a fraction alpha of the previous step. Across the valley, consecutive steps point in opposite directions and cancel; along the valley they point the same way and add up, so the ball speeds up where progress is consistent. Too much momentum, with alpha close to 1, overshoots and swings back and forth for a long time.',
+    intuition: 'In a long, narrow valley, plain gradient descent zig-zags across it and crawls along it. Momentum turns the optimizer into a heavy rolling ball that speeds up in the direction that keeps paying off.',
     formulas: [
       { tex: tex`x_{i+1}=x_i-\gamma\,\nabla f(x_i)+\alpha\,\Delta x_i,\qquad \Delta x_i=x_i-x_{i-1}`, definitions: [tex`\gamma: step size (learning rate)`, tex`\alpha: momentum coefficient, between 0 and 1; alpha = 0 is plain gradient descent`, tex`\Delta x_i: the previous step`] },
       { tex: tex`f(x)=\tfrac12\left(x_1^2+\kappa\,x_2^2\right):\quad \text{plain descent needs}\ \gamma<\tfrac{2}{\kappa}`, definitions: [tex`\kappa: how much steeper one direction is than the other (the condition number); a large kappa is a long, narrow valley`] },
@@ -168,7 +168,7 @@ export const mmlConcepts = [
     group: 'Optimization',
     week: 'MML book §7.2',
     problem: 'It finds the best point when the parameters must satisfy constraints, such as staying on a line or inside a ball of limited size.',
-    intuition: 'Draw the level curves of the function you want to minimize, and the constraint you must stay on. Walking along the constraint, f keeps decreasing until the constraint just touches a level curve without crossing it. At that touching point the curves are tangent, so their gradients are parallel: grad f = -lambda grad h. The size of the number lambda, the Lagrange multiplier, tells how fast the best value would change if the constraint were loosened. The Lagrangian L = f + lambda h packages everything: setting all its partial derivatives to zero gives the tangency condition and the constraint together. For an inequality g(x) <= 0 the multiplier must be nonnegative, and it is zero when the constraint is not active at the answer. Ridge and lasso can be read this way: minimizing the loss inside a ball ||theta|| <= t gives the same answer as adding a penalty lambda ||theta|| (squared for ridge) for some lambda >= 0 that depends on t.',
+    intuition: 'With a constraint, you must stay on a path. Walk along it while the function keeps dropping, until the path just touches a level curve without crossing it: that touching point is the constrained minimum.',
     formulas: [
       { tex: tex`\min_x f(x)\ \text{s.t.}\ h(x)=0:\qquad \nabla f(x^*)+\lambda\,\nabla h(x^*)=0,\quad h(x^*)=0`, definitions: [tex`f: objective to minimize`, tex`h: equality constraint function`, tex`\lambda: Lagrange multiplier`, tex`x^*: the constrained minimizer`] },
       { tex: tex`L(x,\lambda)=f(x)+\lambda\,h(x),\qquad \nabla_xL=0,\quad \frac{\partial L}{\partial\lambda}=h(x)=0`, definitions: [tex`L: the Lagrangian`] },

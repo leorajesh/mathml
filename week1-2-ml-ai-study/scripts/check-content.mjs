@@ -11,6 +11,7 @@ import { figures } from '../src/data/figures.js';
 import { mmlReferences } from '../src/data/mmlReferences.js';
 import { courseBooks, courseReferences, caseStudies } from '../src/data/courseReferences.js';
 import { mathLinks } from '../src/data/mathLinks.js';
+import { intuitionDetails } from '../src/data/intuitionDetails.js';
 import { trackOrder } from '../src/data/learningTracks.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -102,6 +103,17 @@ for (const [key, links] of Object.entries(mathLinks)) {
     if (!link.why || link.why.includes('\\')) problems.push(`${key}: math link to "${link.id}" needs a plain-text reason`);
   }
 }
+// ML Track intuitions: a short hook plus 2-5 labelled key ideas, so the section stays scannable.
+const words = (text) => text.trim().split(/\s+/).length;
+for (const id of mlPages) {
+  const details = intuitionDetails[id];
+  if (!details) { problems.push(`${id}: ML page without key ideas in intuitionDetails.js`); continue; }
+  if (words(conceptMap[id].intuition) > 55) problems.push(`${id}: intuition hook has ${words(conceptMap[id].intuition)} words (max 55)`);
+  if (details.keyIdeas.length < 2 || details.keyIdeas.length > 5) problems.push(`${id}: needs 2 to 5 key ideas`);
+  for (const item of details.keyIdeas) if (!item.label || words(item.text) > 40) problems.push(`${id}: key idea "${item.label}" needs a label and at most 40 words`);
+  for (const note of details.courseNotes ?? []) if (words(note) > 50) problems.push(`${id}: course note over 50 words`);
+}
+for (const id of Object.keys(intuitionDetails)) if (!mlPages.has(id)) problems.push(`intuition details for "${id}", which is not an ML Track page`);
 for (const [id, figure] of Object.entries(figures)) {
   if (!drawnFigures.has(id)) problems.push(`figure "${id}" has no drawing in Figures.jsx`);
   if (!figure.title || !figure.caption || !figure.alt) problems.push(`figure "${id}" needs a title, caption, and alt text`);

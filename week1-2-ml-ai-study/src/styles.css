@@ -332,6 +332,12 @@ fieldset:disabled .quiz-option { cursor: default; }
 .residual.thin { stroke-width: 1.5; stroke-dasharray: 3 3; }
 
 /* "Picture it" figures */
+.intuition-hook { font-size: 1.12rem; line-height: 1.6; color: var(--ink) !important; }
+.key-ideas { margin: 12px 0 0; padding-left: 20px; display: grid; gap: 8px; line-height: 1.55; }
+.key-ideas strong { color: var(--ink); }
+.course-notes { margin-top: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; }
+.course-notes summary { cursor: pointer; font-weight: 700; color: var(--muted); }
+.course-notes ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; line-height: 1.5; }
 .picture-it { margin-top: 18px; }
 .picture-it h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .concept-figure { margin: 0 0 16px; padding: 14px; background: rgba(255, 253, 248, 0.86); border: 1px solid var(--line); border-radius: 8px; }

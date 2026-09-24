@@ -9,6 +9,7 @@ import { concepts, conceptMap, entryFor, notCovered, topicMap, topicOf } from '.
 import { learningObjectives, selfChecksByConcept } from './data/learningObjectives.js';
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
+import { intuitionDetails } from './data/intuitionDetails.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
 import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
 import { mathLinks, mlUsesOf } from './data/mathLinks.js';
@@ -188,7 +189,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
       </OrderedSection>
 
       <OrderedSection number="2" title="Plain-Language Intuition">
-        <p>{concept.intuition}</p>
+        <IntuitionBody concept={concept} />
         {concept.figure && (
           <div className="picture-it">
             <h3>Picture it</h3>
@@ -330,6 +331,30 @@ function FormulaDefinition({ definition }) {
 }
 
 // ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
+// A short hook, then labelled key ideas, then (collapsed) the details tied to the course notes and slides.
+function IntuitionBody({ concept }) {
+  const details = intuitionDetails[concept.id];
+  if (!details) return <p>{concept.intuition}</p>;
+  return (
+    <>
+      <p className="intuition-hook">{concept.intuition}</p>
+      <ul className="key-ideas">
+        {details.keyIdeas.map((item) => (
+          <li key={item.label}><strong>{/[?!.]$/.test(item.label) ? item.label : `${item.label}.`}</strong> {item.text}</li>
+        ))}
+      </ul>
+      {details.courseNotes && (
+        <details className="course-notes">
+          <summary>From the course notes and slides ({details.courseNotes.length})</summary>
+          <ul>
+            {details.courseNotes.map((note) => <li key={note}>{note}</li>)}
+          </ul>
+        </details>
+      )}
+    </>
+  );
+}
+
 function MathBridge({ conceptId, onSelect }) {
   const uses = mathLinks[conceptId] ?? [];
   const usedBy = mlUsesOf(conceptId);

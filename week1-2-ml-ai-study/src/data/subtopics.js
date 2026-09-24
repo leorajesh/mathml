@@ -450,7 +450,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It identifies bowl-shaped functions, where walking downhill can never get stuck in a false valley: any low point you reach is the lowest.',
-    intuition: 'A function is convex if the straight line (chord) between any two points on its graph never dips below the graph, like a bowl. Bowls have no false valleys: any local minimum is the global minimum, so an optimizer cannot get stuck in the wrong dip. For smooth functions of one variable, convex means the second derivative is never negative, so the slope only increases. Sums and maximums of convex functions are convex, which is why losses built from them are too.',
+    intuition: 'A function is convex if the straight line (chord) between any two points on its graph never dips below the graph, like a bowl. Bowls have no false valleys: any local minimum is the global minimum, so an optimizer cannot get stuck in the wrong dip. For smooth functions of one variable, convex means the second derivative is never negative, so the slope only increases. Sums and maximums of convex functions are convex, which is why losses built from them are too. Non-convex functions are harder: an optimizer can get stuck in a local minimum, or slow down at a saddle point, a flat "pass" where the function curves up in one direction and down in another. One precision: convexity guarantees that every local minimum has the same, globally lowest value, but that value can be reached at several parameter settings (a flat-bottomed bowl), as the Week 1 notes point out.',
     formulas: [
       { tex: tex`f(\lambda a+(1-\lambda)b)\le \lambda f(a)+(1-\lambda)f(b)\quad \forall a,b,\ \lambda\in[0,1]`, definitions: [tex`\lambda: position along the chord, between 0 and 1`] },
       { tex: tex`f''(x)\ge0\ \ \forall x\quad\text{or}\quad \nabla^2 f(x)\succeq0\ \ \forall x`, definitions: [tex`f'': second derivative (test for twice-differentiable f on a convex domain)`, tex`\nabla^2 f: Hessian, the matrix of second derivatives`, tex`\succeq0: positive semidefinite`] },
@@ -461,7 +461,7 @@ export const subtopicConcepts = [
     misconception: 'Convex does not mean smooth: |x| and hinge loss have corners but are still convex, and a function can be smooth but not convex.',
     prerequisites: ['empirical-risk-zero-one', 'derivatives'],
     followOns: ['surrogate-losses', 'gradient-descent-method', 'subgradients'],
-    sources: ['Week1_03-HingeLoss.pdf'],
+    sources: ['Week1_03-HingeLoss.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf'],
   },
   {
     id: 'surrogate-losses',
@@ -469,7 +469,7 @@ export const subtopicConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It explains why we train with a convex, easier-to-optimize stand-in loss, such as hinge or logistic loss, instead of directly counting mistakes.',
-    intuition: 'Counting mistakes gives a staircase-shaped loss: flat almost everywhere, so there is no slope to follow downhill. A surrogate loss is a convex stand-in that sits on or above the mistake count and still pushes decisions the right way. Hinge loss charges for being wrong or barely right; logistic loss charges smoothly and never quite reaches zero. Lowering the surrogate tends to lower the real error.',
+    intuition: 'Counting mistakes gives a staircase-shaped loss: flat almost everywhere, so there is no slope to follow downhill. A surrogate loss is a convex stand-in that sits on or above the mistake count and still pushes decisions the right way. Hinge loss charges for being wrong or barely right; logistic loss charges smoothly and never quite reaches zero. Lowering the surrogate tends to lower the real error. Why not minimize the mistake count directly? The zero-one loss is non-convex, and when the data are not linearly separable, finding the classifier with the fewest training mistakes is computationally hard (NP-hard), as the Lesson 2 slides point out. Convex problems can be solved efficiently, so we minimize a convex upper bound instead.',
     formulas: [
       { tex: tex`L_{0/1}(z)=\mathbb{1}\{z\le0\}\le L_{\text{hinge}}(z)=\max(0,1-z)`, definitions: [tex`z: signed margin y(theta dot x)`, tex`L_{\text{hinge}}: convex surrogate`] },
       { tex: tex`L_{\text{logistic}}(z)=\log_2(1+e^{-z})\ \ge L_{0/1}(z)`, definitions: [tex`L_{\text{logistic}}: logistic loss in base 2, which equals 1 at z = 0`] },
@@ -479,7 +479,7 @@ export const subtopicConcepts = [
     misconception: 'A surrogate loss is not the metric itself; it is a training objective chosen because it is easier to optimize. Report accuracy or error with the real metric.',
     prerequisites: ['hinge-loss', 'convex-functions'],
     followOns: ['gradient-descent-method', 'logistic-loss'],
-    sources: ['Week1_03-HingeLoss.pdf', 'Week2_notes02-Logistic Regression.pdf', 'Bishop §7.1.2'],
+    sources: ['Week1_03-HingeLoss.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf', 'Week2_notes02-Logistic Regression.pdf', 'Bishop §7.1.2'],
   },
 
   // ---------- Gradient and subgradient descent ----------
@@ -489,7 +489,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1-W2',
     problem: 'It finds good parameters by repeatedly taking small steps downhill on the loss, useful when there is no direct formula for the answer.',
-    intuition: 'Imagine standing on a foggy hillside and wanting to reach the valley. You feel which way the ground slopes (the gradient points uphill) and take a step the opposite way, then repeat. The learning rate is your step size: too small is slow, too large overshoots or even climbs out of the valley. On a smooth convex loss, small enough steps keep going downhill toward the bottom.',
+    intuition: 'Imagine standing on a foggy hillside and wanting to reach the valley. You feel which way the ground slopes (the gradient points uphill) and take a step the opposite way, then repeat. The learning rate is your step size: too small is slow, too large overshoots or even climbs out of the valley. On a smooth convex loss, small enough steps keep going downhill toward the bottom. Gradient descent is a first-order method: it only uses slopes, so in general it finds a local minimum, which is the global one when the function is convex. Stochastic gradient descent estimates the gradient from one random example: each step is much cheaper and it often gets close faster, but its path is erratic.',
     formulas: [
       { tex: tex`\theta^{(k+1)}=\theta^{(k)}-\alpha\nabla J(\theta^{(k)})`, definitions: [tex`\alpha: learning rate (step size)`, tex`\nabla J: gradient, the direction of steepest increase`, tex`k: step number`] },
       { tex: tex`J(\theta)=(\theta-3)^2:\quad \theta^{(k+1)}-3=(1-2\alpha)(\theta^{(k)}-3)`, definitions: [tex`1-2\alpha: shrink factor; converges when |1 - 2 alpha| < 1, that is 0 < alpha < 1`] },
@@ -499,7 +499,7 @@ export const subtopicConcepts = [
     misconception: 'A larger learning rate is not always faster; too large a step can overshoot or diverge.',
     prerequisites: ['convex-functions', 'partial-derivatives-gradient'],
     followOns: ['momentum', 'subgradients', 'stochastic-subgradient-descent', 'linear-regression', 'logistic-loss'],
-    sources: ['Week1_03-HingeLoss.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
+    sources: ['Week1_03-HingeLoss.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
     id: 'subgradients',

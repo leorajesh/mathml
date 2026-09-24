@@ -164,11 +164,13 @@ export const quizzes = {
     {"question": "Why is zero-one loss hard to minimize directly?", "answer": "It is flat almost everywhere, so it gives no direction to improve", "wrong": ["It is always zero", "It can be negative", "It needs the test set"], "why": "Small parameter changes usually do not change the count, so there is no slope to follow."},
   ],
   "hinge-loss": [
+    {"question": "The Lesson 2 slides: the true label is -1 and the prediction score is 0.4. What is the hinge loss?", "answer": "1.4", "wrong": ["1", "0.6", "0"], "why": "The agreement is y times score = -0.4, so the loss is max(0, 1 - (-0.4)) = 1.4, more than the zero-one loss of 1."},
     {"question": "What is the hinge loss for a signed margin z = 0.2?", "answer": "0.8", "wrong": ["0", "0.2", "1.2"], "why": "max(0, 1 - 0.2) = 0.8."},
     {"question": "For which margins is the hinge loss exactly 0?", "answer": "z >= 1", "wrong": ["z > 0", "z = 0 only", "Never"], "why": "The loss becomes zero once the margin clears 1."},
     {"question": "Why can a correctly classified example still have positive hinge loss?", "answer": "Its margin is between 0 and 1: correct but not confident", "wrong": ["Hinge loss ignores the label", "Correct examples always have loss 1", "Because the bias is negative"], "why": "Hinge loss asks for margin at least 1, not just the right sign."},
   ],
   "convex-functions": [
+    {"question": "What is a saddle point?", "answer": "A point with zero gradient where the function curves up in one direction and down in another", "wrong": ["The global minimum of a convex function", "A point where the function is not differentiable", "Any point where the loss is zero"], "why": "It is neither a minimum nor a maximum; non-convex losses can have them, and gradient methods slow down near them."},
     {"question": "Which function is convex?", "answer": "f(x) = x^2", "wrong": ["f(x) = x^3", "f(x) = sin(x)", "f(x) = -x^2"], "why": "x^2 has f''(x) = 2 >= 0 everywhere; the others curve downward somewhere."},
     {"question": "Why are convex losses convenient to minimize?", "answer": "Every local minimum is a global minimum", "wrong": ["They are always zero at the optimum", "They are always smooth", "They have exactly one input"], "why": "Convex functions have no false valleys, so descent cannot get stuck in the wrong dip."},
     {"question": "Is |x| convex?", "answer": "Yes, even though it has a corner at 0", "wrong": ["No, because it is not smooth", "No, because it has a minimum", "Only for x > 0"], "why": "The chord test holds everywhere; convex does not require smoothness."},

@@ -124,6 +124,7 @@ export const workedExampleMath = {
   'hinge-loss': [
     tex`\max(0,1-1.5)=0,\quad \max(0,1-0.2)=0.8,\quad \max(0,1-(-1))=2`,
     tex`R_n=\frac{0+0.8+2}{3}=0.933\ldots`,
+    tex`(-1,\,0.4)\mapsto1.4,\qquad (+1,\,-0.9)\mapsto1.9,\qquad (+1,\,0.7)\mapsto0.3`,
   ],
   'stochastic-subgradient-descent': [
     tex`y=+1,\quad x=\begin{bmatrix}2\\1\end{bmatrix},\quad \theta=\begin{bmatrix}0\\0\end{bmatrix},\quad \eta=0.2`,

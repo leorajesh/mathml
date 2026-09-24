@@ -45,6 +45,16 @@ export const courseBooks = {
     citation: 'C. Fregly, A. Barth, Data Science on AWS: Implementing End-to-End, Continuous AI and Machine Learning Pipelines. O\'Reilly, 2021.',
     area: 'mlops',
   },
+  uml: {
+    short: 'Shalev-Shwartz & Ben-David',
+    citation: 'S. Shalev-Shwartz, S. Ben-David, Understanding Machine Learning: From Theory to Algorithms. Cambridge University Press, 2014 (cited in the Lesson 2 slides).',
+    area: 'ml',
+  },
+  barber: {
+    short: 'Barber',
+    citation: 'D. Barber, Bayesian Reasoning and Machine Learning. Cambridge University Press, 2012 (a perceptron figure in the Lesson 2 slides comes from it).',
+    area: 'ml',
+  },
   sculley: {
     short: 'Sculley et al.',
     citation: 'D. Sculley et al., Machine Learning: The High-Interest Credit Card of Technical Debt. SE4ML Workshop, NIPS 2014 (now NeurIPS). See also Sculley et al., Hidden Technical Debt in Machine Learning Systems, NIPS 2015.',
@@ -92,6 +102,8 @@ export const courseReferences = {
     ref('bishop', '4.1.7', 'The perceptron algorithm', 192),
     ref('dhs', '5.5', 'Minimizing the Perceptron Criterion Function'),
     ref('mitchell', '4.4.2', 'The Perceptron Training Rule'),
+    ref('uml', '9.1.2', 'Perceptron for Halfspaces'),
+    ref('barber', '', 'The perceptron (figure used in the Lesson 2 slides)'),
   ],
   'perceptron-convergence': [
     ref('bishop', '4.1.7', 'The perceptron algorithm (convergence theorem, Figure 4.7)', 194),
@@ -102,10 +114,12 @@ export const courseReferences = {
     ref('bishop', '1.5.1', 'Minimizing the misclassification rate', 39),
     ref('isl', '2.2.3', 'The Classification Setting (training and test error rates)'),
     ref('mitchell', '5.2', 'Estimating Hypothesis Accuracy (sample error and true error)'),
+    ref('uml', '8.2', 'Implementing the ERM Rule (cited in the Lesson 2 slides)'),
   ],
   'hinge-loss': [
     ref('bishop', '7.1.2', 'Relation to logistic regression (the hinge error, Figure 7.5)', 337),
     ref('isl', '9.5', 'Relationship to Logistic Regression (hinge loss)'),
+    ref('uml', '12.3', 'Surrogate Loss Functions (cited in the Lesson 2 slides)'),
   ],
   'max-margin-svm': [
     ref('bishop', '7.1', 'Maximum Margin Classifiers (Figure 7.1)', 326),
@@ -120,6 +134,7 @@ export const courseReferences = {
   'surrogate-losses': [
     ref('bishop', '7.1.2', 'Relation to logistic regression (hinge, logistic, and misclassification errors compared, Figure 7.5)', 337),
     ref('isl', '9.5', 'Relationship to Logistic Regression'),
+    ref('uml', '12.3', 'Surrogate Loss Functions (cited in the Lesson 2 slides)'),
   ],
   'gradient-descent-method': [
     ref('bishop', '5.2.4', 'Gradient descent optimization', 240),

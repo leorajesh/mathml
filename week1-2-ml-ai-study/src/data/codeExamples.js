@@ -537,6 +537,11 @@ plt.axhline(0.5, linestyle="--", color="gray")
 plt.scatter([score], [prob], color="red", zorder=3)
 plt.xlabel("score s"); plt.ylabel("probability"); plt.title("Sigmoid")
 
+# Lesson 4 examples: theta = (-3, 1, 1) at (1, 1), and the score -1 + x1^2 + x2^2 at (2, 2)
+for name, z in [("(1, 1), straight boundary", -3 + 1 + 1), ("(2, 2), circular boundary", -1 + 2**2 + 2**2)]:
+    p = sigmoid(z)
+    print(f"{name}: score {z}, P(y = 1) = {p:.4f}, P(y = 0) = {1 - p:.4f}, predict {int(z >= 0)}")
+
 # Try: which score gives probability exactly 0.5?`,
 
   'logistic-loss': py`import numpy as np
@@ -582,6 +587,12 @@ print(f"precision   = {precision:.3f}")
 print(f"recall      = {recall:.3f}")
 print(f"specificity = {specificity:.3f}")
 print(f"F1          = {f1:.3f}")
+
+# The cat table from Lesson 4
+TP, FP, TN, FN = 11, 2, 9, 3
+accuracy = (TP + TN) / (TP + TN + FP + FN)
+print(f"cat table: accuracy {accuracy:.3f}, error rate {1 - accuracy:.3f}, precision {TP / (TP + FP):.3f}, "
+      f"recall {TP / (TP + FN):.3f}, specificity {TN / (TN + FP):.3f}")
 
 # Try: a model that always predicts negative has TP = FP = 0. Compute its accuracy and recall.`,
 

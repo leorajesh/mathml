@@ -166,6 +166,8 @@ export const workedExampleMath = {
     tex`s=\theta\cdot x+\theta_0=2`,
     tex`\sigma(2)=\frac{e^2}{1+e^2}\approx\frac{7.389}{8.389}\approx0.881`,
     tex`0.881\ge0.5\Rightarrow \hat y=1`,
+    tex`z=-3+1+1=-1<0\Rightarrow\hat y=0,\qquad \sigma(-1)\approx0.269,\quad 1-0.269=0.731`,
+    tex`z=-1+2^2+2^2=7\ge0\Rightarrow\hat y=1,\qquad \sigma(7)\approx0.9991`,
   ],
   'logistic-loss': [
     tex`y=1,\quad h=0.8,\quad L=-\log(0.8)\approx0.223`,
@@ -178,6 +180,8 @@ export const workedExampleMath = {
     tex`\operatorname{Accuracy}=\frac{8+90}{110}=0.891`,
     tex`\operatorname{Precision}=\frac{8}{8+2}=0.8`,
     tex`\operatorname{Recall}=\frac{8}{8+10}=0.444`,
+    tex`TP=11,\quad FN=3,\quad FP=2,\quad TN=9`,
+    tex`\operatorname{Acc}=\tfrac{20}{25}=0.8,\ \text{err}=0.2,\ \operatorname{Prec}=\tfrac{11}{13}\approx0.846,\ \operatorname{Rec}=\tfrac{11}{14}\approx0.786,\ \operatorname{Spec}=\tfrac{9}{11}\approx0.818`,
   ],
   'eigenvalues-eigenvectors': [
     tex`A=\begin{bmatrix}2&0\\0&3\end{bmatrix},\quad v=\begin{bmatrix}1\\0\end{bmatrix}`,

@@ -1,4 +1,7 @@
 export const advancedConceptIds = new Set([
+  'jacobian-chain-rule',
+  'backpropagation',
+  'taylor-hessian',
   'orthogonal-complement',
   'gram-schmidt',
   'trace',
@@ -39,11 +42,30 @@ export const recommendedPaths = {
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
   'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net'],
   'overview-generalization': ['model-complexity-generalization', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics'],
+  'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
   'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
 };
 
 export const guidedSelfChecks = {
+  derivatives: [
+    { question: 'Why does the chain rule multiply the two derivatives instead of adding them?', answer: 'Rates of change compound. If f grows 2 times as fast as x and g grows 3 times as fast as f, then g grows 3 * 2 = 6 times as fast as x.' },
+  ],
+  'partial-derivatives-gradient': [
+    { question: 'Why does gradient descent step against the gradient rather than along a coordinate axis?', answer: 'Among all directions of the same length, the negative gradient decreases f the fastest (to first order): the slope along u is grad f dot u, which is most negative when u points opposite the gradient.' },
+  ],
+  'jacobian-chain-rule': [
+    { question: 'In the chain rule for g(f(x)), why is it (Jacobian of g) times (Jacobian of f) and not the other way round?', answer: 'The shapes force it: dg/df is k by m and df/dx is m by n, so only (dg/df)(df/dx) is defined and gives the k by n Jacobian of the composition. It mirrors the order of composition: f acts first, on the right.' },
+  ],
+  'loss-gradients': [
+    { question: 'How can you check a hand-derived gradient?', answer: 'Compare it with finite differences: nudge one coordinate by a small eps in each direction and compute (L(theta + eps e_i) - L(theta - eps e_i)) / (2 eps). The two should agree to several digits.' },
+  ],
+  backpropagation: [
+    { question: 'Why is backpropagation much faster than finite differences for a model with a million weights?', answer: 'Finite differences need about one extra loss evaluation per weight, so a million forward passes. Backpropagation gets every derivative from one forward and one backward pass, and it is exact rather than approximate.' },
+  ],
+  'taylor-hessian': [
+    { question: 'Why does gradient descent zig-zag on some bowls, and what does the Hessian have to do with it?', answer: 'When the Hessian\'s eigenvalues differ a lot, the bowl is steep in one direction and flat in another. A step size small enough for the steep direction is tiny for the flat one, so the iterates bounce across the steep walls while creeping along the valley.' },
+  ],
   norms: [
     { question: 'Why does lasso use the L1 norm rather than the L2 norm to get sparse weights?', answer: 'The L1 unit ball is a diamond with corners on the axes, and the loss contours usually first touch it at a corner, where some weights are exactly 0. The round L2 ball has no corners, so weights shrink but rarely hit 0.' },
   ],

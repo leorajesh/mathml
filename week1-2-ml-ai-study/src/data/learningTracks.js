@@ -8,7 +8,7 @@ export const tracks = {
     id: 'math',
     title: 'Math Track',
     short: 'Math',
-    description: 'Linear algebra and analytic geometry from sets and vectors to projections, eigenvectors, matrix decompositions, and PCA, in an order where each page only needs the ones before it. Section by section it follows Chapters 2, 3, 4, and 10 of the course reference book, Mathematics for Machine Learning.',
+    description: 'Linear algebra and analytic geometry from sets and vectors to projections, eigenvectors, matrix decompositions, and PCA, in an order where each page only needs the ones before it. Section by section it follows Chapters 2, 3, 4, 5, and 10 of the course reference book, Mathematics for Machine Learning.',
     sections: [
       { title: 'Foundations', concepts: ['sets', 'functions', 'inverse-composition', 'vectors-dot-product', 'norms'] },
       { title: 'Matrices and linear systems', concepts: ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure'] },
@@ -18,6 +18,7 @@ export const tracks = {
       { title: 'Analytic geometry: angles and projections', concepts: ['inner-products', 'orthogonality', 'orthogonal-complement', 'orthogonal-projections', 'gram-schmidt'] },
       { title: 'Eigenvalues and eigenvectors', concepts: ['eigenvalues-eigenvectors', 'trace', 'diagonalization', 'pagerank', 'spectral-theorem'] },
       { title: 'Matrix decompositions', concepts: ['lu-decomposition', 'cholesky-decomposition', 'svd'] },
+      { title: 'Vector calculus', concepts: ['derivatives', 'partial-derivatives-gradient', 'jacobian-chain-rule', 'loss-gradients', 'backpropagation', 'taylor-hessian'] },
       { title: 'Dimensionality reduction', concepts: ['dimensionality-reduction', 'pca'] },
     ],
   },

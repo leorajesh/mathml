@@ -135,6 +135,8 @@ export const workedExampleMath = {
     tex`\theta_1=2,\quad \theta_0=1`,
     tex`\hat y=2\cdot3+1=7`,
     tex`y-\hat y=9-7=2`,
+    tex`R_n(\theta)=\tfrac12\bigl[(2-\theta)^2+(3-2\theta)^2\bigr],\qquad R_n'(\theta)=-(8-5\theta)`,
+    tex`\theta:\ 0\ \xrightarrow{-0.1\cdot(-8)}\ 0.8\ \xrightarrow{-0.1\cdot(-4)}\ 1.2\ \to\ \cdots\ \to\ 1.6`,
   ],
   'polynomial-regression': [
     tex`\varphi(x)=\begin{bmatrix}x\\x^2\\x^3\end{bmatrix}`,
@@ -448,5 +450,34 @@ export const workedExampleMath = {
     tex`e^{0.5}\approx1.6487,\quad T_1(0.5)=1.5,\quad T_2(0.5)=1.625`,
     tex`\nabla f=[2x+3y,\ 3x+2y]=[0,\ 0]\ \text{at}\ (0,0)`,
     tex`H=\begin{bmatrix}2&3\\3&2\end{bmatrix},\quad \lambda=5,\ -1\ \Rightarrow\ \text{saddle};\qquad f(t,-t)=-t^2`,
+  ],
+  'max-margin-svm': [
+    tex`x^{(1)}=\begin{bmatrix}2\\2\end{bmatrix},\ y^{(1)}=+1;\quad x^{(2)}=\begin{bmatrix}0\\0\end{bmatrix},\ y^{(2)}=-1;\quad \theta=\begin{bmatrix}0.5\\0.5\end{bmatrix},\ \theta_0=-1`,
+    tex`y^{(1)}(\theta\cdot x^{(1)}+\theta_0)=1,\qquad y^{(2)}(\theta\cdot x^{(2)}+\theta_0)=(-1)(-1)=1`,
+    tex`\frac{2}{\lVert\theta\rVert}=\frac{2}{\sqrt{0.5}}\approx2.83=\lVert x^{(1)}-x^{(2)}\rVert=\sqrt8`,
+    tex`\theta=\begin{bmatrix}0.25\\0.25\end{bmatrix},\ \theta_0=-0.5:\quad \text{margins }0.5,\quad \max(0,1-0.5)=0.5`,
+  ],
+  'feature-scaling': [
+    tex`\mu=\tfrac13(1000+1500+2000)=1500`,
+    tex`\sigma=\sqrt{\tfrac13\bigl(500^2+0^2+500^2\bigr)}\approx408.2`,
+    tex`z=\tfrac{-500}{408.2},\ 0,\ \tfrac{500}{408.2}\approx-1.22,\ 0,\ 1.22`,
+    tex`z_{\text{test}}=\frac{2500-1500}{408.2}\approx2.45`,
+  ],
+  'bias-variance': [
+    tex`f(x)=2;\qquad \hat h=1.5,\ 1.6,\ 1.4`,
+    tex`\text{bias}^2=(1.5-2)^2=0.25,\qquad \text{variance}=\tfrac13(0^2+0.1^2+0.1^2)\approx0.0067`,
+    tex`\hat h=1.2,\ 2.9,\ 2.0:\quad \text{bias}^2\approx(2.033-2)^2\approx0.0011,\quad \text{variance}\approx0.482`,
+    tex`0.25+0.0067\approx0.257\quad<\quad0.0011+0.482\approx0.483`,
+  ],
+  'roc-auc': [
+    null,
+    tex`t=0.5:\quad \operatorname{TPR}=\tfrac23,\quad \operatorname{FPR}=\tfrac13`,
+    tex`t=0.35:\ (\operatorname{FPR},\operatorname{TPR})=(\tfrac13,1);\qquad t=0.75:\ (0,\tfrac23)`,
+    tex`\operatorname{AUC}=\frac{\#\{(p,n):s_p>s_n\}}{3\cdot3}=\frac89\approx0.889`,
+  ],
+  'ml-in-production': [
+    null,
+    tex`92-1.5\cdot12=74\%`,
+    tex`\bar A=92-\frac{1.5\cdot3}{2}=89.75\%,\qquad T=1:\ \bar A=92-0.75=91.25\%`,
   ],
 };

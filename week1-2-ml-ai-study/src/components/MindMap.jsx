@@ -18,7 +18,7 @@ const domains = [
     title: 'Introduction to ML Modelling',
     group: 'Problem',
     summary: 'Input-output pairs, feature representations, hypothesis classes, error functions, learning algorithms, and generalization.',
-    concepts: ['ml-workflow', 'sets-functions', 'feature-vectors'],
+    concepts: ['ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
   },
   {
     id: 'overview-linear-algebra',
@@ -32,7 +32,7 @@ const domains = [
     title: 'Linear Classification: Perceptron and Hinge Loss',
     group: 'Model',
     summary: 'Linear classifiers through origin, linearly separable examples, perceptron learning, zero-one loss, and hinge loss.',
-    concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss'],
+    concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
   },
   {
     id: 'overview-optimization',
@@ -46,14 +46,14 @@ const domains = [
     title: 'Linear Regression and Ridge Regression',
     group: 'Loss',
     summary: 'Linear regression models, least-squares criteria, gradient descent training, polynomial features, ridge regression, and regularization.',
-    concepts: ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net'],
+    concepts: ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net', 'feature-scaling'],
   },
   {
     id: 'overview-generalization',
     title: 'Generalization and Logistic Regression',
     group: 'Generalization',
     summary: 'Overfitting, generalization, train-test evaluation, logistic regression, logistic cost, prediction, and classification metrics.',
-    concepts: ['model-complexity-generalization', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics'],
+    concepts: ['model-complexity-generalization', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'bias-variance', 'roc-auc', 'ml-in-production'],
   },
   {
     id: 'overview-advanced-math',

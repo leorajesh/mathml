@@ -22,7 +22,7 @@ domain root and under a sub-path such as GitHub Pages' `/mathml/`.
 
 ## Topics and subtopics
 
-Titles that name several ideas are **topics** with one page per **subtopic** (74 concept pages, 16 topics),
+Titles that name several ideas are **topics** with one page per **subtopic** (79 concept pages, 16 topics),
 defined in `src/data/subtopics.js`. A topic keeps its original id, so the concept map, old links, and
 map edges point at its overview page, which lists the subtopics in order; each subtopic page shows a
 "Part of <topic>" bar with links to its siblings.
@@ -30,11 +30,12 @@ map edges point at its overview page, which lists the subtopics in order; each s
 After editing content, run `npm run check`. It verifies that every prerequisite / follow-on link
 resolves, every graph type exists, worked-example formulas line up with their steps, every concept has
 Python starter code, topics are consistent, all KaTeX renders, every figure exists and has alt text,
-every page the reference book covers cites it, and the tracks respect prerequisites.
+every page the reference book covers cites it, every ML page cites a course book, the math-behind links
+connect ML pages to math pages, and the tracks respect prerequisites.
 
 ## Quizzes
 
-Section 8 of every concept page is a multiple-choice quiz (3 questions per concept, 222 in all) with a
+Section 8 of every concept page is a multiple-choice quiz (3 questions per concept, 237 in all) with a
 score, per-question feedback, and an explanation for every answer. Options are shuffled so the correct
 answer is not always first, and "Try again" reshuffles. Topic overview pages have a combined quiz of
 their subtopics. The best score is saved in the browser and shown in the track lists.
@@ -45,7 +46,7 @@ Questions live in `src/data/quizzes.js` as `{ question, answer, wrong: [3 option
 ## Learning tracks
 
 Besides the concept map, the app has two step-by-step tracks: the **Math Track** (46 concepts) and the
-**ML Track** (28 concepts). No concept is in both: where a page mixed math and ML (Feature Vectors and
+**ML Track** (33 concepts). No concept is in both: where a page mixed math and ML (Feature Vectors and
 Dot Products) it is split into a math page and an ML page, and ML pages link to the math they rely on. They reuse the same concept pages and leave the
 map and the prerequisite / follow-on links unchanged; a track only adds an order, previous / next buttons,
 and "done" checkmarks saved in the browser. Links: `#track=math`, `#track=ml`, and
@@ -76,6 +77,25 @@ https://mml-book.github.io). The app follows it in three ways:
 
 The book's licence allows personal use only and no derivative works, so nothing is copied from it: all
 text, examples, and figures here are our own, and the book is cited by section and figure number.
+
+## Machine learning course books
+
+The ML pages follow the course reading list: Bishop, *Pattern Recognition and Machine Learning*; James,
+Witten, Hastie & Tibshirani, *An Introduction to Statistical Learning*; Duda, Hart & Stork, *Pattern
+Classification*; Mitchell, *Machine Learning*; and for ML operations Huyen, *Designing Machine Learning
+Systems*, Treveil, Lefevre et al., *Introducing MLOps*, Barth & Fregly, *Data Science on AWS*, and Sculley
+et al., *Machine Learning: The High-Interest Credit Card of Technical Debt*.
+
+- **"Read more in the course books"** on every ML page and topic: the matching sections
+  (`src/data/courseReferences.js`). Bishop is free from Microsoft Research, so its entries link to the right
+  PDF page (printed page + 20); the other books are cited by chapter and section. Some pages also link
+  real-world case studies from the *Designing Machine Learning Systems* resource list.
+- **"The math behind this page"** on ML pages and **"Where machine learning uses this"** on math pages
+  (`src/data/mathLinks.js`): each link says in one sentence which piece of math the ML idea uses.
+- **Pages added from these books:** maximum margin and the regularized hinge objective (SVM); feature
+  scaling, encoding, and data leakage; the bias-variance trade-off; ROC curves and AUC; and ML in
+  production (lifecycle, monitoring, distribution shift, technical debt). The linear-regression page now
+  shows the gradient and trains by gradient descent.
 
 ## Runnable Python
 

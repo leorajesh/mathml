@@ -331,7 +331,64 @@ function ComputationGraphFigure() {
   );
 }
 
+function BiasVarianceTargets() {
+  const panels = [
+    { x: 90, y: 85, bias: 0, spread: 8, label: 'low bias, low variance' },
+    { x: 250, y: 85, bias: 26, spread: 8, label: 'high bias, low variance' },
+    { x: 410, y: 85, bias: 0, spread: 26, label: 'low bias, high variance' },
+    { x: 570, y: 85, bias: 26, spread: 26, label: 'high bias, high variance' },
+  ];
+  // Fixed offsets so the picture is the same on every visit.
+  const offsets = [[0.2, -0.9], [-0.7, 0.4], [0.9, 0.3], [-0.3, 0.8], [0.6, -0.5], [-0.9, -0.3], [0.1, 0.5], [0.5, 0.9], [-0.5, -0.8], [0.8, -0.1]];
+  return (
+    <>
+      {panels.map((p) => (
+        <g key={p.label}>
+          {[56, 40, 24, 9].map((r, i) => <circle key={r} cx={p.x} cy={p.y + 60} r={r} className={i % 2 ? 'fig-ring light' : 'fig-ring'} />)}
+          {offsets.map(([dx, dy], i) => <circle key={i} className="fig-dot small blue-dot" cx={p.x + p.bias + dx * p.spread} cy={p.y + 60 - p.bias * 0.6 + dy * p.spread} r="4" />)}
+          <text className="fig-label" x={p.x} y={p.y + 150} textAnchor="middle">{p.label}</text>
+        </g>
+      ))}
+      <text className="fig-step" x="320" y="290" textAnchor="middle">centre of each target = the true value; each dot = one model trained on a different training set</text>
+    </>
+  );
+}
+
+function MlLifecycle() {
+  const stages = [
+    { x: 40, y: 50, label: 'Scope', sub: 'task, metric, baseline' },
+    { x: 250, y: 50, label: 'Data', sub: 'collect, label, validate' },
+    { x: 460, y: 50, label: 'Features', sub: 'scale, encode' },
+    { x: 460, y: 190, label: 'Train & evaluate', sub: 'offline, held-out data' },
+    { x: 250, y: 190, label: 'Deploy', sub: 'serve within latency' },
+    { x: 40, y: 190, label: 'Monitor', sub: 'drift, live accuracy' },
+  ];
+  const w = 140;
+  const h = 62;
+  return (
+    <>
+      {stages.map((s) => (
+        <g key={s.label}>
+          <rect className="fig-box" x={s.x} y={s.y} width={w} height={h} rx="10" />
+          <text className="fig-label" x={s.x + w / 2} y={s.y + 26} textAnchor="middle">{s.label}</text>
+          <text className="fig-step" x={s.x + w / 2} y={s.y + 45} textAnchor="middle">{s.sub}</text>
+        </g>
+      ))}
+      <Arrow from={[182, 81]} to={[246, 81]} color="blue" variant="small" />
+      <Arrow from={[392, 81]} to={[456, 81]} color="blue" variant="small" />
+      <Arrow from={[530, 114]} to={[530, 186]} color="blue" variant="small" />
+      <Arrow from={[458, 221]} to={[394, 221]} color="blue" variant="small" />
+      <Arrow from={[248, 221]} to={[184, 221]} color="blue" variant="small" />
+      <Arrow from={[150, 188]} to={[282, 116]} color="rust" variant="small" />
+      <text className="fig-label rust" x="250" y="178">retrain when the data drifts</text>
+      <text className="fig-step" x="320" y="290" textAnchor="middle">the model is one stage of a loop that keeps running after deployment</text>
+    </>
+  );
+}
+
 const drawings = {
+  'bias-variance-targets': BiasVarianceTargets,
+  'ml-lifecycle': MlLifecycle,
   'computation-graph': ComputationGraphFigure,
   'row-column-picture': RowColumnPicture,
   'l1-l2-balls': L1L2Balls,
@@ -357,6 +414,7 @@ export function ConceptFigure({ id }) {
       <figcaption>
         <strong>{meta.title}.</strong> {meta.caption}
         {meta.mml && <span className="figure-compare"> Compare with the book: {MML_BOOK.title}, {meta.mml}.</span>}
+        {meta.ml && <span className="figure-compare"> Compare with the course books: {meta.ml}.</span>}
       </figcaption>
     </figure>
   );

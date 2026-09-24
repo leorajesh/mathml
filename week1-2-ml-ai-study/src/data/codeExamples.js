@@ -527,14 +527,25 @@ h = np.array([0.8, 0.2])
 losses = log_loss(y, h)
 print("losses:", np.round(losses, 3))
 print("difference:", round(losses[1] - losses[0], 3))
+# Try: set h = [0.99, 0.01]. How big is the second loss?
 
 # Likelihood of many examples underflows; log-likelihood does not
 p = np.full(2000, 0.6)
-print("product of 2000 probabilities (float64):", np.prod(p))
+print("product of 2000 probabilities (float64):", np.prod(p), "(stuck at the tiniest float, or 0: the true value is lost)")
 print("true value: about 10 **", round(np.sum(np.log10(p)), 1), "-> far below what float64 can store")
 print("sum of their logs:", round(np.sum(np.log(p)), 2), "(no problem)")
 
-# Try: set h = [0.99, 0.01]. How big is the second loss?`,
+# Learning: gradient descent with gradient (1/n) sum (h - y) x (a leading 1 in x plays the offset)
+X = np.array([[1.0, 0.5], [1.0, 1.5], [1.0, 2.0], [1.0, 2.5], [1.0, 3.0], [1.0, 3.5]])
+labels = np.array([0, 0, 1, 0, 1, 1])   # overlapping classes, so the best theta is finite
+theta = np.zeros(2)
+for step in range(2000):
+    probs = 1 / (1 + np.exp(-X @ theta))
+    theta -= 0.5 * X.T @ (probs - labels) / len(labels)
+probs = 1 / (1 + np.exp(-X @ theta))
+print("theta after 2000 steps:", np.round(theta, 3), " average loss:", round(np.mean(log_loss(labels, probs)), 4))
+
+# Try: change the labels to [0, 0, 0, 1, 1, 1] (separable). What happens to theta as you add steps?`,
 
   'classification-metrics': py`TP, FP, TN, FN = 8, 2, 90, 10
 
@@ -1350,4 +1361,154 @@ mu = -sp.diff(g_obj, x).subs(x, x_star)      # from d/dx [(x-2)^2 + mu (x - 1)] 
 print("active constraint at x = 1, multiplier =", mu, "(>= 0, as required)")
 
 # Try: change the inequality to x <= 3. Is the constraint active, and what is the multiplier?`,
+
+  'derivatives': py`import sympy as sp
+
+x = sp.symbols("x")
+f = (2 * x + 1) ** 3
+df = sp.diff(f, x)
+print("f'(x) =", sp.factor(df), " f'(1) =", df.subs(x, 1))
+
+# Difference quotients approach the derivative as h shrinks
+fn = sp.lambdify(x, f)
+for h in [1.0, 0.1, 0.01, 0.001]:
+    print(f"h = {h:<6} (f(1+h) - f(1))/h = {(fn(1 + h) - fn(1)) / h:.4f}")
+
+# The sigmoid's derivative is sigma (1 - sigma)
+s = sp.symbols("s")
+sigma = 1 / (1 + sp.exp(-s))
+print("sigma'(s) - sigma(1 - sigma) simplifies to", sp.simplify(sp.diff(sigma, s) - sigma * (1 - sigma)))
+print("slope at s = 0:", sp.diff(sigma, s).subs(s, 0))
+
+# Try: differentiate sp.log(1 + sp.exp(-x)) and compare it with -sigma(-x).`,
+
+  'partial-derivatives-gradient': py`import numpy as np
+import sympy as sp
+
+x, y = sp.symbols("x y")
+f = x ** 2 * y + 3 * y
+grad = [sp.diff(f, v) for v in (x, y)]
+g = np.array([float(d.subs({x: 1, y: 2})) for d in grad])
+print("gradient formula:", grad, " at (1, 2):", g)
+
+# Numerical check, one coordinate at a time
+fn = sp.lambdify((x, y), f)
+h = 1e-3
+print("numerical:", [round((fn(1 + h, 2) - fn(1, 2)) / h, 3), round((fn(1, 2 + h) - fn(1, 2)) / h, 3)])
+
+# Directional derivatives: largest along the gradient, zero along the contour
+for name, u in [("[1, 0]", [1, 0]), ("gradient direction", g / np.linalg.norm(g)), ("[1, -1]/sqrt 2", [1 / np.sqrt(2), -1 / np.sqrt(2)])]:
+    print(f"slope along {name}: {g @ np.array(u):.3f}")
+print("||grad|| =", round(np.linalg.norm(g), 3))
+
+# Try: f = x**2 + y**2 at (3, 4). Which way does the gradient point?`,
+
+  'jacobian-chain-rule': py`import sympy as sp
+
+r, th = sp.symbols("r theta", positive=True)
+f = sp.Matrix([r * sp.cos(th), r * sp.sin(th)])
+J = f.jacobian([r, th])
+print("J =", J)
+print("det J =", sp.simplify(J.det()))
+J0 = J.subs({r: 2, th: 0})
+print("J at r = 2, theta = 0:", J0.tolist())
+print("step dr = 0.01 moves by", [float(v) for v in J0 * sp.Matrix([0.01, 0])], " step dtheta = 0.01 moves by", [float(v) for v in J0 * sp.Matrix([0, 0.01])])
+
+# Chain rule: gradient of g(f(r, theta)) = (gradient of g at f) times J
+x, y = sp.symbols("x y")
+g = x ** 2 + y ** 2
+grad_g = sp.Matrix([[sp.diff(g, x), sp.diff(g, y)]]).subs({x: 2, y: 0})
+print("chain rule:", (grad_g * J0).tolist())
+print("direct:", [sp.diff(g.subs({x: f[0], y: f[1]}), v).subs({r: 2, th: 0}) for v in (r, th)])
+
+# Try: the Jacobian of the linear map [2x + y, x - 3y]. Is it the matrix of the map?`,
+
+  'loss-gradients': py`import numpy as np
+
+# Least squares through the origin on (1, 2) and (2, 3)
+X = np.array([[1.0], [2.0]])
+y = np.array([2.0, 3.0])
+loss = lambda th: np.sum((y - X @ th) ** 2)
+grad = lambda th: -2 * (y - X @ th) @ X          # dL/dtheta = -2 (y - X theta)^T X
+th = np.array([0.0])
+print("gradient at 0:", grad(th))
+eps = 1e-6
+print("numerical check:", (loss(th + eps) - loss(th - eps)) / (2 * eps))
+print("normal equation:", np.linalg.solve(X.T @ X, X.T @ y))
+
+# Logistic loss for one example x = [1, 2], y = 1 (the leading 1 is the offset)
+x1 = np.array([1.0, 2.0])
+sigma = lambda s: 1 / (1 + np.exp(-s))
+theta = np.zeros(2)
+g = (sigma(theta @ x1) - 1) * x1
+print("logistic gradient:", g)
+theta = theta - 0.5 * g
+print("after one step: theta =", theta, " sigma =", round(sigma(theta @ x1), 4))
+
+# The quadratic-form rule: gradient of x^T A x is x^T (A + A^T)
+A = np.array([[1.0, 2.0], [0.0, 3.0]])
+v = np.array([1.0, -1.0])
+f = lambda z: z @ A @ z
+numeric = [(f(v + eps * e) - f(v - eps * e)) / (2 * eps) for e in np.eye(2)]
+print("x^T (A + A^T):", v @ (A + A.T), " numerical:", np.round(numeric, 6))
+
+# Try: use 2 x^T A instead. Why is it wrong for this A?`,
+
+  'backpropagation': py`import numpy as np
+
+def forward_backward(w, b, x, y):
+    # forward pass: store every intermediate value
+    z = w * x + b
+    m = y * z
+    L = np.log1p(np.exp(-m))
+    # backward pass: chain rule from the output toward the inputs
+    dL_dm = -1 / (1 + np.exp(m))            # = -e^(-m) / (1 + e^(-m)) = -sigma(-m), without overflow
+    dL_dz = dL_dm * y
+    return L, {"m": dL_dm, "z": dL_dz, "w": dL_dz * x, "b": dL_dz}
+
+L, grads = forward_backward(0.5, -0.5, 2.0, 1.0)
+print("loss:", round(float(L), 4))
+print("gradients:", {k: round(float(v), 4) for k, v in grads.items()})
+
+# Check against finite differences
+eps = 1e-6
+num_w = (forward_backward(0.5 + eps, -0.5, 2.0, 1.0)[0] - forward_backward(0.5 - eps, -0.5, 2.0, 1.0)[0]) / (2 * eps)
+print("finite-difference dL/dw:", round(num_w, 4))
+
+# Training = gradient descent using these gradients
+w, b = 0.5, -0.5
+for _ in range(20):
+    L, g = forward_backward(w, b, 2.0, 1.0)
+    w, b = w - 0.5 * g["w"], b - 0.5 * g["b"]
+print("after 20 steps: w =", round(w, 3), " b =", round(b, 3), " loss =", round(forward_backward(w, b, 2.0, 1.0)[0], 4))
+
+# Try: set y = -1. Which way do the gradients point now?`,
+
+  'taylor-hessian': py`import numpy as np
+import sympy as sp
+
+x = sp.symbols("x")
+print("Taylor series of e^x:", sp.series(sp.exp(x), x, 0, 4))
+for n in [1, 2, 3]:
+    Tn = sp.series(sp.exp(x), x, 0, n + 1).removeO()
+    print(f"T{n}(0.5) = {float(Tn.subs(x, 0.5)):.4f}   error = {float(sp.exp(0.5) - Tn.subs(x, 0.5)):.4f}")
+
+# Hessian and the second-derivative test
+a, b = sp.symbols("a b")
+f = a ** 2 + 3 * a * b + b ** 2
+H = sp.hessian(f, (a, b))
+print("gradient:", [sp.diff(f, v) for v in (a, b)], " Hessian:", H.tolist())
+eig = np.linalg.eigvalsh(np.array(H, dtype=float))
+print("Hessian eigenvalues:", eig, "->", "saddle" if eig.min() < 0 < eig.max() else "minimum or maximum")
+t = sp.symbols("t")
+print("f along [1, -1]:", sp.expand(f.subs({a: t, b: -t})))
+
+# Newton's method finds the minimum of a quadratic in one step
+g = (a - 1) ** 2 + 2 * (b + 2) ** 2
+p = sp.Matrix([5, 5])
+grad = sp.Matrix([sp.diff(g, v) for v in (a, b)]).subs({a: p[0], b: p[1]})
+step = p - sp.hessian(g, (a, b)).inv() * grad
+print("Newton step from (5, 5):", list(step))
+
+# Try: f = a**2 + b**2 + a*b. Is the origin now a minimum?`,
 };

@@ -58,6 +58,12 @@ export const mmlReferences = {
   pagerank: [ref('4.2', 'Eigenvalues and Eigenvectors (PageRank example)', 113)],
   'spectral-theorem': [ref('4.2', 'Eigenvalues and Eigenvectors (spectral theorem)', 111)],
   'dimensionality-reduction': [ref('10.1', 'Problem Setting', 318), ref('10.3', 'Projection Perspective', 325)],
+  derivatives: [ref('5.1', 'Differentiation of Univariate Functions', 141), ref('5.1.2', 'Differentiation Rules', 145)],
+  'partial-derivatives-gradient': [ref('5.2', 'Partial Differentiation and Gradients', 146), ref('5.2.1', 'Basic Rules of Partial Differentiation', 147)],
+  'jacobian-chain-rule': [ref('5.2.2', 'Chain Rule', 148), ref('5.3', 'Gradients of Vector-Valued Functions (the Jacobian)', 149)],
+  'loss-gradients': [ref('5.3', 'Gradients of Vector-Valued Functions (Example 5.11, least-squares loss)', 154), ref('5.4', 'Gradients of Matrices', 155), ref('5.5', 'Useful Identities for Computing Gradients', 158)],
+  backpropagation: [ref('5.6', 'Backpropagation and Automatic Differentiation', 159), ref('5.6.2', 'Automatic Differentiation', 161)],
+  'taylor-hessian': [ref('5.1.1', 'Taylor Series', 142), ref('5.7', 'Higher-Order Derivatives', 164), ref('5.8', 'Linearization and Multivariate Taylor Series', 165)],
   pca: [ref('10.2', 'Maximum Variance Perspective', 320), ref('10.3', 'Projection Perspective', 325), ref('10.4', 'Eigenvector Computation and Low-Rank Approximations', 333), ref('10.6', 'Key Steps of PCA in Practice', 336)],
   'cholesky-decomposition': [ref('4.3', 'Cholesky Decomposition', 114)],
   svd: [ref('4.5', 'Singular Value Decomposition', 119), ref('4.5.1', 'Geometric Intuitions for the SVD', 120), ref('4.6', 'Matrix Approximation', 129)],
@@ -83,7 +89,7 @@ export const mmlReferences = {
   'train-validation-test': [ref('8.2.4', 'Cross-Validation to Assess the Generalization Performance', 263)],
   'cross-validation': [ref('8.2.4', 'Cross-Validation to Assess the Generalization Performance', 263), ref('8.6.1', 'Nested Cross-Validation', 284)],
   'logistic-regression': [ref('9.5', 'Further Reading (logistic regression)', 315), ref('6.6', 'Conjugacy and the Exponential Family (the sigmoid)', 213)],
-  'logistic-loss': [ref('8.3.1', 'Maximum Likelihood Estimation', 265)],
+  'logistic-loss': [ref('8.3.1', 'Maximum Likelihood Estimation', 265), ref('5.5', 'Useful Identities for Computing Gradients', 158)],
 };
 
 // A topic page lists the sections of its subtopics, without repeats.

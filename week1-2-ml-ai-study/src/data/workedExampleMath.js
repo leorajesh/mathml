@@ -412,4 +412,41 @@ export const workedExampleMath = {
     tex`\nabla f=\begin{bmatrix}1\\1\end{bmatrix},\ \nabla h=\begin{bmatrix}1\\1\end{bmatrix}:\quad \nabla f+\lambda\nabla h=0`,
     tex`x^*=1:\ 2(1-2)+\lambda=0\Rightarrow\lambda=2\ge0`,
   ],
+  'derivatives': [
+    tex`f(x)=g(u),\quad g(u)=u^3,\quad u=2x+1`,
+    tex`f'(x)=3(2x+1)^2\cdot2=6(2x+1)^2,\qquad f'(1)=6\cdot9=54`,
+    tex`\frac{f(1.001)-f(1)}{0.001}=\frac{3.002^3-27}{0.001}\approx54.036`,
+    tex`\sigma'(s)=\frac{e^{-s}}{(1+e^{-s})^2}=\sigma(s)\bigl(1-\sigma(s)\bigr),\qquad \sigma'(0)=0.25`,
+  ],
+  'partial-derivatives-gradient': [
+    tex`f(x,y)=x^2y+3y,\qquad f(1,2)=8`,
+    tex`\frac{\partial f}{\partial x}=2xy=4,\quad \frac{\partial f}{\partial y}=x^2+3=4,\quad \nabla f(1,2)=[4,\ 4]`,
+    tex`\lVert\nabla f\rVert=\sqrt{32}\approx5.66,\qquad \nabla f\,\tfrac{1}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix}=0`,
+    tex`\frac{f(1.001,2)-f(1,2)}{0.001}=\frac{8.004002-8}{0.001}\approx4.002`,
+  ],
+  'jacobian-chain-rule': [
+    tex`f(r,\theta)=\begin{bmatrix}r\cos\theta\\ r\sin\theta\end{bmatrix}`,
+    tex`J=\begin{bmatrix}\cos\theta&-r\sin\theta\\ \sin\theta&r\cos\theta\end{bmatrix},\qquad \det J=r`,
+    tex`J(2,0)=\begin{bmatrix}1&0\\0&2\end{bmatrix}:\quad J\begin{bmatrix}0.01\\0\end{bmatrix}=\begin{bmatrix}0.01\\0\end{bmatrix},\quad J\begin{bmatrix}0\\0.01\end{bmatrix}=\begin{bmatrix}0\\0.02\end{bmatrix}`,
+    tex`\frac{\partial g}{\partial(r,\theta)}=[4,\ 0]\begin{bmatrix}1&0\\0&2\end{bmatrix}=[4,\ 0]=\frac{\partial\,r^2}{\partial(r,\theta)}`,
+  ],
+  'loss-gradients': [
+    tex`L(\theta)=(2-\theta)^2+(3-2\theta)^2=\lVert y-X\theta\rVert^2,\quad X=\begin{bmatrix}1\\2\end{bmatrix},\ y=\begin{bmatrix}2\\3\end{bmatrix}`,
+    tex`\frac{dL}{d\theta}=-2\bigl[(2-\theta)\cdot1+(3-2\theta)\cdot2\bigr]=-2(8-5\theta),\qquad \frac{dL}{d\theta}(0)=-16`,
+    tex`-2(8-5\theta)=0\Rightarrow\theta=1.6,\qquad X^TX\theta=X^Ty:\ 5\theta=8`,
+    tex`\nabla J=(\sigma(0)-1)\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}-0.5\\-1\end{bmatrix}`,
+    tex`\theta=\begin{bmatrix}0\\0\end{bmatrix}-0.5\begin{bmatrix}-0.5\\-1\end{bmatrix}=\begin{bmatrix}0.25\\0.5\end{bmatrix},\qquad \sigma(1.25)\approx0.777`,
+  ],
+  'backpropagation': [
+    tex`z=wx+b,\quad m=yz,\quad L=\log(1+e^{-m});\qquad x=2,\ y=1,\ w=0.5,\ b=-0.5`,
+    tex`z=0.5,\quad m=0.5,\quad L=\log(1.6065)\approx0.474`,
+    tex`\frac{\partial L}{\partial m}=-\frac{0.6065}{1.6065}\approx-0.378,\qquad \frac{\partial L}{\partial z}=\frac{\partial L}{\partial m}\,y\approx-0.378`,
+    tex`\frac{\partial L}{\partial w}=\frac{\partial L}{\partial z}\,x\approx-0.755,\qquad \frac{\partial L}{\partial b}=\frac{\partial L}{\partial z}\approx-0.378`,
+  ],
+  'taylor-hessian': [
+    tex`T_1(x)=1+x,\qquad T_2(x)=1+x+\tfrac{x^2}{2}`,
+    tex`e^{0.5}\approx1.6487,\quad T_1(0.5)=1.5,\quad T_2(0.5)=1.625`,
+    tex`\nabla f=[2x+3y,\ 3x+2y]=[0,\ 0]\ \text{at}\ (0,0)`,
+    tex`H=\begin{bmatrix}2&3\\3&2\end{bmatrix},\quad \lambda=5,\ -1\ \Rightarrow\ \text{saddle};\qquad f(t,-t)=-t^2`,
+  ],
 };

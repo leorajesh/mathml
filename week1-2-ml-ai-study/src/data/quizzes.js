@@ -343,4 +343,34 @@ export const quizzes = {
     {"question": "At a constrained minimum on a smooth equality constraint (with grad h not zero), how are grad f and grad h related?", "answer": "They are parallel: grad f = -lambda grad h", "wrong": ["grad f is always zero", "They are always perpendicular", "grad h is always zero"], "why": "The level curve of f just touches the constraint there, so both gradients are normal to the same curve."},
     {"question": "For an inequality constraint g(x) <= 0 that is not active at the solution, what is its multiplier?", "answer": "0", "wrong": ["Any negative number", "1", "It is undefined"], "why": "Complementary slackness: lambda g(x*) = 0. If g(x*) < 0 the constraint does not bind, so lambda = 0."},
   ],
+  "derivatives": [
+    {"question": "What is the derivative of f(x) = (2x + 1)^3 at x = 1?", "answer": "54", "wrong": ["27", "18", "6"], "why": "Chain rule: f'(x) = 3(2x + 1)^2 * 2 = 6(2x + 1)^2, and 6 * 9 = 54."},
+    {"question": "What does the difference quotient (f(x + h) - f(x))/h measure?", "answer": "The slope of the chord from x to x + h, which tends to the derivative as h shrinks", "wrong": ["The area under f between x and x + h", "The exact derivative for any h", "The average value of f on [x, x + h]"], "why": "It is rise over run for a short chord; its limit as h goes to 0 is f'(x)."},
+    {"question": "The derivative of the sigmoid can be written in terms of sigma itself. Which formula is right?", "answer": "sigma'(s) = sigma(s)(1 - sigma(s))", "wrong": ["sigma'(s) = sigma(s)^2", "sigma'(s) = 1 - sigma(s)", "sigma'(s) = e^s"], "why": "Differentiating 1/(1 + e^(-s)) gives e^(-s)/(1 + e^(-s))^2, which equals sigma(1 - sigma). At s = 0 it is 0.25."},
+  ],
+  "partial-derivatives-gradient": [
+    {"question": "For f(x, y) = x^2 y + 3y, what is the gradient at (1, 2)?", "answer": "[4, 4]", "wrong": ["[2, 4]", "[4, 3]", "[8, 4]"], "why": "df/dx = 2xy = 4 and df/dy = x^2 + 3 = 4."},
+    {"question": "How is the gradient related to the level curve (contour) through a point?", "answer": "It is perpendicular to the contour and points toward higher values", "wrong": ["It is tangent to the contour", "It points toward the minimum", "It has no fixed relation to the contour"], "why": "Moving along the contour keeps f constant, so the slope there, grad f dot u, is 0: u is perpendicular to the gradient."},
+    {"question": "The gradient at a point is [3, 4]. What is the largest slope of f among all unit directions?", "answer": "5", "wrong": ["7", "4", "12"], "why": "The directional derivative grad f dot u is largest along the gradient, where it equals ||grad f|| = sqrt(9 + 16) = 5."},
+  ],
+  "jacobian-chain-rule": [
+    {"question": "f maps R^3 to R^2. What is the shape of its Jacobian?", "answer": "2 by 3", "wrong": ["3 by 2", "3 by 3", "2 by 2"], "why": "One row per output (2) and one column per input (3)."},
+    {"question": "What is the Jacobian of the linear map f(x) = Ax?", "answer": "A itself", "wrong": ["A^T", "The identity matrix", "det(A)"], "why": "Output i is row i of A dotted with x, so its gradient is row i of A."},
+    {"question": "For the polar map f(r, theta) = [r cos theta, r sin theta], what is det J?", "answer": "r", "wrong": ["1", "r^2", "cos theta"], "why": "det J = r cos^2 theta + r sin^2 theta = r, so small areas grow in proportion to the distance from the origin."},
+  ],
+  "loss-gradients": [
+    {"question": "What is the gradient of L(theta) = ||y - X theta||^2 with respect to theta (as a row vector)?", "answer": "-2 (y - X theta)^T X", "wrong": ["2 (y - X theta)", "X^T X", "-2 X (y - X theta)^T"], "why": "Chain rule: the outer function ||e||^2 has gradient 2e^T, and e = y - X theta has Jacobian -X."},
+    {"question": "When is the gradient of x^T A x equal to 2 x^T A?", "answer": "When A is symmetric", "wrong": ["Always", "When A is invertible", "When x is a unit vector"], "why": "In general the gradient is x^T (A + A^T), which equals 2 x^T A only if A = A^T."},
+    {"question": "For logistic loss with labels in {0, 1}, what is the gradient contributed by one example?", "answer": "(sigma(theta dot x) - y) x", "wrong": ["(y - sigma(theta dot x)) x^2", "sigma(theta dot x) x", "-y log(sigma(theta dot x)) x"], "why": "The sigmoid's derivative sigma(1 - sigma) cancels against the log terms, leaving prediction error times input."},
+  ],
+  "backpropagation": [
+    {"question": "In which order does backpropagation compute derivatives?", "answer": "From the output back toward the inputs, reusing the values stored in the forward pass", "wrong": ["From the inputs forward to the output, one input at a time", "In random order", "All at once by finite differences"], "why": "Starting from dL/dL = 1, each node multiplies the incoming derivative by its local derivative and passes it back."},
+    {"question": "A value feeds two later nodes. How is its derivative computed in the backward pass?", "answer": "The contributions from both paths are added", "wrong": ["Only the larger contribution is kept", "The contributions are multiplied", "It is set to zero"], "why": "The multivariate chain rule sums over every path by which the value affects the output."},
+    {"question": "With x = 2, y = +1, w = 0.5, b = -0.5 and L = log(1 + e^(-y(wx + b))), what is dL/dw?", "answer": "About -0.755", "wrong": ["About 0.474", "About -0.378", "About 0.755"], "why": "dL/dm = -e^(-0.5)/(1 + e^(-0.5)) ≈ -0.378, then dL/dw = dL/dm * y * x ≈ -0.755. (-0.378 is dL/db.)"},
+  ],
+  "taylor-hessian": [
+    {"question": "What is the second-order Taylor polynomial of e^x around 0?", "answer": "1 + x + x^2/2", "wrong": ["1 + x + x^2", "x + x^2/2", "1 + x^2/2"], "why": "Every derivative of e^x is 1 at 0, and the k-th term is f^(k)(0) x^k / k!."},
+    {"question": "At a point with zero gradient, the Hessian has eigenvalues 5 and -1. What kind of point is it?", "answer": "A saddle point", "wrong": ["A local minimum", "A local maximum", "The test cannot say"], "why": "Positive curvature in one direction and negative in another: f goes up one way and down another."},
+    {"question": "Which Hessian condition, holding everywhere, makes a twice-differentiable function convex?", "answer": "The Hessian is positive semidefinite everywhere", "wrong": ["The Hessian is invertible everywhere", "All entries of the Hessian are positive", "The Hessian has trace zero"], "why": "Nonnegative curvature in every direction at every point is the multivariable version of f'' >= 0."},
+  ],
 };

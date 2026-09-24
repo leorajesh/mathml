@@ -17,6 +17,7 @@ export const intuitionDetails = {
     courseNotes: [
       "Shortcuts that are easy now but costly to rework later are technical debt. Lesson 1 suggests choosing tools by the 4 Cs: cost, coverage, complexity, and community.",
       "An MLOps engineer mixes software development, machine learning, and data engineering.",
+      "The breast-cancer regression target, time until recurrence, is only a lower bound (a censored value) for patients who had not recurred when follow-up ended; the slides treat it as plain regression for simplicity.",
       "Notation warning: the slides write m examples with n attributes (sometimes with y in {0, 1}); the lecture notes and this site write n examples with d features and y in {-1, +1}.",
     ],
   },
@@ -25,6 +26,7 @@ export const intuitionDetails = {
       idea("The pieces", "Inputs and labels, features, a hypothesis class (the kind of rule allowed), a loss (how mistakes are scored), and an optimizer (how the rule improves)."),
       idea("The goal", "Generalization: doing well on new examples, not just the ones used for training."),
       idea("Mitchell's definition", "A program learns from experience E at task T, measured by performance P, if its performance at T improves with E."),
+      idea("Why restrict the rules?", "If any rule is allowed, some rule memorizes the training labels (the notes' single-pixel classifier) and fails on new data. If too few are allowed, nothing fits. Choosing the class is model selection."),
       idea("It does not stop at training", "In production the model is deployed, monitored, and retrained as the data changes."),
     ],
   },
@@ -40,19 +42,20 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("The score", "Each example gets theta . x + theta_0. Positive means one side, negative the other, and the boundary is where the score is exactly 0."),
       idea("What the parameters do", "theta points perpendicular to the line and sets its tilt; theta_0 slides it."),
-      idea("Ties", "A score of exactly 0 needs a tie-break (the code uses +1), but during training a margin of 0 always counts as a mistake."),
+      idea("Ties", "The notes define sign(0) = +1 (as does the code), but during training a margin of 0 always counts as a mistake."),
     ],
   },
   "linear-classifier-through-origin": {
     keyIdeas: [
       idea("The boundary", "All points with theta . x = 0, which always includes the origin."),
       idea("Un-pinning it", "Adding theta_0 lets the line slide parallel to itself, which can separate data the pinned line cannot."),
+      idea("Nothing lost in theory", "Append a constant feature 1: x = [x, 1] and theta = [theta, theta_0]. A through-origin classifier in d + 1 dimensions is then a general one in d dimensions."),
     ],
   },
   "linear-separability": {
     keyIdeas: [
       idea("It depends on the features", "The same data can be separable with one choice of features and not with another."),
-      idea("Margin = breathing room", "The distance from the best separator to the closest point. Wider is safer."),
+      idea("Margin = breathing room", "A separator's margin is the distance from its boundary to the closest point. The data's margin is the largest such value over all separators. Wider is safer."),
       idea("Overlap means no line", "When the classes overlap, no line works, and the perceptron never settles."),
       idea("Through the origin is stricter", "A negative at x = 1 and a positive at x = 3 need an offset: without theta_0, theta x has the same sign at both points."),
     ],
@@ -74,6 +77,7 @@ export const intuitionDetails = {
       idea("The guarantee", "On linearly separable data the perceptron makes only finitely many mistakes."),
       idea("Wide gap, few mistakes", "If every example has length at most R and some separator has margin gamma, there are at most (R/gamma)^2 mistakes."),
       idea("Overlap breaks it", "When the classes overlap, fixing one example can break another, so the corrections can go on forever."),
+      idea("Proof in two lines", "After k mistakes, theta . theta*/||theta*|| >= k gamma while ||theta||^2 <= k R^2. Cauchy-Schwarz gives k gamma <= sqrt(k) R, so k <= (R/gamma)^2."),
     ],
     courseNotes: [
       "The Week 1 notes state only the finite-mistakes theorem. The (R/gamma)^2 form is Novikoff's bound, which goes beyond the notes (they define the margin later).",
@@ -82,13 +86,13 @@ export const intuitionDetails = {
   "empirical-risk-zero-one": {
     keyIdeas: [
       idea("Easy to read", "A training error of 0.1 means 10% of the training examples are misclassified."),
-      idea("Hard to learn from", "It cannot tell a near miss from a disaster, so it gives the algorithm no hint about which way to improve."),
+      idea("Hard to learn from", "It cannot tell a near miss from a disaster, so it gives no hint about which way to improve. Minimizing it exactly on non-separable data is NP-hard (Lesson 2)."),
     ],
   },
   "hinge-loss": {
     keyIdeas: [
       idea("Its shape", "The cost falls in a straight line as the margin grows, then stays at zero once the margin reaches 1."),
-      idea("Why it helps", "Unlike the zero-one loss, its slope tells the algorithm which way to move."),
+      idea("Why it helps", "It is a convex upper bound on the zero-one loss, so the training risk is convex and simple descent methods find its minimum, even on non-separable data. It also grows with the size of a mistake."),
       idea("Why a margin of 1?", "Combined with a penalty on ||theta||, it makes the classifier prefer the widest gap between the classes: the support vector machine."),
     ],
   },
@@ -123,7 +127,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Step against the gradient", "The gradient points uphill, so each step goes the other way: theta <- theta - alpha times the gradient."),
       idea("Learning rate = step size", "Too small is slow; too large overshoots, or even climbs out of the valley."),
-      idea("Local or global?", "It only uses slopes (a first-order method), so it finds a local minimum, which is the global one when the loss is convex."),
+      idea("Local or global?", "It only uses slopes (a first-order method), so it heads to a point where the gradient is zero, usually a local minimum, which is the global one when the loss is convex."),
       idea("The stochastic version", "Estimate the gradient from one random example: each step is much cheaper and often gets close faster, but the path is erratic."),
     ],
   },
@@ -144,7 +148,7 @@ export const intuitionDetails = {
   "stochastic-subgradient-descent": {
     keyIdeas: [
       idea("Like the perceptron, but...", "It also learns from correct but unconfident examples (agreement at most 1, not at most 0), and it uses step sizes that shrink over time."),
-      idea("Random order", "Picking examples at random, rather than cycling through them in order, stops the updates from oscillating."),
+      idea("Random order", "Picking examples at random, rather than cycling in order, stops the updates from oscillating. More precisely, each step is then an unbiased estimate of the full (sub)gradient."),
       idea("Keep the best", "The loss falls only noisily, so remember the best theta seen so far and report that one."),
       idea("With a penalty", "Adding the SVM regularizer makes every step also shrink theta slightly."),
     ],
@@ -158,7 +162,7 @@ export const intuitionDetails = {
       idea("The multiplier", "lambda tells how fast the best value would change if the constraint were loosened."),
       idea("The Lagrangian", "L = f + lambda h. Setting all its partial derivatives to zero gives the tangency condition and the constraint together."),
       idea("Inequalities", "For g(x) <= 0 the multiplier must be nonnegative, and it is zero when the constraint is not active at the answer."),
-      idea("Link to ridge and lasso", "Minimizing the loss inside a ball ||theta|| <= t gives the same answer as adding a penalty lambda ||theta|| (squared for ridge) for a matching lambda >= 0."),
+      idea("Link to ridge and lasso", "Minimizing the loss subject to ||theta||_2^2 <= t (ridge) or ||theta||_1 <= t (lasso) gives the same answer as adding lambda ||theta||_2^2 or lambda ||theta||_1, for a matching lambda >= 0."),
     ],
   },
   "linear-regression": {
@@ -173,7 +177,7 @@ export const intuitionDetails = {
       "Lesson 3 frames every ML problem by its elements: task, inputs and outputs, model with trainable parameters, and loss. For the apartment data: supervised regression, area in, price out, y ≈ a x + b, mean squared error.",
       "The slides write the loss without the 1/2 used in the notes, so their gradients carry a factor 2. The best line is the same.",
       "With several features the model is y ≈ a_1 x_1 + ... + a_K x_K + b.",
-      "Early stopping: quit gradient descent when a and b change by less than a small threshold delta, or after a maximum number of iterations.",
+      "The slides' early stopping: quit gradient descent when a and b change by less than a small threshold delta, or after a maximum number of iterations. Elsewhere in ML, early stopping usually means stopping when the validation error starts rising, which also regularizes; here it is a convergence test.",
       "With one feature, y = a x + b is a line: a hyperplane of the (x, y) plane, one dimension less than the space (strictly an affine one, since it need not pass through the origin).",
     ],
   },
@@ -182,6 +186,8 @@ export const intuitionDetails = {
       idea("Still linear regression", "The prediction is linear in the weights, so every linear regression tool still works."),
       idea("Degree = flexibility dial", "Too low and the curve is too stiff to follow the pattern (underfitting); too high and it wiggles through every noisy point (overfitting)."),
       idea("Beware outside the data", "A high degree can match the training points yet behave wildly beyond their range, for example for an apartment larger than any seen in training."),
+      idea("Scale first", "Powers like x^10 of raw values differ by many orders of magnitude and make X^T X badly conditioned, so standardize x before expanding."),
+      idea("Features grow fast", "With d inputs, all terms up to degree K give C(d + K, K) features, which is why PolynomialFeatures output grows quickly."),
     ],
     courseNotes: [
       "Lesson 3 does this with scikit-learn's PolynomialFeatures: build the columns x, x^2, ..., x^K, then run ordinary multi-feature linear regression on them.",
@@ -252,7 +258,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Why three sets", "Validation chooses settings such as the polynomial degree or lambda; the test set gives an honest final score."),
       idea("Do not peek", "Tuning while peeking at the test score slowly fits to it, and it stops predicting performance on truly new data."),
-      idea("Same source", "All three sets should come from the same kind of data the model will see in use."),
+      idea("Same source", "All three sets should come from the same kind of data the model will see in use. If the model will predict the future, split by time rather than at random."),
     ],
   },
   "cross-validation": {
@@ -260,6 +266,7 @@ export const intuitionDetails = {
       idea("The loop", "Train k times, each time holding out a different fold for validation, and average the k validation scores."),
       idea("Less waste", "Every example is used for validation exactly once."),
       idea("Then finish", "Pick the setting with the best average, refit on all the non-test data, and test once."),
+      idea("Match the folds to deployment", "Stratified folds for imbalanced classes, grouped folds when examples share a user or patient, time-ordered splits for time series. Leave-one-out is k = n."),
     ],
   },
   "logistic-regression": {
@@ -267,7 +274,7 @@ export const intuitionDetails = {
       idea("Read it as a probability", "h(x) = p(y = 1 | x). An output of 0.7 for a tumour means an estimated 70% chance that it is malignant."),
       idea("Still a straight boundary", "h(x) >= 0.5 exactly when theta . x + theta_0 >= 0, so the boundary is a line (a hyperplane). Squared features let it curve."),
       idea("Why not linear regression?", "One far-away but clearly positive example tilts a regression line, shifts its 0.5 crossing, and breaks predictions that were right before."),
-      idea("Discriminative", "It learns only how to tell the classes apart; a generative model learns what each class looks like."),
+      idea("Discriminative", "It models p(y | x) directly. A generative model instead models p(x | y) and p(y), what each class looks like, then uses Bayes' rule."),
       idea("More than two classes", "One-vs-rest trains one classifier per class (cat vs not cat, dog vs not dog, fish vs not fish) and picks the most probable class."),
     ],
   },
@@ -277,6 +284,7 @@ export const intuitionDetails = {
       idea("Why not squared error?", "With the sigmoid inside, squared error is not convex, so gradient descent can stall. Cross-entropy is convex, though it has no closed-form solution."),
       idea("Where it comes from", "Minimizing it picks the most likely parameters (maximum likelihood). The minus sign turns maximizing the log-likelihood into minimizing a non-negative loss."),
       idea("A familiar update", "theta <- theta - alpha times the average of (h - y) x: the same form as linear regression, with a different h."),
+      idea("Separable data", "Convex does not guarantee a finite minimizer: on linearly separable data the loss keeps falling as ||theta|| grows, so in practice a small L2 penalty is added."),
     ],
     courseNotes: [
       "Lesson 4 also asks whether MSE or R^2 suit logistic regression. They measure how far the probabilities are from the 0/1 labels, not how many classes come out right, so classifiers are usually judged with confusion-matrix metrics.",
@@ -305,7 +313,7 @@ export const intuitionDetails = {
   "ml-in-production": {
     keyIdeas: [
       idea("The system", "Collect and validate data, compute features, serve predictions within a time budget, and log the results."),
-      idea("Drift", "Inputs can move away from the training data (covariate shift), or the link between inputs and labels can change (concept drift). Accuracy then decays quietly unless monitored."),
+      idea("Drift", "Inputs can move away from the training data (covariate shift), or the input-label link can change (concept drift). Accuracy can fall unnoticed unless monitored; under covariate shift alone, the harm comes from a model that is wrong or extrapolating."),
       idea("Technical debt", "Entangled features, glue code, tangled pipelines, and predictions that feed back into their own future training data (Sculley et al.)."),
       idea("Good practice", "Start from the business objective, keep a simple baseline, version data and models, monitor inputs and outputs, and retrain on a schedule or when drift appears."),
     ],

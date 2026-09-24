@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -88,6 +88,9 @@ const plotAxes = {
   jacobianMap: { x: 'drawn 1.6 times larger', y: '' },
   lossSurface: { x: 'slope a', y: 'intercept b' },
   computationGraph: { x: '', y: '' },
+  biasVariance: { x: 'polynomial degree (0 to 9)', y: 'error' },
+  roc: { x: '', y: '' },
+  driftRetrain: { x: 'months after deployment (0 to 24)', y: 'accuracy (%)' },
 };
 
 function renderCanvas(content, axes) {
@@ -173,6 +176,11 @@ function renderGraph(type, values) {
     case 'lossSurface': return LossSurfaceGraph({ values });
     case 'computationGraph': return ComputationGraphGraph({ values });
     case 'taylor': return TaylorGraph({ values });
+    case 'maxMargin': return MaxMarginGraph({ values });
+    case 'scaling': return ScalingGraph({ values });
+    case 'biasVariance': return BiasVarianceGraph({ values });
+    case 'roc': return RocGraph({ values });
+    case 'driftRetrain': return DriftRetrainGraph({ values });
     default: return null;
   }
 }
@@ -1179,5 +1187,197 @@ function TaylorGraph({ values }) {
   return {
     content: <g><path className="fn-curve" d={clippedPath(Math.sin, -5, 5)} /><path className="boundary" d={clippedPath(T, -5, 5)} />{circlePoint({ x: x0, y: Math.sin(x0) }, 'active-dot', 'x0')}<text className="graph-note" x="44" y="48">degree {n} Taylor polynomial around x0 = {x0.toFixed(1)}</text></g>,
     readout: [`at x0 + 1: sin = ${Math.sin(at).toFixed(4)}, T${n} = ${T(at).toFixed(4)}, error ${Math.abs(Math.sin(at) - T(at)).toExponential(1)}`, `at x0 + 2: error ${Math.abs(Math.sin(x0 + 2) - T(x0 + 2)).toExponential(1)}`],
+  };
+}
+
+// ---------- Graphs for the ML pages from the course reading list ----------
+
+// A small two-class dataset with one overlapping point, for the soft-margin SVM.
+const svmPoints = [
+  { x: 2.5, y: 2, label: 1 }, { x: 3.5, y: 3, label: 1 }, { x: 4, y: 1.5, label: 1 }, { x: 2, y: 3.5, label: 1 }, { x: 5, y: 3, label: 1 }, { x: 0.3, y: -0.4, label: 1 },
+  { x: -2, y: -1.5, label: -1 }, { x: -3.5, y: -2.5, label: -1 }, { x: -1, y: -3, label: -1 }, { x: -3, y: 0.5, label: -1 }, { x: -4.5, y: -1, label: -1 }, { x: 0.5, y: 0.8, label: -1 },
+];
+const svmCache = new Map();
+
+// Soft-margin SVM by averaged full-batch subgradient descent (Pegasos-style steps 1/(lambda k)).
+function trainSvm(lambda) {
+  const key = lambda.toFixed(3);
+  if (svmCache.has(key)) return svmCache.get(key);
+  let w = [0, 0];
+  let b = 0;
+  const avg = { w: [0, 0], b: 0 };
+  const n = svmPoints.length;
+  const iterations = 6000;
+  for (let k = 1; k <= iterations; k += 1) {
+    const eta = 1 / (lambda * (k + 10));
+    let gw0 = lambda * w[0];
+    let gw1 = lambda * w[1];
+    let gb = 0;
+    for (const p of svmPoints) {
+      if (p.label * (w[0] * p.x + w[1] * p.y + b) < 1) {
+        gw0 -= (p.label * p.x) / n;
+        gw1 -= (p.label * p.y) / n;
+        gb -= p.label / n;
+      }
+    }
+    w = [w[0] - eta * gw0, w[1] - eta * gw1];
+    b -= eta * gb;
+    if (k > iterations / 2) {
+      avg.w[0] += w[0] / (iterations / 2);
+      avg.w[1] += w[1] / (iterations / 2);
+      avg.b += b / (iterations / 2);
+    }
+  }
+  svmCache.set(key, avg);
+  return avg;
+}
+
+function MaxMarginGraph({ values }) {
+  const { w, b } = trainSvm(values.lambda);
+  const norm = Math.hypot(w[0], w[1]);
+  const lineAt = (level) => (Math.abs(w[1]) > 1e-9
+    ? [{ x: -xHalf, y: (level - b - w[0] * -xHalf) / w[1] }, { x: xHalf, y: (level - b - w[0] * xHalf) / w[1] }]
+    : [{ x: (level - b) / w[0], y: -5 }, { x: (level - b) / w[0], y: 5 }]);
+  let hinge = 0;
+  let inside = 0;
+  let errors = 0;
+  const dots = svmPoints.map((p, index) => {
+    const margin = p.label * (w[0] * p.x + w[1] * p.y + b);
+    hinge += Math.max(0, 1 - margin) / svmPoints.length;
+    if (margin <= 1.02) inside += 1;
+    if (margin <= 0) errors += 1;
+    return <g key={index}>{margin <= 1.02 && <circle className="support-ring" cx={sx(p.x)} cy={sy(p.y)} r="11" />}<circle className={p.label > 0 ? 'point-a' : 'point-b'} cx={sx(p.x)} cy={sy(p.y)} r="6" /></g>;
+  });
+  const objective = (values.lambda / 2) * norm * norm + hinge;
+  return {
+    content: <g><path className="margin-line" d={linePath(lineAt(1))} /><path className="margin-line" d={linePath(lineAt(-1))} /><path className="boundary" d={linePath(lineAt(0))} />{dots}</g>,
+    readout: [`margin width 2/||theta|| = ${(2 / norm).toFixed(2)}`, `${inside} points on or inside the margin (support vectors), ${errors} misclassified`, `objective = lambda/2 ||theta||^2 + mean hinge = ${objective.toFixed(3)}`],
+  };
+}
+
+function ScalingGraph({ values }) {
+  const s = values.standardize ? 1 : values.s;
+  const kappa = s * s;
+  // Loss 0.5 (w1^2 + s^2 w2^2) in the coordinates the optimizer sees. Steps must stay below 2/s^2;
+  // 1.8/s^2 is close to that limit, so the steep direction zig-zags while the flat one creeps.
+  const alpha = kappa === 1 ? 1 : 1.8 / kappa;
+  let w = { x: -7, y: 3 / s };
+  const path = [w];
+  for (let k = 0; k < values.steps; k += 1) {
+    w = { x: w.x - alpha * w.x, y: w.y - alpha * kappa * w.y };
+    path.push(w);
+  }
+  const start = path[0];
+  const startLoss = 0.5 * (start.x ** 2 + kappa * start.y ** 2);
+  const endLoss = 0.5 * (w.x ** 2 + kappa * w.y ** 2);
+  // The loss shrinks by at least rate^2 per step, where rate is the slower of the two directions.
+  const rate = Math.max(Math.abs(1 - alpha), Math.abs(1 - alpha * kappa));
+  const needed = rate === 0 ? 1 : Math.ceil(Math.log(0.01) / (2 * Math.log(rate)));
+  const levels = [1, 2.5, 4.5, 7];
+  return {
+    content: <g>{levels.map((r) => <ellipse key={r} className="contour" cx={sx(0)} cy={sy(0)} rx={sx(r) - sx(0)} ry={sy(0) - sy(r / s)} />)}<path className="path-momentum" d={linePath(path)} />{path.map((p, index) => <circle key={index} className="active-dot small" cx={sx(p.x)} cy={sy(p.y)} r="3" />)}{circlePoint(start, 'point-a', 'start')}{circlePoint({ x: 0, y: 0 }, 'muted-dot', 'best weights')}</g>,
+    readout: [values.standardize ? 'standardized: both features have spread 1, the contours are circles' : `feature 2 is ${values.s} times larger in scale: curvature ratio kappa = ${kappa.toFixed(1)}`, `loss after ${values.steps} steps: ${(100 * endLoss / startLoss).toFixed(2)}% of the start`, `steps for the loss to fall to 1% of its start: about ${needed}`],
+  };
+}
+
+// Exact bias^2 and variance for least-squares polynomials on a fixed design: 12 evenly spaced inputs,
+// noise standard deviation 0.4, true function sin(2 pi x). Variance averages sigma^2 (d + 1)/n.
+const biasVarianceCurve = (() => {
+  const n = 12;
+  const noise = 0.4;
+  const xs = Array.from({ length: n }, (_, i) => i / (n - 1));
+  const f = xs.map((x) => Math.sin(2 * Math.PI * x));
+  const basis = [];
+  const results = [];
+  for (let degree = 0; degree <= 9; degree += 1) {
+    // Modified Gram-Schmidt on the column (2x - 1)^degree keeps the projection stable.
+    let column = xs.map((x) => (2 * x - 1) ** degree);
+    for (const q of basis) {
+      const c = column.reduce((sum, v, i) => sum + v * q[i], 0);
+      column = column.map((v, i) => v - c * q[i]);
+    }
+    const length = Math.hypot(...column);
+    basis.push(column.map((v) => v / length));
+    const fit = xs.map((_, i) => basis.reduce((sum, q) => sum + q[i] * q.reduce((acc, v, j) => acc + v * f[j], 0), 0));
+    const bias2 = fit.reduce((sum, v, i) => sum + (v - f[i]) ** 2, 0) / n;
+    const variance = (noise * noise * (degree + 1)) / n;
+    results.push({ degree, bias2, variance, total: bias2 + variance + noise * noise });
+  }
+  return { results, noise };
+})();
+
+function BiasVarianceGraph({ values }) {
+  const { results, noise } = biasVarianceCurve;
+  const X = (degree) => -4.4 + degree * (8.8 / 9);
+  const Y = (v) => -4.2 + Math.min(v, 0.72) * (8.4 / 0.72);
+  const curve = (key) => linePath(results.map((r) => ({ x: X(r.degree), y: Y(r[key]) })));
+  const chosen = results[Math.round(values.degree)];
+  const best = results.reduce((a, r) => (r.total < a.total ? r : a), results[0]);
+  return {
+    content: <g><path className="axis" d={`M ${sx(-4.6)} ${sy(-4.2)} L ${sx(4.6)} ${sy(-4.2)}`} />{results.map((r) => <text key={r.degree} x={sx(X(r.degree))} y={sy(-4.2) + 16} textAnchor="middle">{r.degree}</text>)}<path className="noise-line" d={linePath([{ x: X(0), y: Y(noise * noise) }, { x: X(9), y: Y(noise * noise) }])} /><path className="line-a" d={curve('bias2')} /><path className="line-b" d={curve('variance')} /><path className="fn-curve" d={curve('total')} /><path className="chord-line" d={`M ${sx(X(chosen.degree))} ${sy(-4.2)} L ${sx(X(chosen.degree))} ${sy(4.4)}`} /><text className="graph-note" x="44" y="48">blue bias^2, orange variance, dark total, dotted noise</text></g>,
+    readout: [`degree ${chosen.degree}: bias^2 = ${chosen.bias2.toFixed(3)}, variance = ${chosen.variance.toFixed(3)}, noise = ${(noise * noise).toFixed(2)}`, `expected error at the training inputs with fresh noise = ${chosen.total.toFixed(3)}`, `lowest expected error at degree ${best.degree} (${best.total.toFixed(3)})`],
+  };
+}
+
+function normalCdf(z) {
+  // Abramowitz and Stegun 7.1.26 approximation of erf, accurate to about 1e-7.
+  const t = 1 / (1 + (0.3275911 * Math.abs(z)) / Math.SQRT2);
+  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-(z * z) / 2);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+}
+
+function RocGraph({ values }) {
+  const d = values.separation;
+  const t = values.threshold;
+  // Negatives ~ N(0, 1), positives ~ N(d, 1).
+  const tpr = (th) => 1 - normalCdf(th - d);
+  const fpr = (th) => 1 - normalCdf(th);
+  const auc = normalCdf(d / Math.SQRT2);
+  const size = 250;
+  const left = 50;
+  const top = 50;
+  const px = (v) => left + v * size;
+  const py = (v) => top + size - v * size;
+  const roc = Array.from({ length: 121 }, (_, i) => { const th = 6 - (i * 10) / 120; return `${i ? 'L' : 'M'} ${px(fpr(th))} ${py(tpr(th))}`; }).join(' ');
+  const dens = (x, mean) => Math.exp(-((x - mean) ** 2) / 2);
+  const dx = (x) => 360 + ((x + 3) / 9) * 260;
+  const dy = (v) => 300 - v * 200;
+  const densityPath = (mean) => Array.from({ length: 181 }, (_, i) => { const x = -3 + (i * 9) / 180; return `${i ? 'L' : 'M'} ${dx(x)} ${dy(dens(x, mean))}`; }).join(' ');
+  return {
+    content: (
+      <g>
+        <rect className="roc-box" x={left} y={top} width={size} height={size} />
+        <path className="chord-line" d={`M ${px(0)} ${py(0)} L ${px(1)} ${py(1)}`} />
+        <path className="boundary" d={roc} />
+        <circle className="active-dot" cx={px(fpr(t))} cy={py(tpr(t))} r="7" />
+        <text x={left + size / 2} y={top + size + 22} textAnchor="middle">false positive rate</text>
+        <text x={left - 12} y={top + size / 2} textAnchor="middle" transform={`rotate(-90 ${left - 12} ${top + size / 2})`}>true positive rate</text>
+        <path className="line-b" d={densityPath(0)} />
+        <path className="line-a" d={densityPath(d)} />
+        <path className="residual" d={`M ${dx(t)} ${dy(0)} L ${dx(t)} ${dy(1.1)}`} />
+        <path className="axis" d={`M ${dx(-3)} ${dy(0)} L ${dx(6)} ${dy(0)}`} />
+        <text x={dx(t) + 6} y={dy(1.1) + 12}>threshold</text>
+        <text x="490" y="324" textAnchor="middle">score</text>
+      </g>
+    ),
+    readout: [`TPR = ${tpr(t).toFixed(3)}, FPR = ${fpr(t).toFixed(3)} at threshold ${t.toFixed(1)}`, `AUC = ${auc.toFixed(3)} (0.5 is random ranking, 1 is perfect)`],
+  };
+}
+
+function DriftRetrainGraph({ values }) {
+  const { decay, interval } = values;
+  const A0 = 92;
+  const accuracy = (m) => A0 - decay * (m % interval);
+  const X = (m) => -4.6 + (m / 24) * 9.2;
+  const Y = (a) => -4.2 + (a / 100) * 8.6;
+  const points = [];
+  for (let m = 0; m <= 24; m += 0.05) points.push({ x: X(m), y: Y(Math.max(accuracy(m), 0)) });
+  let sum = 0;
+  const samples = 2400;
+  for (let k = 0; k < samples; k += 1) sum += accuracy((24 * k) / samples);
+  const retrains = interval >= 24 ? 0 : Math.ceil(24 / interval) - 1;
+  return {
+    content: <g><path className="axis" d={`M ${sx(X(0))} ${sy(Y(0))} L ${sx(X(24))} ${sy(Y(0))}`} />{[0, 6, 12, 18, 24].map((m) => <text key={m} x={sx(X(m))} y={sy(Y(0)) + 16} textAnchor="middle">{m}</text>)}{[0, 50, 100].map((a) => <text key={a} x={sx(X(0)) - 6} y={sy(Y(a)) + 4} textAnchor="end">{a}</text>)}<path className="noise-line" d={linePath([{ x: X(0), y: Y(A0) }, { x: X(24), y: Y(A0) }])} /><path className="boundary" d={linePath(points)} /></g>,
+    readout: [`average accuracy over two years: ${(sum / samples).toFixed(2)}%`, `${retrains} retrains in two years${interval >= 24 ? ' (never retrained)' : ''}`, `accuracy just before each retrain (or at month 24): ${Math.max(A0 - decay * Math.min(interval, 24), 0).toFixed(1)}%`],
   };
 }

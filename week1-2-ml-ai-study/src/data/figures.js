@@ -52,6 +52,18 @@ export const figures = {
     alt: 'A chain of boxes from the input x through a hidden layer h = sigma(W1 x + b1) and an output y-hat = W2 h + b2 to the loss L. Blue arrows run left to right labelled forward. Orange arrows run right to left labelled with dL/dy-hat, dL/dh, and dL/dz1, and short orange arrows branch off to the weight gradients dL/dW2 and dL/dW1.',
     mml: 'Figures 5.8-5.9',
   },
+  'bias-variance-targets': {
+    title: 'Bias and variance as throws at a target',
+    caption: 'Each dot is the prediction, at one fixed input x, of a model trained on a different training set; the centre is the true value. Bias is how far the cloud\'s centre is from the bullseye, variance is how spread out the cloud is. Rigid models behave like the second target (tight but off-centre), very flexible models like the third (centred but scattered).',
+    alt: 'Four targets in a row. First: dots tightly clustered on the bullseye (low bias, low variance). Second: dots tightly clustered away from the centre (high bias, low variance). Third: dots scattered widely around the centre (low bias, high variance). Fourth: dots scattered and off-centre (high bias, high variance).',
+    ml: 'the same idea shown as curves in Bishop §3.2 (Figures 3.5-3.6) and ISL §2.2.2 (Figure 2.12)',
+  },
+  'ml-lifecycle': {
+    title: 'The production ML lifecycle',
+    caption: 'A model in production is one stage of a loop: scope the problem and the business metric, collect and validate data, engineer features, train and evaluate offline, deploy, and monitor. Monitoring feeds back into new data and retraining. As Sculley et al. point out, the model code is only a small part of the whole system.',
+    alt: 'Six boxes arranged in a loop: Scope, Data, Features, Train and evaluate, Deploy, Monitor. Arrows go around the loop, and a return arrow from Monitor to Data is labelled retrain when the data drifts.',
+    ml: 'Huyen Ch. 1-2; Sculley et al. (2014), and Figure 1 of Sculley et al. (2015)',
+  },
 };
 
 export const figureIds = Object.keys(figures);

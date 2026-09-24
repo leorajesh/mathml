@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, BookOpen, Network, Sigma } from 'lucide-react';
+import { ArrowLeft, BookOpen, Library, Network, Sigma, Sparkles } from 'lucide-react';
 import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { ConceptFigure } from './components/Figures.jsx';
@@ -10,6 +10,8 @@ import { learningObjectives, selfChecksByConcept } from './data/learningObjectiv
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
+import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
+import { mathLinks, mlUsesOf } from './data/mathLinks.js';
 import { normalizeDefinitionSymbol } from './utils/mathText.js';
 import { PythonRunner } from './python/PythonRunner.jsx';
 import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
@@ -193,6 +195,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
             <ConceptFigure id={concept.figure} />
           </div>
         )}
+        <MathBridge conceptId={concept.id} onSelect={onSelect} />
       </OrderedSection>
 
       <OrderedSection number="3" title="Key Formulas and Symbols">
@@ -246,6 +249,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
         <LinkGroup label="Follow-on" ids={concept.followOns} onSelect={onSelect} fallback="This is the end of this concept path." />
         <div className="sources"><Sigma size={18} /> Sources: {concept.sources.join(', ')}</div>
         <BookReferences references={mmlReferences[concept.id] ?? []} />
+        <CourseBookReferences references={courseReferences[concept.id] ?? []} cases={caseStudies[concept.id] ?? []} />
       </OrderedSection>
 
       {trackId && <TrackBar trackId={trackId} conceptId={concept.id} onOpen={onSelect} onShowTrack={onShowTrack} position="bottom" />}
@@ -322,6 +326,50 @@ function FormulaDefinition({ definition }) {
       <span className="definition-symbol"><InlineMath math={symbolMath} /></span>
       <span className="definition-explanation">{explanation}</span>
     </li>
+  );
+}
+
+// ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
+function MathBridge({ conceptId, onSelect }) {
+  const uses = mathLinks[conceptId] ?? [];
+  const usedBy = mlUsesOf(conceptId);
+  if (!uses.length && !usedBy.length) return null;
+  const items = uses.length ? uses : usedBy;
+  return (
+    <aside className={`math-bridge ${uses.length ? 'to-math' : 'to-ml'}`} aria-label={uses.length ? 'The math behind this page' : 'Where machine learning uses this'}>
+      <h3><Sparkles size={18} /> {uses.length ? 'The math behind this page' : 'Where machine learning uses this'}</h3>
+      <ul>
+        {items.map((item) => (
+          <li key={item.id}>
+            <button className="inline-link" onClick={() => onSelect(item.id)}>{entryFor(item.id).title}</button>: {item.why}
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+// The machine learning course's reading list: sections to read for this page, and case studies.
+function CourseBookReferences({ references, cases }) {
+  if (!references.length && !cases.length) return null;
+  const books = [...new Set(references.map((item) => item.book))];
+  return (
+    <aside className="course-references" aria-label="Read more in the course books">
+      <h3><Library size={18} /> Read more in the course books</h3>
+      <ul>
+        {references.map((item) => {
+          const link = courseLink(item);
+          const label = `${courseBooks[item.book].short}${item.section ? `, ${item.section.startsWith('Ch') || item.section.startsWith('App') ? '' : '§'}${item.section}` : ''}: ${item.title}`;
+          return (
+            <li key={`${item.book}-${item.section}-${item.title}`}>
+              {link ? <a href={link} target="_blank" rel="noreferrer">{label}</a> : label}{item.page ? ` (p. ${item.page})` : ''}
+            </li>
+          );
+        })}
+        {cases.map((item) => <li key={item.url}>Case study: <a href={item.url} target="_blank" rel="noreferrer">{item.title}</a></li>)}
+      </ul>
+      {books.length > 0 && <p>{books.map((id) => courseBooks[id].citation).join(' ')}</p>}
+    </aside>
   );
 }
 
@@ -430,6 +478,7 @@ function TopicPage({ topic, onBack, onSelect }) {
         </div>
       </section>
       <BookReferences references={mmlReferencesFor(topic.children)} />
+      <CourseBookReferences references={courseReferencesFor(topic.children)} cases={[]} />
     </main>
   );
 }

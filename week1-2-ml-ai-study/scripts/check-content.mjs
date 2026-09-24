@@ -9,6 +9,9 @@ import { workedExampleMath } from '../src/data/workedExampleMath.js';
 import { quizzes } from '../src/data/quizzes.js';
 import { figures } from '../src/data/figures.js';
 import { mmlReferences } from '../src/data/mmlReferences.js';
+import { courseBooks, courseReferences, caseStudies } from '../src/data/courseReferences.js';
+import { mathLinks } from '../src/data/mathLinks.js';
+import { trackOrder } from '../src/data/learningTracks.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
 const problems = [];
@@ -17,7 +20,7 @@ const graphTypes = new Set([...graphSource.matchAll(/case '(\w+)':/g)].map((matc
 const figureSource = fs.readFileSync(new URL('../src/components/Figures.jsx', import.meta.url), 'utf8');
 const drawnFigures = new Set([...figureSource.slice(figureSource.indexOf('const drawings')).matchAll(/'([\w-]+)':/g)].map((match) => match[1]));
 // Pages the reference book does not cover; every other page must cite a section of it.
-const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics']);
+const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics', 'roc-auc', 'ml-in-production']);
 
 function renders(tex, where) {
   try {
@@ -78,6 +81,27 @@ for (const key of Object.keys(quizzes)) if (!conceptMap[key]) problems.push(`qui
 for (const key of Object.keys(codeExamples)) if (!conceptMap[key]) problems.push(`code for unknown concept "${key}"`);
 for (const key of Object.keys(workedExampleMath)) if (!conceptMap[key]) problems.push(`worked math for unknown concept "${key}"`);
 for (const key of Object.keys(mmlReferences)) if (!conceptMap[key]) problems.push(`MML reference for unknown concept "${key}"`);
+// Course-book references and case studies point at real pages and books, and every ML page cites a course book
+// (momentum and subgradients are covered by the MML book instead).
+const mlPages = new Set(trackOrder('ml'));
+const mathPages = new Set(trackOrder('math'));
+for (const [key, items] of Object.entries(courseReferences)) {
+  if (!conceptMap[key]) problems.push(`course reference for unknown concept "${key}"`);
+  for (const item of items) {
+    if (!courseBooks[item.book]) problems.push(`${key}: unknown course book "${item.book}"`);
+    if (!item.title || (item.page !== undefined && !(item.page >= 1 && item.page <= 740))) problems.push(`${key}: malformed course reference ${JSON.stringify(item)}`);
+  }
+}
+for (const id of mlPages) if (!courseReferences[id] && !['momentum', 'subgradients'].includes(id)) problems.push(`${id}: ML page without a course-book reference`);
+for (const key of Object.keys(caseStudies)) if (!conceptMap[key]) problems.push(`case study for unknown concept "${key}"`);
+// The math-behind links go from an ML Track page to Math Track pages.
+for (const [key, links] of Object.entries(mathLinks)) {
+  if (!mlPages.has(key)) problems.push(`math link from "${key}", which is not an ML Track page`);
+  for (const link of links) {
+    if (!mathPages.has(link.id)) problems.push(`${key}: math link to "${link.id}", which is not a Math Track page`);
+    if (!link.why || link.why.includes('\\')) problems.push(`${key}: math link to "${link.id}" needs a plain-text reason`);
+  }
+}
 for (const [id, figure] of Object.entries(figures)) {
   if (!drawnFigures.has(id)) problems.push(`figure "${id}" has no drawing in Figures.jsx`);
   if (!figure.title || !figure.caption || !figure.alt) problems.push(`figure "${id}" needs a title, caption, and alt text`);

@@ -178,7 +178,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Production ML W1',
     problem: 'They turn real things (an email, a house, a photo) into lists of numbers, so a model can compare and score them.',
-    intuition: 'A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age]. Choosing features is a design decision: yes/no facts become 0 or 1, categories become one-hot lists with a single 1, and features on very different scales are often standardized. To score an example, give each feature a weight that says how much it matters and whether it helps or hurts, then add up weight times value. That sum is the dot product theta dot x: a big positive total means "strong yes", negative means "lean no".',
+    intuition: 'A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age]. Choosing features is a design decision: yes/no facts become 0 or 1, categories become one-hot lists with a single 1, and features on very different scales are often standardized. To score an example, give each feature a weight that says how much it matters and whether it helps or hurts, then add up weight times value. That sum is the dot product theta dot x: a big positive total means "strong yes", negative means "lean no". Good features make the information about the label easy to reach: the notes\' face example describes images by the outputs of simple detectors (edges, colour patches, textures) rather than raw pixel values. The same recipe must be used for training examples and for every new example, or new examples will "look" different to the classifier; and the training examples must be representative of the ones the model will see later (a tumour classifier trained on one tumour type has little reason to work on another).',
     formulas: [
       { tex: tex`x=\varphi(\text{example})\in\mathbb{R}^d`, definitions: [tex`\varphi: feature map, the rule that turns an example into numbers`, tex`d: number of features`] },
       { tex: tex`\theta\cdot x=\sum_{i=1}^{d}\theta_ix_i`, definitions: [tex`\theta_i: weight on feature i, learned from data`, tex`\theta\cdot x: model score before thresholding`] },
@@ -479,7 +479,7 @@ export const subtopicConcepts = [
     misconception: 'A surrogate loss is not the metric itself; it is a training objective chosen because it is easier to optimize. Report accuracy or error with the real metric.',
     prerequisites: ['hinge-loss', 'convex-functions'],
     followOns: ['gradient-descent-method', 'logistic-loss'],
-    sources: ['Week1_03-HingeLoss.pdf'],
+    sources: ['Week1_03-HingeLoss.pdf', 'Week2_notes02-Logistic Regression.pdf', 'Bishop §7.1.2'],
   },
 
   // ---------- Gradient and subgradient descent ----------

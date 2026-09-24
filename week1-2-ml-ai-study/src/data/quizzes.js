@@ -190,7 +190,7 @@ export const quizzes = {
   ],
   "stochastic-subgradient-descent": [
     {"question": "What does one stochastic step use?", "answer": "One randomly chosen training example", "wrong": ["The whole training set", "Only the test set", "The largest example"], "why": "Using one example makes each step cheap but noisy."},
-    {"question": "How does hinge-loss SGD differ from the perceptron?", "answer": "It also updates on correct examples with margin below 1, uses a step size, and shrinks theta when regularized", "wrong": ["It never updates on mistakes", "It ignores the labels", "It only works on separable data"], "why": "The hinge loss asks for margin at least 1, and the regularizer shrinks theta each step."},
+    {"question": "How does hinge-loss SGD differ from the perceptron?", "answer": "It updates whenever the agreement is at most 1 (not just on mistakes), uses a decreasing learning rate, and picks examples at random", "wrong": ["It never updates on mistakes", "It ignores the labels", "It only works on separable data"], "why": "These are the three differences listed in the Week 1 notes: the hinge loss asks for agreement above 1, the step size eta_k shrinks over time, and random selection stops the updates from oscillating."},
     {"question": "Why can the training loss go up on some SGD steps?", "answer": "Each step follows one noisy example, not the full average", "wrong": ["The learning rate is always too large", "The loss is not convex", "SGD maximizes the loss"], "why": "On average the steps go downhill, but individual steps can go up."},
   ],
   "linear-regression": [
@@ -209,7 +209,7 @@ export const quizzes = {
     {"question": "When does the formula theta = (X^T X)^-1 X^T y work?", "answer": "When X^T X is invertible, which holds when the columns of X are independent", "wrong": ["Always", "Only with one feature", "Only when y is zero"], "why": "Dependent columns make X^T X singular."},
   ],
   "ridge-regularization": [
-    {"question": "What does ridge regularization penalize?", "answer": "Large weights, through lambda times the sum of squared weights", "wrong": ["The number of training examples", "The size of the residuals only", "The bias term, always"], "why": "The penalty lambda ||theta||^2 pulls weights toward zero."},
+    {"question": "What does ridge regularization penalize?", "answer": "Large weights, through (lambda/2) times the sum of squared weights", "wrong": ["The number of training examples", "The size of the residuals only", "The bias term, always"], "why": "The penalty (lambda/2)||theta||^2 in the Week 2 notes pulls weights toward zero."},
     {"question": "In the page's example (X^T X = 5, X^T y = 8, n = 2, lambda = 0.5), what is theta_ridge?", "answer": "8/6 = 1.333", "wrong": ["8/5 = 1.6", "8/7 = 1.143", "0"], "why": "theta = X^T y / (X^T X + n lambda) = 8 / (5 + 1)."},
     {"question": "Why can ridge improve test performance even though training error rises?", "answer": "It reduces overfitting by discouraging extreme weights", "wrong": ["It adds more training data", "It removes all features", "It changes the test labels"], "why": "Trading a little training fit for stability often generalizes better."},
   ],
@@ -397,5 +397,10 @@ export const quizzes = {
     {"question": "What is covariate shift?", "answer": "The distribution of the inputs changes while the relationship between inputs and labels stays the same", "wrong": ["The labels become noisier", "The model's weights change during deployment", "The test set is smaller than the training set"], "why": "P(x) moves but P(y | x) does not; concept drift is when P(y | x) itself changes."},
     {"question": "Accuracy falls 1.5 points per month from 92%, and the model is retrained every 3 months. What is the average accuracy?", "answer": "89.75%", "wrong": ["92%", "87.5%", "74%"], "why": "Accuracy saws between 92% and 87.5%, so the average is 92 - 1.5*3/2 = 89.75%."},
     {"question": "Sculley et al. describe 'changing anything changes everything'. What does it mean?", "answer": "Features and settings are entangled, so changing one input or hyperparameter can change the behaviour of the whole model", "wrong": ["Models must be retrained every day", "Any code change requires a new dataset", "Changing the test set changes the model"], "why": "ML models mix all their inputs, so no change is truly local; this is one source of technical debt."},
+  ],
+  "ml-landscape": [
+    {"question": "A model learns to predict the time until a tumour recurs from 30 measurements. What kind of problem is this?", "answer": "Supervised regression", "wrong": ["Supervised classification", "Unsupervised learning", "Reinforcement learning"], "why": "Labels are given (supervised) and the target is a number (a time), so it is regression; predicting recurrence yes/no from the same table would be classification."},
+    {"question": "Which set lists the three phases of MLOps in the Lesson 1 slides?", "answer": "Data phase, model phase, operations phase", "wrong": ["Train, validate, test", "Collect, clean, label", "Design, code, compile"], "why": "The data phase covers business and data understanding, the model phase data and model engineering, and the operations phase deployment, testing, versioning, delivery, and monitoring."},
+    {"question": "Why is DevOps alone not enough for machine learning systems?", "answer": "Because data changes everything: a model can get worse when the data changes even if no code changes", "wrong": ["Because ML code cannot be version-controlled", "Because ML models never need testing", "Because DevOps only works for websites"], "why": "ML behaviour depends on data as well as code, so data and models must be versioned, tested, and monitored too."},
   ],
 };

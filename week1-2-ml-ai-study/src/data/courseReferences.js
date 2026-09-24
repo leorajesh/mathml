@@ -55,6 +55,13 @@ export const courseBooks = {
 const ref = (book, section, title, page) => ({ book, section, title, page });
 
 export const courseReferences = {
+  'ml-landscape': [
+    ref('mitchell', '1.1', 'Well-Posed Learning Problems'),
+    ref('bishop', '1', 'Introduction (supervised, unsupervised, and reinforcement learning)', 1),
+    ref('huyen', 'Ch. 1', 'Overview of Machine Learning Systems (ML in research versus production)'),
+    ref('mlops', '', 'Why MLOps, and the people and phases of the ML life cycle'),
+    ref('sculley', '', 'Technical debt in ML systems'),
+  ],
   'ml-workflow': [
     ref('mitchell', '1.1', 'Well-Posed Learning Problems (task T, performance P, experience E)'),
     ref('mitchell', '1.2', 'Designing a Learning System'),

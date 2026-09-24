@@ -135,8 +135,8 @@ export const workedExampleMath = {
     tex`\theta_1=2,\quad \theta_0=1`,
     tex`\hat y=2\cdot3+1=7`,
     tex`y-\hat y=9-7=2`,
-    tex`R_n(\theta)=\tfrac12\bigl[(2-\theta)^2+(3-2\theta)^2\bigr],\qquad R_n'(\theta)=-(8-5\theta)`,
-    tex`\theta:\ 0\ \xrightarrow{-0.1\cdot(-8)}\ 0.8\ \xrightarrow{-0.1\cdot(-4)}\ 1.2\ \to\ \cdots\ \to\ 1.6`,
+    tex`R_n(\theta)=\tfrac14\bigl[(2-\theta)^2+(3-2\theta)^2\bigr],\qquad R_n'(\theta)=-\tfrac12(8-5\theta)`,
+    tex`\theta:\ 0\ \xrightarrow{-0.2\cdot(-4)}\ 0.8\ \xrightarrow{-0.2\cdot(-2)}\ 1.2\ \to\ \cdots\ \to\ 1.6`,
   ],
   'polynomial-regression': [
     tex`\varphi(x)=\begin{bmatrix}x\\x^2\\x^3\end{bmatrix}`,
@@ -479,5 +479,11 @@ export const workedExampleMath = {
     null,
     tex`92-1.5\cdot12=74\%`,
     tex`\bar A=92-\frac{1.5\cdot3}{2}=89.75\%,\qquad T=1:\ \bar A=92-0.75=91.25\%`,
+  ],
+  'ml-landscape': [
+    tex`x^{(t)}\in\mathbb{R}^{30}:\ \text{one tumour per row}`,
+    tex`y^{(t)}\in\{R,N\}\ \to\ \{+1,-1\}\quad\text{(classification)}`,
+    tex`y^{(t)}\in\mathbb{R}_{\ge0}\ \text{(months)}\quad\text{(regression)}`,
+    null,
   ],
 };

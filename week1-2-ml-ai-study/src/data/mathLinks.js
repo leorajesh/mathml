@@ -6,6 +6,10 @@
 const use = (id, why) => ({ id, why });
 
 export const mathLinks = {
+  'ml-landscape': [
+    use('functions', 'Supervised learning looks for a function h from the input space X to the output space Y.'),
+    use('vectors-dot-product', 'Each example, such as a tumour with 30 measurements, becomes a vector in R^30.'),
+  ],
   'ml-workflow': [
     use('functions', 'A model is a function h from inputs to labels; learning picks one h from a family of functions (the hypothesis class).'),
     use('sets', 'The training set S_n and the hypothesis class are sets, and the labels come from a small set such as {-1, +1}.'),

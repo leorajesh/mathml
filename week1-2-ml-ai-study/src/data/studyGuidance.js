@@ -38,7 +38,7 @@ export function conceptLevel(id) {
 }
 
 export const recommendedPaths = {
-  'overview-foundations': ['ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
+  'overview-foundations': ['ml-landscape', 'ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
   'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
   'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
@@ -50,6 +50,9 @@ export const recommendedPaths = {
 };
 
 export const guidedSelfChecks = {
+  'ml-landscape': [
+    { question: 'Name one activity from each MLOps phase for a spam filter.', answer: 'Data phase: agree what counts as spam and what error rate is acceptable, and collect labelled emails. Model phase: engineer features and train and validate a classifier. Operations phase: deploy it behind the mail server, version the model and data, and monitor whether new spam still looks like the training spam.' },
+  ],
   'max-margin-svm': [
     { question: 'Why does requiring signed margins of at least 1 not restrict the boundary?', answer: 'Scaling theta and theta_0 by the same positive number keeps the same boundary but scales every signed margin. The "at least 1" rule only fixes that scale, so that minimizing ||theta|| really widens the geometric gap 2/||theta||.' },
   ],
@@ -108,7 +111,7 @@ export const guidedSelfChecks = {
     { question: 'Why can momentum converge faster than plain gradient descent with the same step size?', answer: 'In a narrow valley, plain descent zig-zags across and creeps along the valley. Momentum adds alpha times the last step, so the across-the-valley parts cancel and the along-the-valley parts accumulate into a larger effective step in the useful direction.' },
   ],
   'lagrange-multipliers': [
-    { question: 'How is ridge regression related to a constrained problem?', answer: 'Minimizing the squared error subject to ||theta||^2 <= t has Lagrangian error + lambda(||theta||^2 - t). For each t with an active constraint there is a lambda >= 0 giving the same minimizer, which is the ridge objective up to a constant.' },
+    { question: 'How is ridge regression related to a constrained problem?', answer: 'Minimizing the squared error subject to ||theta||^2 <= t has Lagrangian error + lambda(||theta||^2 - t). For each t with an active constraint there is a lambda >= 0 giving the same minimizer, which is the ridge objective up to a constant and a rescaling of lambda (the notes write the penalty as (lambda/2)||theta||^2).' },
   ],
   functions: [
     { question: 'Is f(x) = x^2 from the real numbers to the real numbers injective? Surjective?', answer: 'Neither. f(2) = f(-2) = 4, so it is not injective, and no real x gives a negative output such as -1, so it is not surjective.' },
@@ -194,12 +197,14 @@ export const guidedSelfChecks = {
     { question: 'What changes when the bias term theta_0 is removed?', answer: 'The decision boundary becomes theta dot x = 0, so it must pass through the origin. The classifier can rotate the boundary but cannot shift it.' },
   ],
   'linear-separability': [
+    { question: 'Find examples that are linearly separable but not separable through the origin.', answer: 'In one dimension, a negative point at x = 1 and a positive point at x = 3. Any boundary through the origin is x = 0, which puts both points on the same side; with an offset, the boundary x = 2 separates them. Every set separable through the origin is also separable (take theta_0 = 0), but not the other way round.' },
     { question: 'What must be true for every signed margin in a linearly separable dataset?', answer: 'There must exist parameters such that every signed margin y(theta dot x + theta_0) is strictly positive.' },
   ],
   perceptron: [
     { question: 'What triggers a perceptron update?', answer: 'An update happens when y(theta dot x + theta_0) <= 0, meaning the example is misclassified or exactly on the boundary.' },
   ],
   'perceptron-convergence': [
+    { question: 'Can a single perceptron update "undershoot", leaving the example still misclassified?', answer: 'Yes. The update raises the agreement y theta . x by ||x||^2. If the agreement was -10 and ||x||^2 = 5, it becomes -5: still a mistake. Seeing the same example again keeps raising it, so it is eventually fixed, but updates on other examples can push the other way in between.' },
     { question: 'What does separability guarantee for perceptron?', answer: 'If the data are linearly separable, perceptron makes finitely many mistakes and eventually finds a separator. The mistake bound scales like (R/gamma)^2.' },
   ],
   'hinge-loss': [
@@ -209,7 +214,8 @@ export const guidedSelfChecks = {
     { question: 'How can you check convexity in practice?', answer: 'Use the chord definition, check f"(x) >= 0 for one-variable twice-differentiable functions, or check the Hessian is positive semidefinite in multiple dimensions.' },
   ],
   'stochastic-subgradient-descent': [
-    { question: 'How does hinge-loss SSGD differ from perceptron?', answer: 'Perceptron updates when margin <= 0. Hinge SSGD updates when margin <= 1, uses a learning rate, and can optimize non-separable data.' },
+    { question: 'Why do the notes recommend keeping the best theta seen so far?', answer: 'Stochastic steps make the training risk R_n(theta^(k)) go down only noisily, so the last iterate may be worse than an earlier one. Tracking the theta with the lowest R_n so far gives a value that never gets worse, and that is the one to report when you stop. On non-separable data that best risk still need not reach zero.' },
+    { question: 'How does hinge-loss SSGD differ from perceptron?', answer: 'Perceptron updates when the agreement is <= 0 and cycles through the examples in order with step 1. Hinge SSGD updates when the agreement is <= 1, uses a decreasing learning rate eta_k, and picks examples at random; unlike the perceptron it still converges (to the minimum hinge risk) on non-separable data.' },
   ],
   'least-squares-normal-equation': [
     { question: 'How does the normal equation arise from squared residuals?', answer: 'Taking the gradient of the squared-error objective and setting it to zero gives X^T X theta = X^T y.' },

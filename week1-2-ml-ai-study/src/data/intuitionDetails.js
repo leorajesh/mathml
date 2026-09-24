@@ -278,7 +278,7 @@ export const intuitionDetails = {
       idea("More than two classes", "One-vs-rest trains one classifier per class (cat vs not cat, dog vs not dog, fish vs not fish) and picks the most probable class."),
     ],
     courseNotes: [
-      "Lesson 4 gives the chance of y = 0 at score 7 as 0.0001; the correct value is 1 - sigma(7) ≈ 0.0009, as on this page.",
+      "Lesson 4 gives the chance of y = 0 at score 7 as 0.0001. The correct value is 1 - sigma(7) = 1 - 0.99909 ≈ 0.0009, as on this page (check: e^(-7) ≈ 0.000912).",
     ],
   },
   "logistic-loss": {

@@ -637,7 +637,7 @@ const baseConcepts = [
     example: ['For y = 1 and predicted probability h = 0.8, loss = -log(0.8) ≈ 0.223.', 'For y = 1 and h = 0.2, loss = -log(0.2) ≈ 1.609.', 'The confident wrong-ish prediction is penalized much more: 1.609 - 0.223 = 1.386.', 'Optimizing log-likelihood is equivalent to optimizing likelihood because log is increasing, but it converts products into sums that are easier and numerically safer.', 'One gradient step: x = [1, 2] (the leading 1 is the offset), y = 1, theta = [0, 0]. Then h = sigma(0) = 0.5, the gradient is (0.5 - 1)[1, 2] = [-0.5, -1], and with alpha = 0.5, theta becomes [0.25, 0.5].'],
     graph: { type: 'logLoss', title: 'Logistic loss for true label y = 1', sliders: [{ key: 'prob', label: 'predicted probability h', min: 0.02, max: 0.98, step: 0.01, value: 0.8 }] },
     misconception: 'A probability near 0 or 1 is not automatically good; it is good only if it assigns high probability to the observed class.',
-    prerequisites: ['logistic-regression', 'gradient-descent-method', 'loss-gradients'],
+    prerequisites: ['logistic-regression', 'gradient-descent-method', 'loss-gradients', 'feature-scaling'],
     followOns: ['classification-metrics', 'taylor-hessian'],
     sources: ['Week2_notes02-Logistic Regression.pdf', 'Production ML Slides Lesson 4 - Logistic Regression.pdf'],
   },

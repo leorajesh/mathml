@@ -12,6 +12,7 @@ import { mmlReferences } from '../src/data/mmlReferences.js';
 import { courseBooks, courseReferences, caseStudies } from '../src/data/courseReferences.js';
 import { mathLinks } from '../src/data/mathLinks.js';
 import { intuitionDetails } from '../src/data/intuitionDetails.js';
+import { codingGuides } from '../src/data/codingGuides.js';
 import { trackOrder } from '../src/data/learningTracks.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -114,6 +115,15 @@ for (const { id } of concepts) {
   for (const note of details.courseNotes ?? []) if (words(note) > 50) problems.push(`${id}: course note over 50 words`);
 }
 for (const id of Object.keys(intuitionDetails)) if (!conceptMap[id]) problems.push(`intuition details for unknown page "${id}"`);
+// "From formula to code" guides: known pages, labelled steps of at most 70 words, code without tabs.
+for (const [id, steps] of Object.entries(codingGuides)) {
+  if (!conceptMap[id]) problems.push(`coding guide for unknown page "${id}"`);
+  for (const item of steps) {
+    if (!item.label || !item.text) problems.push(`${id}: coding-guide step needs a label and text`);
+    else if (words(item.text) > 70) problems.push(`${id}: coding-guide step "${item.label}" is over 70 words`);
+    if (item.code && item.code.includes('\t')) problems.push(`${id}: coding-guide code "${item.label}" uses tabs`);
+  }
+}
 for (const [id, figure] of Object.entries(figures)) {
   if (!drawnFigures.has(id)) problems.push(`figure "${id}" has no drawing in Figures.jsx`);
   if (!figure.title || !figure.caption || !figure.alt) problems.push(`figure "${id}" needs a title, caption, and alt text`);

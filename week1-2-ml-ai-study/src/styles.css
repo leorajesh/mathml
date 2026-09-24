@@ -342,6 +342,10 @@ fieldset:disabled .quiz-option { cursor: default; }
 .course-notes { margin-top: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; }
 .course-notes summary { cursor: pointer; font-weight: 700; color: var(--muted); }
 .course-notes ul { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; line-height: 1.5; }
+.coding-guide { margin-bottom: 18px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fffdf8; }
+.coding-guide h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.coding-guide ol { margin: 0; padding-left: 22px; display: grid; gap: 10px; line-height: 1.55; }
+.coding-guide pre { margin: 6px 0 0; padding: 8px 10px; background: #f3ece0; border-radius: 6px; overflow-x: auto; font-size: 0.86rem; line-height: 1.45; }
 .picture-it { margin-top: 18px; }
 .picture-it h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .concept-figure { margin: 0 0 16px; padding: 14px; background: rgba(255, 253, 248, 0.86); border: 1px solid var(--line); border-radius: 8px; }

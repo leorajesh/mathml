@@ -1,3 +1,4 @@
+import { calculusConcepts } from './calculusConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
@@ -70,6 +71,12 @@ export const conceptOrder = [
   'lu-decomposition',
   'cholesky-decomposition',
   'svd',
+  'derivatives',
+  'partial-derivatives-gradient',
+  'jacobian-chain-rule',
+  'loss-gradients',
+  'backpropagation',
+  'taylor-hessian',
   'pca',
 ];
 
@@ -80,13 +87,13 @@ export const sourceNotes = [
   'Mathematics for AI Week 1: Matrices, Linear Systems, Vector Spaces, Bases, Linear Transformations',
   'Mathematics for AI Week 2: Invertible Matrices, Rank/Nullity, Affine Spaces, Determinants, Change of Basis',
   'Mathematics for AI Week 3: Eigenvalues, Eigenvectors, Diagonalization, PageRank, Spectral Theorem, Cholesky, LU, SVD',
-  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
+  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
 ];
 
 export const notCovered = [
   'Administrative course logistics and syllabus items were omitted because they do not teach the requested ML or mathematics concepts.',
   'Later Production ML topics such as SVMs, clustering, decision trees, ensemble methods, HMMs, reinforcement learning, and anomaly detection were listed in the introduction slides but fall outside Week 1-2 coverage.',
-  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-4, 7, and 10, plus least squares as a projection); vector calculus, probability, Bayesian regression, Gaussian mixtures, and SVMs are not converted.',
+  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-5, 7, and 10, plus least squares as a projection); probability, Bayesian regression, Gaussian mixtures, and SVMs are not converted.',
   'Long theorem proofs were compressed into intuition, formulas, and numeric examples so the app stays focused on conceptual understanding.',
 ];
 
@@ -527,7 +534,7 @@ const baseConcepts = [
     graph: { type: 'fitLine', title: 'Least squares as visible residuals', caption: 'This graph uses a separate three-point dataset with an intercept. The red bars are residuals. Move the slope and intercept to see why the normal equation solution is the global minimum of this quadratic loss.', sliders: [{ key: 'slope', label: 'slope', min: -1, max: 2, step: 0.05, value: 1 }, { key: 'intercept', label: 'intercept', min: -1, max: 3, step: 0.05, value: 0 }] },
     figure: 'projection-plane',
     misconception: 'The normal equation is elegant, but the slides note it can be slow or impractical for large/high-dimensional problems, where gradient methods are useful.',
-    prerequisites: ['matrix-systems', 'rank-nullity', 'linear-regression', 'orthogonal-projections'],
+    prerequisites: ['matrix-systems', 'rank-nullity', 'linear-regression', 'orthogonal-projections', 'loss-gradients'],
     followOns: ['ridge-regularization', 'model-complexity-generalization'],
     sources: ['Week2_notes01-LinearRegression.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
@@ -592,16 +599,17 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W2',
     problem: 'It is how logistic regression learns: it rewards putting high probability on the right answer and heavily punishes confident wrong answers.',
-    intuition: 'If the true answer is yes and the model says 80% yes, the loss is small. If it says 20% yes, the loss is much bigger. Near 0%, the loss shoots toward infinity, a harsh penalty for being confidently wrong. This loss is convex (bowl-shaped), unlike squared error on probabilities. Minimizing it is the same as choosing the most likely parameters, and using logs turns a huge product of probabilities into a manageable sum.',
+    intuition: 'If the true answer is yes and the model says 80% yes, the loss is small. If it says 20% yes, the loss is much bigger. Near 0%, the loss shoots toward infinity, a harsh penalty for being confidently wrong. This loss is convex (bowl-shaped), unlike squared error on probabilities. Minimizing it is the same as choosing the most likely parameters, and using logs turns a huge product of probabilities into a manageable sum. Learning means running gradient descent on this loss, and its gradient is strikingly simple: the prediction error h - y times the input, averaged over the examples.',
     formulas: [
       { tex: tex`L(y,h)= -y\log(h)-(1-y)\log(1-h)`, definitions: ['y: binary target encoded as 0 or 1', 'h: predicted probability of y=1', 'log: natural logarithm'] },
       { tex: tex`J(\theta)=\frac{1}{n}\sum_{t=1}^{n}L(y^{(t)},\sigma(\theta\cdot x^{(t)}+\theta_0))`, definitions: ['J: average logistic loss', 'sigma: sigmoid', 'theta: logistic-regression weights'] },
       { tex: tex`\arg\max_\theta\prod_{t=1}^{n}p_t\ =\ \arg\max_\theta\sum_{t=1}^{n}\log p_t`, definitions: [tex`p_t: probability assigned to the observed label`, tex`\log: turns products into sums without changing the maximizer`] },
+      { tex: tex`\nabla_\theta J=\frac1n\sum_{t=1}^{n}\bigl(h^{(t)}-y^{(t)}\bigr)\,x^{(t)},\qquad \frac{\partial J}{\partial\theta_0}=\frac1n\sum_{t=1}^{n}\bigl(h^{(t)}-y^{(t)}\bigr)`, definitions: [tex`h^{(t)}: predicted probability sigma(theta dot x^(t) + theta_0)`, tex`h^{(t)}-y^{(t)}: prediction error; learning repeats theta <- theta - alpha times this gradient`] },
     ],
     example: ['For y = 1 and predicted probability h = 0.8, loss = -log(0.8) ≈ 0.223.', 'For y = 1 and h = 0.2, loss = -log(0.2) ≈ 1.609.', 'The confident wrong-ish prediction is penalized much more: 1.609 - 0.223 = 1.386.', 'Optimizing log-likelihood is equivalent to optimizing likelihood because log is increasing, but it converts products into sums that are easier and numerically safer.'],
     graph: { type: 'logLoss', title: 'Logistic loss for true label y = 1', sliders: [{ key: 'prob', label: 'predicted probability h', min: 0.02, max: 0.98, step: 0.01, value: 0.8 }] },
     misconception: 'A probability near 0 or 1 is not automatically good; it is good only if it assigns high probability to the observed class.',
-    prerequisites: ['logistic-regression', 'gradient-descent-method'],
+    prerequisites: ['logistic-regression', 'gradient-descent-method', 'loss-gradients'],
     followOns: ['classification-metrics', 'eigenvalues-eigenvectors'],
     sources: ['Week2_notes02-Logistic Regression.pdf', 'Production ML Slides Lesson 4 - Logistic Regression.pdf'],
   },
@@ -643,7 +651,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 
@@ -711,6 +719,7 @@ export const mindMapEdges = [
   ['feature-vectors', 'linear-classifier'], ['linear-classifier', 'linear-classifier-through-origin'], ['linear-classifier-through-origin', 'linear-separability'], ['linear-separability', 'perceptron'], ['linear-classifier', 'empirical-risk-zero-one'], ['perceptron', 'perceptron-convergence'], ['perceptron-convergence', 'hinge-loss'], ['empirical-risk-zero-one', 'hinge-loss'], ['hinge-loss', 'convexity-surrogate-losses'], ['convexity-surrogate-losses', 'gradient-descent'], ['gradient-descent', 'stochastic-subgradient-descent'],
   ['feature-vectors', 'linear-regression'], ['linear-regression', 'polynomial-regression'], ['linear-regression', 'least-squares-normal-equation'], ['rank-inverse-determinant', 'least-squares-normal-equation'], ['least-squares-normal-equation', 'ridge-regularization'], ['ridge-regularization', 'lasso-elastic-net'], ['lasso-elastic-net', 'model-complexity-generalization'],
   ['model-complexity-generalization', 'validation-cross-validation'], ['validation-cross-validation', 'logistic-regression'], ['linear-classifier', 'logistic-regression'], ['logistic-regression', 'logistic-loss'], ['gradient-descent', 'logistic-loss'], ['logistic-loss', 'classification-metrics'],
+  ['vector-calculus', 'gradient-descent'], ['vector-calculus', 'least-squares-normal-equation'], ['vector-calculus', 'logistic-loss'], ['vector-calculus', 'convexity-surrogate-losses'],
   ['feature-vectors', 'norms-inner-products'], ['norms-inner-products', 'orthogonality-spectral-theorem'], ['norms-inner-products', 'projections-gram-schmidt'], ['orthogonality-spectral-theorem', 'projections-gram-schmidt'], ['rank-inverse-determinant', 'projections-gram-schmidt'], ['projections-gram-schmidt', 'least-squares-normal-equation'], ['projections-gram-schmidt', 'pca'], ['eigenvalues-eigenvectors', 'trace'], ['trace', 'pca'], ['orthogonality-spectral-theorem', 'pca'], ['affine-dimensionality-reduction', 'pca'], ['matrix-decompositions', 'pca'], ['gradient-descent', 'lagrange-multipliers'], ['lagrange-multipliers', 'ridge-regularization'], ['lagrange-multipliers', 'lasso-elastic-net'],
     ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'eigenvalues-eigenvectors'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],
 ];

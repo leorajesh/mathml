@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -85,6 +85,9 @@ const plotAxes = {
   innerProductBall: { x: 'drawn 3 times larger', y: '' },
   traceEigen: { x: 'the real number line', y: '' },
   svdCompression: { x: '', y: '' },
+  jacobianMap: { x: 'drawn 1.6 times larger', y: '' },
+  lossSurface: { x: 'slope a', y: 'intercept b' },
+  computationGraph: { x: '', y: '' },
 };
 
 function renderCanvas(content, axes) {
@@ -164,6 +167,12 @@ function renderGraph(type, values) {
     case 'momentum': return MomentumGraph({ values });
     case 'lagrange': return LagrangeGraph({ values });
     case 'svdCompression': return SvdCompressionGraph({ values });
+    case 'tangentLine': return TangentLineGraph({ values });
+    case 'gradientField': return GradientFieldGraph({ values });
+    case 'jacobianMap': return JacobianMapGraph({ values });
+    case 'lossSurface': return LossSurfaceGraph({ values });
+    case 'computationGraph': return ComputationGraphGraph({ values });
+    case 'taylor': return TaylorGraph({ values });
     default: return null;
   }
 }
@@ -988,5 +997,187 @@ function SvdCompressionGraph({ values }) {
   return {
     content: <g>{panel(60, original, 'original A (48 by 48)')}{panel(340, rebuilt, `A_k with k = ${k}`)}</g>,
     readout: [`stores k(48 + 48 + 1) = ${k * (size + size + 1)} numbers instead of ${size * size}`, `keeps ${((100 * keptEnergy) / energy).toFixed(1)}% of the energy (sum of squared singular values)`, `relative error ||A - A_k||_F / ||A||_F = ${Math.sqrt(Math.max(energy - keptEnergy, 0) / energy).toFixed(3)}; the next singular value is ${(singular[k] ?? 0).toFixed(2)}`],
+  };
+}
+
+// ---------- Graphs for the vector calculus pages (MML book Ch. 5) ----------
+
+// Samples a curve and breaks it wherever it leaves the plotting area, so steep curves are clipped cleanly.
+function clippedPath(f, from, to, samples = 240) {
+  let d = '';
+  let pen = false;
+  for (let index = 0; index <= samples; index += 1) {
+    const x = from + ((to - from) * index) / samples;
+    const y = f(x);
+    if (!Number.isFinite(y) || Math.abs(y) > 5.2) { pen = false; continue; }
+    d += `${pen ? 'L' : 'M'} ${sx(x)} ${sy(y)} `;
+    pen = true;
+  }
+  return d;
+}
+
+function TangentLineGraph({ values }) {
+  const f = (x) => (x ** 3) / 4 - x;
+  const df = (x) => (3 * x * x) / 4 - 1;
+  const { x0, h } = values;
+  const slope = df(x0);
+  const chordSlope = Math.abs(h) < 1e-9 ? slope : (f(x0 + h) - f(x0)) / h;
+  const tangent = (x) => f(x0) + slope * (x - x0);
+  const chord = (x) => f(x0) + chordSlope * (x - x0);
+  return {
+    content: <g><path className="fn-curve" d={clippedPath(f, -4.2, 4.2)} /><path className="boundary" d={clippedPath(tangent, -5, 5, 400)} /><path className="chord-line" d={clippedPath(chord, -5, 5, 400)} />{circlePoint({ x: x0, y: f(x0) }, 'active-dot', 'x0')}{Math.abs(f(x0 + h)) <= 5 && Math.abs(h) > 1e-9 && circlePoint({ x: x0 + h, y: f(x0 + h) }, 'point-a', 'x0 + h')}</g>,
+    readout: [`difference quotient (chord slope) = ${chordSlope.toFixed(4)}`, `derivative f'(x0) = 3x0^2/4 - 1 = ${slope.toFixed(4)}`, `gap = ${Math.abs(chordSlope - slope).toFixed(4)}; for small h it shrinks roughly in proportion to |h| (like h^2 at x0 = 0)`],
+  };
+}
+
+function GradientFieldGraph({ values }) {
+  const { px, py, angle } = values;
+  const f = (x, y) => (x * x) / 2 + y * y;
+  const level = f(px, py);
+  const grad = { x: px, y: 2 * py };
+  const radians = (angle * Math.PI) / 180;
+  const u = { x: Math.cos(radians), y: Math.sin(radians) };
+  const slope = grad.x * u.x + grad.y * u.y;
+  const size = Math.hypot(grad.x, grad.y);
+  const point = { x: px, y: py };
+  const contours = [0.5, 2, 4.5, 8, 12.5];
+  return {
+    content: <g>{contours.map((c) => <ellipse key={c} className="contour" cx={sx(0)} cy={sy(0)} rx={sx(Math.sqrt(2 * c)) - sx(0)} ry={sy(0) - sy(Math.sqrt(c))} />)}{level > 0 && <ellipse className="contour strong" cx={sx(0)} cy={sy(0)} rx={sx(Math.sqrt(2 * level)) - sx(0)} ry={sy(0) - sy(Math.sqrt(level))} />}{size > 0 && arrow(point, { x: px + grad.x / 2, y: py + grad.y / 2 }, 'result-vector')}{arrow(point, { x: px + 1.5 * u.x, y: py + 1.5 * u.y }, 'vector-a')}{circlePoint(point, 'active-dot', '')}</g>,
+    readout: [`gradient at (${px.toFixed(2)}, ${py.toFixed(2)}) = [${grad.x.toFixed(2)}, ${grad.y.toFixed(2)}], length ${size.toFixed(2)}`, `slope along u = grad f . u = ${slope.toFixed(3)}`, size > 0 ? `largest possible slope is ${size.toFixed(2)} (along the gradient); 0 along the contour` : 'at the minimum the gradient is zero: every direction is flat'],
+  };
+}
+
+function JacobianMapGraph({ values }) {
+  const { px, py, size } = values;
+  const zoom = 1.6;
+  const map = (x, y) => ({ x: x + 0.2 * y * y, y: y + 0.2 * x * x });
+  const show = (p) => ({ x: zoom * p.x, y: zoom * p.y });
+  const J = [[1, 0.4 * py], [0.4 * px, 1]];
+  const det = J[0][0] * J[1][1] - J[0][1] * J[1][0];
+  const half = size / 2;
+  const corners = [[-half, -half], [half, -half], [half, half], [-half, half]];
+  const boundary = [];
+  for (let side = 0; side < 4; side += 1) {
+    const [ax, ay] = corners[side];
+    const [bx, by] = corners[(side + 1) % 4];
+    for (let k = 0; k < 20; k += 1) {
+      const t = k / 20;
+      boundary.push(map(px + ax + t * (bx - ax), py + ay + t * (by - ay)));
+    }
+  }
+  boundary.push(boundary[0]);
+  const image = map(px, py);
+  const linear = [...corners, corners[0]].map(([dx, dy]) => ({ x: image.x + J[0][0] * dx + J[0][1] * dy, y: image.y + J[1][0] * dx + J[1][1] * dy }));
+  const square = [...corners, corners[0]].map(([dx, dy]) => ({ x: px + dx, y: py + dy }));
+  let area = 0;
+  for (let k = 0; k < boundary.length - 1; k += 1) area += boundary[k].x * boundary[k + 1].y - boundary[k + 1].x * boundary[k].y;
+  area = Math.abs(area) / 2;
+  return {
+    content: <g><path className="shape-original" d={linePath(square.map(show))} /><path className="shape-result" d={linePath(boundary.map(show))} /><path className="linear-approx" d={linePath(linear.map(show))} />{circlePoint(show({ x: px, y: py }), 'point-a', 'p')}{circlePoint(show(image), 'active-dot', 'f(p)')}</g>,
+    readout: [`J = [[1, ${J[0][1].toFixed(2)}], [${J[1][0].toFixed(2)}, 1]], det J = ${det.toFixed(3)}`, `area of the curved image / area of the square = ${(area / (size * size)).toFixed(3)}`, 'smaller squares: the ratio approaches |det J| and the dashed parallelogram fits the image'],
+  };
+}
+
+// Least squares for the line y = a x + b on (1, 1), (2, 2), (3, 2), drawn in (a, b) coordinates.
+const lsPoints = [[1, 1], [2, 2], [3, 2]];
+const lsBest = { a: 0.5, b: 2 / 3 };
+function lsLoss(a, b) { return lsPoints.reduce((sum, [x, y]) => sum + (y - a * x - b) ** 2, 0); }
+function lsGrad(a, b) { return lsPoints.reduce((g, [x, y]) => { const r = y - a * x - b; return { a: g.a - 2 * r * x, b: g.b - 2 * r }; }, { a: 0, b: 0 }); }
+
+function LossSurfaceGraph({ values }) {
+  // (a, b) plane mapped onto the canvas: a in [-1.5, 2.5] across, b in [-2, 3.2] up.
+  const toCanvas = (a, b) => ({ x: -4.6 + ((a + 1.5) / 4) * 9.2, y: -4.6 + ((b + 2) / 5.2) * 9.2 });
+  const { steps } = values;
+  let a = values.a;
+  let b = values.b;
+  const path = [toCanvas(a, b)];
+  for (let k = 0; k < steps; k += 1) {
+    const g = lsGrad(a, b);
+    a -= 0.03 * g.a;
+    b -= 0.03 * g.b;
+    path.push(toCanvas(a, b));
+  }
+  // Contours: L = Lmin + c along the ellipse (p - p*)^T M (p - p*) = c, M = sum [[x^2, x], [x, 1]].
+  const m11 = 14;
+  const m12 = 6;
+  const m22 = 3;
+  const minLoss = lsLoss(lsBest.a, lsBest.b);
+  const contour = (c) => {
+    const pts = [];
+    for (let k = 0; k <= 240; k += 1) {
+      const t = (2 * Math.PI * k) / 240;
+      const dir = { a: Math.cos(t), b: Math.sin(t) };
+      const q = m11 * dir.a * dir.a + 2 * m12 * dir.a * dir.b + m22 * dir.b * dir.b;
+      const r = Math.sqrt(c / q);
+      pts.push(toCanvas(lsBest.a + r * dir.a, lsBest.b + r * dir.b));
+    }
+    return linePath(pts);
+  };
+  const start = toCanvas(values.a, values.b);
+  const g0 = lsGrad(values.a, values.b);
+  const scale = 0.03;
+  const arrowEnd = toCanvas(values.a - scale * g0.a, values.b - scale * g0.b);
+  return {
+    content: <g>{[0.1, 0.5, 1.5, 4, 9].map((c) => <path key={c} className="contour" d={contour(c)} />)}{arrow(start, arrowEnd, 'result-vector')}<path className="path-momentum" d={linePath(path)} />{path.slice(1).map((p, index) => <circle key={index} className="active-dot small" cx={sx(p.x)} cy={sy(p.y)} r="3" />)}{circlePoint(start, 'point-a', 'start')}{circlePoint(toCanvas(lsBest.a, lsBest.b), 'muted-dot', 'minimum')}</g>,
+    readout: [`gradient at start: dL/da = ${g0.a.toFixed(2)}, dL/db = ${g0.b.toFixed(2)} (loss ${lsLoss(values.a, values.b).toFixed(3)})`, `after ${steps} steps: a = ${a.toFixed(3)}, b = ${b.toFixed(3)}, loss ${lsLoss(a, b).toFixed(4)} (minimum ${minLoss.toFixed(4)})`, 'the valley is long and narrow, so progress along it is slow: the Hessian eigenvalues differ by a factor of about 46'],
+  };
+}
+
+function ComputationGraphGraph({ values }) {
+  const { w, b, x, y } = values;
+  const z = w * x + b;
+  const m = y * z;
+  const loss = Math.log1p(Math.exp(-m));
+  const dm = -1 / (1 + Math.exp(m));
+  const dz = dm * y;
+  const dw = dz * x;
+  const db = dz;
+  const lossAt = (wv) => Math.log1p(Math.exp(-y * (wv * x + b)));
+  const numeric = (lossAt(w + 1e-5) - lossAt(w - 1e-5)) / 2e-5;
+  const nodes = [
+    { id: 'x', label: 'x', value: x, grad: null, px: 50, py: 60 },
+    { id: 'w', label: 'w', value: w, grad: dw, px: 50, py: 150 },
+    { id: 'b', label: 'b', value: b, grad: db, px: 50, py: 240 },
+    { id: 'z', label: 'z = wx + b', value: z, grad: dz, px: 215, py: 150 },
+    { id: 'y', label: 'y', value: y, grad: null, px: 215, py: 260 },
+    { id: 'm', label: 'm = y z', value: m, grad: dm, px: 375, py: 150 },
+    { id: 'L', label: 'L = log(1 + e^-m)', value: loss, grad: 1, px: 520, py: 150 },
+  ];
+  const at = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  const edges = [['x', 'z'], ['w', 'z'], ['b', 'z'], ['z', 'm'], ['y', 'm'], ['m', 'L']];
+  const boxW = 104;
+  const boxH = 54;
+  return {
+    content: (
+      <g>
+        {edges.map(([from, to]) => <line key={`${from}-${to}`} className="graph-edge" x1={at[from].px + boxW / 2} y1={at[from].py} x2={at[to].px - boxW / 2} y2={at[to].py} />)}
+        {nodes.map((n) => (
+          <g key={n.id}>
+            <rect className="graph-node" x={n.px - boxW / 2} y={n.py - boxH / 2} width={boxW} height={boxH} rx="8" />
+            <text x={n.px} y={n.py - 10} textAnchor="middle" className="node-label">{n.label}</text>
+            <text x={n.px} y={n.py + 7} textAnchor="middle" className="node-value">{n.value.toFixed(3)}</text>
+            {n.grad !== null && <text x={n.px} y={n.py + 22} textAnchor="middle" className="node-grad">dL/d{n.id} = {n.grad.toFixed(3)}</text>}
+          </g>
+        ))}
+        <text className="graph-note" x="320" y="330" textAnchor="middle">forward: left to right; backward: right to left</text>
+      </g>
+    ),
+    readout: [`loss L = ${loss.toFixed(4)}`, `backprop: dL/dw = ${dw.toFixed(4)}, dL/db = ${db.toFixed(4)}`, `finite-difference check of dL/dw: ${numeric.toFixed(4)}`],
+  };
+}
+
+function TaylorGraph({ values }) {
+  const { x0 } = values;
+  const n = Math.round(values.n);
+  // Derivatives of sin cycle through sin, cos, -sin, -cos.
+  const derivative = (k) => [Math.sin(x0), Math.cos(x0), -Math.sin(x0), -Math.cos(x0)][k % 4];
+  let factorial = 1;
+  const coefficients = [];
+  for (let k = 0; k <= n; k += 1) { if (k > 0) factorial *= k; coefficients.push(derivative(k) / factorial); }
+  const T = (x) => coefficients.reduce((sum, c, k) => sum + c * (x - x0) ** k, 0);
+  const at = x0 + 1;
+  return {
+    content: <g><path className="fn-curve" d={clippedPath(Math.sin, -5, 5)} /><path className="boundary" d={clippedPath(T, -5, 5)} />{circlePoint({ x: x0, y: Math.sin(x0) }, 'active-dot', 'x0')}<text className="graph-note" x="44" y="48">degree {n} Taylor polynomial around x0 = {x0.toFixed(1)}</text></g>,
+    readout: [`at x0 + 1: sin = ${Math.sin(at).toFixed(4)}, T${n} = ${T(at).toFixed(4)}, error ${Math.abs(Math.sin(at) - T(at)).toExponential(1)}`, `at x0 + 2: error ${Math.abs(Math.sin(x0 + 2) - T(x0 + 2)).toExponential(1)}`],
   };
 }

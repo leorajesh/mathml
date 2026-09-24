@@ -22,7 +22,7 @@ domain root and under a sub-path such as GitHub Pages' `/mathml/`.
 
 ## Topics and subtopics
 
-Titles that name several ideas are **topics** with one page per **subtopic** (68 concept pages, 15 topics),
+Titles that name several ideas are **topics** with one page per **subtopic** (74 concept pages, 16 topics),
 defined in `src/data/subtopics.js`. A topic keeps its original id, so the concept map, old links, and
 map edges point at its overview page, which lists the subtopics in order; each subtopic page shows a
 "Part of <topic>" bar with links to its siblings.
@@ -34,7 +34,7 @@ every page the reference book covers cites it, and the tracks respect prerequisi
 
 ## Quizzes
 
-Section 8 of every concept page is a multiple-choice quiz (3 questions per concept, 204 in all) with a
+Section 8 of every concept page is a multiple-choice quiz (3 questions per concept, 222 in all) with a
 score, per-question feedback, and an explanation for every answer. Options are shuffled so the correct
 answer is not always first, and "Try again" reshuffles. Topic overview pages have a combined quiz of
 their subtopics. The best score is saved in the browser and shown in the track lists.
@@ -44,7 +44,7 @@ Questions live in `src/data/quizzes.js` as `{ question, answer, wrong: [3 option
 
 ## Learning tracks
 
-Besides the concept map, the app has two step-by-step tracks: the **Math Track** (40 concepts) and the
+Besides the concept map, the app has two step-by-step tracks: the **Math Track** (46 concepts) and the
 **ML Track** (28 concepts). No concept is in both: where a page mixed math and ML (Feature Vectors and
 Dot Products) it is split into a math page and an ML page, and ML pages link to the math they rely on. They reuse the same concept pages and leave the
 map and the prerequisite / follow-on links unchanged; a track only adds an order, previous / next buttons,
@@ -60,7 +60,9 @@ The course reference is Deisenroth, Faisal, and Ong, *Mathematics for Machine Le
 https://mml-book.github.io). The app follows it in three ways:
 
 - **Pages from the book.** Norms; inner products; orthogonal complements and the four fundamental
-  subspaces; orthogonal projections; Gram-Schmidt; trace; PCA (Ch. 3, 4, 10) in the Math Track, and
+  subspaces; orthogonal projections; Gram-Schmidt; trace; vector calculus (derivatives, gradients,
+  Jacobians and the chain rule, loss gradients, backpropagation, Taylor series and the Hessian); PCA
+  (Ch. 3, 4, 5, 10) in the Math Track, and
   gradient descent with momentum and Lagrange multipliers (Ch. 7) in the ML Track. Least squares is
   also explained as a projection (§9.4), and the SVD page rebuilds an image from its top singular values.
 - **"Read more in the MML book"** at the end of every page and topic: the matching sections, each linking
@@ -69,7 +71,7 @@ https://mml-book.github.io). The app follows it in three ways:
   classification metrics) have none.
 - **"Picture it" figures** under the intuition of some pages (row and column pictures of Ax = b, L1 vs
   L2 balls, projection onto a plane, the SVD circle-to-ellipse, the four subspaces, zig-zag vs momentum,
-  Lagrange tangency). Captions and alt text are in `src/data/figures.js`, drawings in
+  Lagrange tangency, forward and backward passes through a network). Captions and alt text are in `src/data/figures.js`, drawings in
   `src/components/Figures.jsx`.
 
 The book's licence allows personal use only and no derivative works, so nothing is copied from it: all
@@ -119,11 +121,11 @@ Covered from the attached material:
 - Production ML Week 2: linear regression, least squares, normal equation, gradient descent for regression, ridge regression, overfitting/generalization, logistic regression, sigmoid probabilities, logistic loss.
 - Mathematics for AI Week 1-2: matrices, linear systems, vector spaces, bases, linear transformations, change of basis, invertibility, rank/nullity, determinants.
 - Mathematics for AI Week 3: eigenvalues, eigenvectors, diagonalization, PageRank intuition, orthogonality, spectral theorem, Cholesky, LU, and SVD.
-- Mathematics for Machine Learning (book): norms, inner products, orthogonal complements, projections, Gram-Schmidt, trace, momentum, Lagrange multipliers, and PCA.
+- Mathematics for Machine Learning (book): norms, inner products, orthogonal complements, projections, Gram-Schmidt, trace, vector calculus and backpropagation, momentum, Lagrange multipliers, and PCA.
 
 Not covered:
 
 - Administrative course logistics and syllabus items.
 - Later Production ML topics such as SVMs, clustering, decision trees, ensemble methods, HMMs, reinforcement learning, and anomaly detection because they are outside Week 1-2.
-- Most of the Mathematics for Machine Learning book beyond Chapters 2-4, 7, and 10 (vector calculus, probability, and the Bayesian and SVM chapters).
+- Most of the Mathematics for Machine Learning book beyond Chapters 2-5, 7, and 10 (probability, and the Bayesian, mixture-model, and SVM chapters).
 - Full formal theorem proofs; the app prioritizes intuition, formulas, and worked numeric examples.

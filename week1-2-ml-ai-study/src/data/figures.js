@@ -46,6 +46,12 @@ export const figures = {
     alt: 'Concentric circles around the origin and a straight line x + y = 1. The line is tangent to one circle at (0.5, 0.5), where two parallel arrows (the gradients) point away from the origin. At another point on the line the arrows point in different directions.',
     mml: 'Figure 7.4',
   },
+  'computation-graph': {
+    title: 'Forward pass, then backward pass, through a small network',
+    caption: 'Top (blue): the forward pass computes each layer from the one before and stores the results. Bottom (orange): the backward pass starts with dL/dL = 1 at the loss and moves right to left, multiplying by the transpose of each step\'s local Jacobian (gradients are written here as column vectors). The gradient for each layer\'s weights comes from the backward signal arriving at that layer and the value stored there in the forward pass.',
+    alt: 'A chain of boxes from the input x through a hidden layer h = sigma(W1 x + b1) and an output y-hat = W2 h + b2 to the loss L. Blue arrows run left to right labelled forward. Orange arrows run right to left labelled with dL/dy-hat, dL/dh, and dL/dz1, and short orange arrows branch off to the weight gradients dL/dW2 and dL/dW1.',
+    mml: 'Figures 5.8-5.9',
+  },
 };
 
 export const figureIds = Object.keys(figures);

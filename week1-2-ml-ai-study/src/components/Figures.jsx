@@ -296,7 +296,43 @@ function LagrangeTangent() {
   );
 }
 
+function ComputationGraphFigure() {
+  const boxes = [
+    { label: 'x', sub: 'input', back: null },
+    { label: 'z1 = W1x + b1', sub: 'pre-activation', back: "dL/dz1 = dL/dh ⊙ σ'(z1)" },
+    { label: 'h = σ(z1)', sub: 'hidden layer', back: 'dL/dh = W2ᵀ dL/dŷ' },
+    { label: 'ŷ = W2h + b2', sub: 'output', back: 'dL/dŷ' },
+    { label: 'L(ŷ, y)', sub: 'loss', back: 'dL/dL = 1' },
+  ];
+  const width = 104;
+  const gap = 26;
+  const left = (index) => 8 + index * (width + gap);
+  const top = 64;
+  const height = 56;
+  return (
+    <>
+      <text className="fig-label blue" x="8" y="40">forward: compute and store each value →</text>
+      {boxes.map((box, index) => (
+        <g key={box.label}>
+          <rect className="fig-box" x={left(index)} y={top} width={width} height={height} rx="10" />
+          <text className="fig-label" x={left(index) + width / 2} y={top + 24} textAnchor="middle">{box.label}</text>
+          <text className="fig-step" x={left(index) + width / 2} y={top + 43} textAnchor="middle">{box.sub}</text>
+          {index < boxes.length - 1 && <Arrow from={[left(index) + width + 2, top + 16]} to={[left(index + 1) - 3, top + 16]} color="blue" variant="small" />}
+          {index < boxes.length - 1 && <Arrow from={[left(index + 1) - 2, top + 42]} to={[left(index) + width + 3, top + 42]} color="rust" variant="small" />}
+          {box.back && <text className="fig-label rust" x={left(index) + width / 2} y={index % 2 ? 150 : 170} textAnchor="middle">{box.back}</text>}
+        </g>
+      ))}
+      <Arrow from={[left(1) + width / 2, 178]} to={[left(1) + width / 2, 222]} color="rust" variant="small" />
+      <Arrow from={[left(3) + width / 2, 178]} to={[left(3) + width / 2, 222]} color="rust" variant="small" />
+      <text className="fig-label rust" x={left(1) + width / 2} y="242" textAnchor="middle">dL/dW1 = (dL/dz1) xᵀ</text>
+      <text className="fig-label rust" x={left(3) + width / 2} y="242" textAnchor="middle">dL/dW2 = (dL/dŷ) hᵀ</text>
+      <text className="fig-label rust" x="8" y="288">← backward: multiply by local derivatives, from the loss toward the input</text>
+    </>
+  );
+}
+
 const drawings = {
+  'computation-graph': ComputationGraphFigure,
   'row-column-picture': RowColumnPicture,
   'l1-l2-balls': L1L2Balls,
   'projection-plane': ProjectionPlane,

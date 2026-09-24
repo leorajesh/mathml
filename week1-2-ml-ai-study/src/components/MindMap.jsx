@@ -69,6 +69,13 @@ const domains = [
     summary: 'Norms, inner products, orthogonality, orthogonal complements and the four fundamental subspaces, projections, Gram-Schmidt, and least squares as a projection.',
     concepts: ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   },
+  {
+    id: 'overview-vector-calculus',
+    title: 'Vector Calculus: Gradients and Backpropagation',
+    group: 'Optimization',
+    summary: 'Derivatives, the chain rule, gradients, Jacobians, gradients of loss functions, backpropagation, Taylor approximation, and the Hessian, and the optimization and loss pages that use them.',
+    concepts: ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
+  },
 ];
 
 const overviewEdges = [
@@ -84,6 +91,9 @@ const overviewEdges = [
   ['overview-linear-algebra', 'overview-analytic-geometry'],
   ['overview-analytic-geometry', 'overview-regression'],
   ['overview-analytic-geometry', 'overview-advanced-math'],
+  ['overview-linear-algebra', 'overview-vector-calculus'],
+  ['overview-vector-calculus', 'overview-optimization'],
+  ['overview-vector-calculus', 'overview-regression'],
 ];
 
 function wrapTitle(title, maxLength = 22) {
@@ -203,7 +213,7 @@ function OverviewMap({ onOpenDomain, onSelect }) {
 
   return (
     <div className="overview-map">
-      <svg className="overview-svg" viewBox="0 0 1080 480" role="img" aria-label="Overall concept domains">
+      <svg className="overview-svg" viewBox={`0 0 1080 ${80 + Math.ceil(domains.length / 4) * 210}`} role="img" aria-label="Overall concept domains">
         <defs>
           <marker id="overviewArrow" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto">
             <path d="M 1 1 L 11 6 L 1 11 z" fill="#2f3436" />

@@ -130,7 +130,8 @@ export const workedExampleMath = {
     tex`y=+1,\quad x=\begin{bmatrix}2\\1\end{bmatrix},\quad \theta=\begin{bmatrix}0\\0\end{bmatrix},\quad \eta=0.2`,
     tex`y(\theta\cdot x)=0\le1`,
     tex`\theta\leftarrow\theta+\eta yx=\begin{bmatrix}0\\0\end{bmatrix}+0.2\begin{bmatrix}2\\1\end{bmatrix}=\begin{bmatrix}0.4\\0.2\end{bmatrix}`,
-    tex`\text{one cheap noisy step replaces a full-dataset average}`, 
+    tex`y(\theta\cdot x)=0.4\cdot2+0.2\cdot1=1.0\le1\ \Rightarrow\ \theta\leftarrow\begin{bmatrix}0.4\\0.2\end{bmatrix}+0.2\begin{bmatrix}2\\1\end{bmatrix}=\begin{bmatrix}0.8\\0.4\end{bmatrix}`,
+    tex`y(\theta\cdot x)=0.8\cdot2+0.4\cdot1=2>1\ \Rightarrow\ \text{no more updates}`,
   ],
   'linear-regression': [
     tex`\theta_1=2,\quad \theta_0=1`,

@@ -15,7 +15,7 @@ export const workedExampleMath = {
     tex`P(D\mid+)=\frac{0.9\cdot0.01}{0.9\cdot0.01+0.05\cdot0.99}=\frac{0.009}{0.0585}\approx0.154`,
   ],
   'expectation-variance': [
-    tex`E[X]=\tfrac{21}{6}=3.5,\quad E[X^2]=\tfrac{91}{6}\approx15.17,\quad \operatorname{Var}X\approx15.17-12.25=2.917`,
+    tex`E[X]=\tfrac{21}{6}=3.5,\quad E[X^2]=\tfrac{91}{6},\quad \operatorname{Var}X=\tfrac{91}{6}-\tfrac{49}{4}=\tfrac{35}{12}\approx2.917`,
     tex`\operatorname{Var}\bar X=\tfrac{2.917}{4}\approx0.729`,
     tex`E[Z]=\tfrac{1.2+2.9+2.0}{3}\approx2.0333,\quad (E[Z]-2)^2\approx0.0011,\quad \operatorname{Var}Z\approx0.4822`,
     tex`E[(Z-2)^2]=\tfrac{0.64+0.81+0}{3}\approx0.4833=0.0011+0.4822`,

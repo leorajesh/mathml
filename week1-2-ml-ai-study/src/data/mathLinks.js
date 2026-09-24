@@ -7,7 +7,8 @@ const use = (id, why) => ({ id, why });
 
 export const mathLinks = {
   'ml-landscape': [
-    use('probability-basics', 'Supervised learning estimates p(y | x); reinforcement learning maximizes an expected total reward.'),
+    use('probability-basics', 'Supervised learning estimates p(y | x), the probability of a label given the inputs.'),
+    use('expectation-variance', 'Reinforcement learning maximizes an expected total reward.'),
     use('functions', 'Supervised learning looks for a function h from the input space X to the output space Y.'),
     use('vectors-dot-product', 'Each example, such as a tumour with 30 measurements, becomes a vector in R^30.'),
   ],
@@ -41,7 +42,7 @@ export const mathLinks = {
   ],
   'empirical-risk-zero-one': [
     use('functions', 'The zero-one loss is an indicator function: 1 for a mistake, 0 otherwise.'),
-    use('expectation-variance', 'Training error is an average of losses, an estimate of the expected error on new data.'),
+    use('expectation-variance', 'Empirical risk is an average of losses. On fresh examples it estimates the expected error; on the data a model was fitted to, it is optimistic.'),
   ],
   'hinge-loss': [
     use('derivatives', 'Hinge loss is piecewise linear with a corner at margin 1: slope -1 on one side, 0 on the other.'),
@@ -111,7 +112,7 @@ export const mathLinks = {
     use('norms', 'The penalty mixes the L1 and squared L2 norms.'),
   ],
   'model-complexity-generalization': [
-    use('expectation-variance', 'Test error is an expectation over the data distribution; training error is a sample average that estimates it.'),
+    use('expectation-variance', 'Test error is an expectation over the data distribution. For a fixed model, the average loss on fresh examples estimates it; the training error of a fitted model is optimistic.'),
     use('dimension', 'Model complexity often grows with the number of free parameters, the dimension of the hypothesis space.'),
   ],
   'logistic-regression': [
@@ -121,27 +122,26 @@ export const mathLinks = {
     use('vectors-dot-product', 'The probability depends on x only through the score theta . x + theta_0.'),
   ],
   'logistic-loss': [
-    use('loss-gradients', 'The gradient of the average logistic loss is (1/n) sum (h - y) x: prediction error times input.'),
+    use('loss-gradients', 'The gradient of the average logistic loss is (1/n) sum (h - y) x, prediction error times input, and its Hessian (1/n) X^T S X with S = diag(h(1 - h)) is positive semidefinite, so the loss is convex.'),
     use('backpropagation', 'The chain rule through the sigmoid is backpropagation on a two-step computation graph.'),
-    use('loss-gradients', 'The Hessian (1/n) X^T S X, with S = diag(h(1 - h)), is positive semidefinite, which is why logistic loss is convex.'),
     use('likelihood-mle', 'The logistic loss is the average negative log-likelihood of Bernoulli labels.'),
   ],
   'roc-auc': [
     use('functions', 'The ROC curve is a function from a threshold to a pair (FPR, TPR); sweeping the threshold traces it.'),
-    use('probability-basics', 'TPR and FPR are conditional probabilities P(score >= t | class), and AUC is P(positive score > negative score).'),
-    use('covariance-gaussian', 'The graph uses Gaussian scores; the difference of two independent Gaussians gives AUC = Phi(d / sqrt 2).'),
+    use('probability-basics', 'TPR and FPR are conditional probabilities: P(score >= t | positive) and P(score >= t | negative).'),
+    use('covariance-gaussian', 'AUC is P(positive score > negative score); with the graph\'s Gaussian scores, the difference of two independent Gaussians gives AUC = Phi(d / sqrt 2).'),
   ],
   'classification-metrics': [
     use('probability-basics', 'Recall is P(predict yes | truly yes) and precision is P(truly yes | predict yes): the same counts, conditioned differently.'),
   ],
   'bias-variance': [
-    use('expectation-variance', 'Expected error = bias^2 + variance + noise follows from E[(Z - c)^2] = (E Z - c)^2 + Var Z.'),
+    use('expectation-variance', 'E[(Z - c)^2] = (E Z - c)^2 + Var Z gives bias^2 + variance; noise in the labels, independent of the training set, adds its variance sigma^2.'),
   ],
   'train-validation-test': [
     use('expectation-variance', 'A held-out error is an average over examples drawn like future data, so it estimates the expected error.'),
   ],
   'cross-validation': [
-    use('expectation-variance', 'Averaging k fold scores gives a steadier estimate than one split, because averages have smaller variance.'),
+    use('expectation-variance', 'Averaging k fold scores gives a steadier estimate than one split, because averages have smaller variance (by less than 1/k, since the folds share training data).'),
   ],
   'ml-in-production': [
     use('probability-basics', 'Drift is a change in the joint distribution P(x, y) = P(x) P(y | x): covariate shift changes P(x), concept drift P(y | x).'),

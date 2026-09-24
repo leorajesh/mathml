@@ -659,8 +659,8 @@ export const intuitionDetails = {
   },
   "probability-basics": {
     keyIdeas: [
-      idea("Events are sets", "An event is a set of outcomes. P(not A) = 1 - P(A), and P(A or B) = P(A) + P(B) - P(A and B)."),
-      idea("Conditioning", "P(A | B) = P(A and B) / P(B): the share of B-cases that are also A. A classifier's h(x) = p(y = 1 | x) is exactly this."),
+      idea("Random variables", "A random variable is a number that depends on chance. Discrete ones have probabilities p(x) that sum to 1; continuous ones have a density, and probabilities are areas under it."),
+      idea("Conditioning", "P(A | B) = P(A and B) / P(B): the share of B-cases that are also A. A classifier's h(x) is its estimate of p(y = 1 | x)."),
       idea("Sum and product rules", "p(x) = sum over y of p(x, y), and p(x, y) = p(y | x) p(x). Everything else follows from these two."),
       idea("Bayes' rule", "p(y | x) = p(x | y) p(y) / p(x). Generative models learn p(x | y) and p(y) and apply it; logistic regression learns p(y | x) directly."),
       idea("Independence and i.i.d.", "Independent: p(x, y) = p(x) p(y). Training examples are assumed i.i.d., so the probability of the whole data set is a product."),
@@ -670,7 +670,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Expectation is linear", "E[aX + bY + c] = a E[X] + b E[Y] + c, always, even when X and Y are dependent."),
       idea("Variance", "Var X = E[(X - mu)^2] = E[X^2] - mu^2, and Var(aX + b) = a^2 Var X. The standard deviation is its square root, in the original units."),
-      idea("Averages settle down", "The mean of n i.i.d. draws keeps expectation mu but has variance sigma^2/n. That is why training error estimates the true error, and more data helps."),
+      idea("Averages settle down", "The mean of n i.i.d. draws keeps expectation mu but has variance sigma^2/n. So for a fixed model, test error on fresh data estimates the true error; the training error of a fitted model is optimistic."),
       idea("Bias-variance in one line", "For any constant c, E[(Z - c)^2] = (E Z - c)^2 + Var Z. With Z a model's prediction and c the truth, that is bias squared plus variance."),
       idea("SGD is right on average", "If t is picked uniformly, the expected one-example gradient equals the average gradient: each noisy step points the right way on average."),
     ],

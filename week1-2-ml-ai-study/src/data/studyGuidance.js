@@ -109,7 +109,7 @@ export const guidedSelfChecks = {
     { question: 'Why are precision and recall different numbers even though they use the same true positives?', answer: 'They condition on different events. Recall is P(predicted yes | actually yes), divided by all real positives; precision is P(actually yes | predicted yes), divided by all predicted positives. Bayes\' rule links them through the base rates.' },
   ],
   'expectation-variance': [
-    { question: 'Why does a larger training set make the training error a more reliable estimate of the true error?', answer: 'The training error is an average of n losses. If the examples are independent, the average has the true error as its mean and a variance that shrinks like 1/n (for a fixed model).' },
+    { question: 'Why is the error on a fresh test set a fair estimate of the true error, but the training error is not?', answer: 'For a model fixed before seeing the test examples, the test error is an average of n independent losses, so its mean is the true error and its variance shrinks like 1/n. The training examples were used to choose the model, so its training error is biased low.' },
   ],
   'covariance-gaussian': [
     { question: 'How is the variance of the data along a direction b computed from the covariance matrix, and why does PCA care?', answer: 'Var(b^T x) = b^T Sigma b. PCA looks for the unit direction b that makes this as large as possible, which is the top eigenvector of Sigma.' },

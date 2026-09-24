@@ -422,7 +422,7 @@ function SampleMeansGraph({ values }) {
   const bins = 5 * n + 1;
   const counts = Array(bins).fill(0);
   for (const m of means) counts[Math.round((m - 1) * n)] += 1;
-  const X = (v) => -4.5 + ((v - 1) / 5) * 9;
+  const X = (v) => -4.5 + ((v - 0.5) / 6) * 9;
   const tallest = Math.max(...counts);
   const Y = (c) => -4.5 + (8.5 * c) / Math.max(tallest, 1);
   const avg = means.reduce((a, b) => a + b, 0) / means.length;
@@ -473,7 +473,8 @@ function LikelihoodCurveGraph({ values }) {
   const X = (m) => -4.5 + 9 * m;
   const bottom = -20;
   const Y = (v) => -4.5 + (9 * (clamp(v, bottom, 0) - bottom)) / -bottom;
-  const curve = Array.from({ length: 99 }, (_, index) => { const m = (index + 1) / 100; return { x: X(m), y: Y(ell(m)) }; });
+  // Only the part of the curve above the plot's lower edge is drawn (the log-likelihood is concave, so that part is one piece).
+  const curve = Array.from({ length: 99 }, (_, index) => (index + 1) / 100).filter((m) => ell(m) >= bottom).map((m) => ({ x: X(m), y: Y(ell(m)) }));
   const best = k / n;
   const bestEll = best === 0 || best === 1 ? 0 : ell(best);
   return {

@@ -12,7 +12,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §3.1',
     problem: 'It gives a precise meaning to "how big is this vector?", which is what error sizes, distances, and regularization penalties all measure.',
-    intuition: 'A norm is a rule that gives every vector a length. The everyday straight-line length is the Euclidean (L2) norm. The Manhattan (L1) norm adds up the absolute coordinates, like walking along city blocks, and the max (L-infinity) norm keeps only the largest coordinate. To count as a norm, a rule must behave like a length: only the zero vector has length 0, doubling a vector doubles its length, and a detour is never shorter than the direct route (the triangle inequality). The vectors of length exactly 1 form a different shape for each norm: a circle for L2, a diamond for L1, and a square for L-infinity. Those corners are why an L1 penalty (lasso) often sets some weights exactly to zero.',
+    intuition: 'A norm answers "how big is this vector?". Error sizes, distances, and regularization penalties are all norms, and different norms measure size in different ways.',
     formulas: [
       { tex: tex`\lVert x\rVert_1=\sum_{i=1}^{n}|x_i|,\qquad \lVert x\rVert_2=\sqrt{\sum_{i=1}^{n}x_i^2}=\sqrt{x^Tx},\qquad \lVert x\rVert_\infty=\max_i|x_i|`, definitions: [tex`x_i: the i-th coordinate of x`, tex`\lVert x\rVert_1: Manhattan (L1) norm`, tex`\lVert x\rVert_2: Euclidean (L2) norm, the usual length`, tex`\lVert x\rVert_\infty: max norm`] },
       { tex: tex`\lVert x\rVert=0\iff x=0,\qquad \lVert c\,x\rVert=|c|\,\lVert x\rVert,\qquad \lVert x+y\rVert\le\lVert x\rVert+\lVert y\rVert`, definitions: [tex`c: any real number`, 'triangle inequality: the last rule, a detour is never shorter than the direct route'] },
@@ -32,7 +32,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §3.2-3.4',
     problem: 'It generalizes the dot product so that lengths, distances, and angles can be measured in the way that suits a problem, for example weighting some directions more than others.',
-    intuition: 'The dot product is one way to combine two vectors into a number, but not the only one. An inner product is any such rule that is symmetric, linear in each vector, and positive definite: a nonzero vector combined with itself always gives a positive number. In R^n every inner product can be written as x^T A y for a symmetric positive definite (SPD) matrix A. Taking A = I gives the ordinary dot product; any other A stretches the ruler differently in different directions, so the "unit circle" becomes an ellipse. Each inner product brings its own length, distance, and angle, and so its own idea of which vectors are orthogonal.',
+    intuition: 'The dot product is one way to turn two vectors into a number, but not the only one. An inner product is any such rule that behaves well, and each one comes with its own ruler for lengths and angles.',
     formulas: [
       { tex: tex`\langle x,y\rangle=x^TAy,\qquad A=A^T,\quad x^TAx>0\ \text{for all}\ x\ne0`, definitions: [tex`\langle x,y\rangle: inner product of x and y`, tex`A: symmetric positive definite (SPD) matrix; A = I gives the dot product`] },
       { tex: tex`\lVert x\rVert=\sqrt{\langle x,x\rangle},\qquad d(x,y)=\lVert x-y\rVert,\qquad \cos\omega=\frac{\langle x,y\rangle}{\lVert x\rVert\,\lVert y\rVert}`, definitions: [tex`\lVert x\rVert: length that the inner product induces`, tex`\omega: angle between x and y`] },
@@ -51,7 +51,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §3.6, §2.7.3',
     problem: 'It splits space into a subspace and everything perpendicular to it, which organizes the null space and column space of every matrix and explains least-squares errors.',
-    intuition: 'Given a subspace U, its orthogonal complement U-perp is the set of all vectors perpendicular to every vector in U. In 3D, the complement of a plane through the origin is the line along its normal. Together they rebuild the whole space: every vector splits in exactly one way into a part in U plus a part in U-perp, and their dimensions add up to n. Every m by n matrix A comes with four such subspaces. In the input space R^n, the row space and the null space are complements, because Ax = 0 says exactly that x is perpendicular to every row. In the output space R^m, the column space and the left null space (the solutions of A^T y = 0) are complements. A maps the row space one-to-one onto the column space and sends the null space to zero.',
+    intuition: 'Take a subspace U. Its orthogonal complement is everything perpendicular to all of U, like the normal line to a plane through the origin in 3D.',
     formulas: [
       { tex: tex`U^\perp=\{v:\ v\cdot u=0\ \text{for all}\ u\in U\},\qquad \dim U+\dim U^\perp=n`, definitions: [tex`U^\perp: orthogonal complement of the subspace U`, tex`n: dimension of the whole space`] },
       { tex: tex`\operatorname{Null}(A)=\operatorname{Row}(A)^\perp\subseteq\mathbb{R}^n,\qquad \operatorname{Null}(A^T)=\operatorname{Col}(A)^\perp\subseteq\mathbb{R}^m`, definitions: [tex`\operatorname{Row}(A): row space, spanned by the rows of A`, tex`\operatorname{Null}(A^T): left null space, the vectors y with A^T y = 0`, tex`\operatorname{Col}(A): column space`] },
@@ -71,7 +71,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §3.8',
     problem: 'It finds the closest point in a subspace to a given vector, the key step in least squares, PCA, and compression.',
-    intuition: 'Drop a perpendicular from a point to a line or a plane: where it lands is the orthogonal projection, the closest point of that subspace. The leftover error vector is perpendicular to the subspace, and that single condition is enough to find the projection. For a line spanned by b, the projection is (b . x / b . b) b. For a subspace spanned by the columns of a matrix B, asking the error to be perpendicular to every column gives the normal equation B^T B lambda = B^T x, and the projection is B lambda. Projecting a second time changes nothing, so the projection matrix P satisfies P^2 = P.',
+    intuition: 'Drop a perpendicular from a point to a line or plane: where it lands is the orthogonal projection, the closest point of that subspace.',
     formulas: [
       { tex: tex`\pi_b(x)=\frac{b^Tx}{b^Tb}\,b=\frac{bb^T}{b^Tb}\,x`, definitions: [tex`b: nonzero vector spanning the line`, tex`\pi_b(x): projection of x onto that line`] },
       { tex: tex`B^T(x-B\lambda)=0\ \Rightarrow\ \lambda=(B^TB)^{-1}B^Tx,\qquad \pi_U(x)=B\lambda`, definitions: [tex`B: matrix whose linearly independent columns are a basis of the subspace U`, tex`\lambda: coordinates of the projection in that basis`] },
@@ -91,7 +91,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §3.8.3',
     problem: 'It turns any basis into an orthonormal basis of the same space, so that coordinates and projections become simple dot products.',
-    intuition: 'Take the basis vectors one at a time. Keep the first one. For each next vector, subtract its projections onto the directions already chosen; what is left is perpendicular to all of them. Scale everything to length 1 at the end (or as you go). After each step, the new vectors span the same space as the original ones used so far. Applied to the columns of a matrix A, the result is the QR factorization A = QR: Q has orthonormal columns, and the upper triangular R records the coefficients.',
+    intuition: 'Gram-Schmidt straightens out a basis: it turns any basis into perpendicular unit vectors that span the same space.',
     formulas: [
       { tex: tex`u_1=b_1,\qquad u_k=b_k-\sum_{j<k}\frac{u_j^Tb_k}{u_j^Tu_j}\,u_j`, definitions: [tex`b_k: the original basis vectors, in order`, tex`u_k: the orthogonal vectors built so far`] },
       { tex: tex`q_k=\frac{u_k}{\lVert u_k\rVert}`, definitions: [tex`q_k: the orthonormal basis vectors`] },
@@ -110,7 +110,7 @@ export const mmlConcepts = [
     group: 'Representation',
     week: 'MML book §4.1-4.2',
     problem: 'It condenses a square matrix into one number, the sum of its diagonal, which equals the sum of its eigenvalues and does not change under a change of basis.',
-    intuition: 'The trace is just the sum of the diagonal entries, yet it knows more than it seems. It equals the sum of the eigenvalues, just as the determinant equals their product, so for a 2 by 2 matrix the trace and the determinant together pin down both eigenvalues. It stays the same when you change basis (tr(P^-1 A P) = tr(A)), and products can be rotated inside it: tr(AB) = tr(BA). In machine learning the trace of a covariance matrix is the total variance of the data, which is what PCA divides up among its components.',
+    intuition: 'The trace is just the sum of the diagonal entries, yet it knows more than it seems: it equals the sum of the eigenvalues.',
     formulas: [
       { tex: tex`\operatorname{tr}(A)=\sum_{i=1}^{n}a_{ii}=\sum_{i=1}^{n}\lambda_i,\qquad \det(A)=\prod_{i=1}^{n}\lambda_i`, definitions: [tex`a_{ii}: diagonal entries of the n by n matrix A`, tex`\lambda_i: eigenvalues of A, counted with repeats (possibly complex)`] },
       { tex: tex`\operatorname{tr}(A+B)=\operatorname{tr}(A)+\operatorname{tr}(B),\qquad \operatorname{tr}(AB)=\operatorname{tr}(BA),\qquad \operatorname{tr}(P^{-1}AP)=\operatorname{tr}(A)`, definitions: [tex`B: matrix such that the products AB and BA are both defined`, tex`P: any invertible matrix (a change of basis)`] },
@@ -129,7 +129,7 @@ export const mmlConcepts = [
     group: 'Generalization',
     week: 'MML book Ch. 10',
     problem: 'It finds the few directions in which data varies most, so high-dimensional data can be compressed, visualized, or denoised while losing as little as possible.',
-    intuition: 'First center the data by subtracting the mean. Then look for the direction in which the points are most spread out: projecting onto it keeps the most variance. That direction is the top eigenvector of the data covariance matrix, and the variance it keeps is the matching eigenvalue. The second principal component is the most-spread direction perpendicular to the first, and so on. The same answer comes from a second view: choose the subspace whose projections are closest to the original points, with the smallest average squared reconstruction error. The two views agree because, by Pythagoras, each point\'s squared length splits into the part kept and the part lost, so total variance = kept variance + reconstruction error, and maximizing one minimizes the other.',
+    intuition: 'PCA finds the few directions in which data varies most, so it can be compressed, visualized, or denoised while losing as little as possible.',
     formulas: [
       { tex: tex`S=\frac{1}{N}\sum_{n=1}^{N}x_nx_n^T`, definitions: [tex`S: data covariance matrix`, tex`x_n: a data point with the mean already subtracted`, tex`N: number of data points`] },
       { tex: tex`\max_{\lVert b\rVert=1}\ b^TSb=\lambda_1,\ \text{reached at}\ b=b_1`, definitions: [tex`b: a unit direction to project onto`, tex`\lambda_1: largest eigenvalue of S, the variance kept`, tex`b_1: its unit eigenvector, the first principal component`] },
@@ -149,7 +149,7 @@ export const mmlConcepts = [
     group: 'Optimization',
     week: 'MML book §7.1',
     problem: 'It speeds up gradient descent in long, narrow valleys, where plain steps zig-zag across the valley instead of moving along it.',
-    intuition: 'When a loss is shaped like a stretched bowl, the gradient points mostly across the narrow direction. Plain gradient descent must use a small step so it does not bounce off the steep walls, and so it crawls along the gentle direction while zig-zagging. Momentum gives the optimizer a memory, like a heavy ball rolling downhill: each step adds a fraction alpha of the previous step. Across the valley, consecutive steps point in opposite directions and cancel; along the valley they point the same way and add up, so the ball speeds up where progress is consistent. Too much momentum, with alpha close to 1, overshoots and swings back and forth for a long time.',
+    intuition: 'In a long, narrow valley, plain gradient descent zig-zags across it and crawls along it. Momentum turns the optimizer into a heavy rolling ball that speeds up in the direction that keeps paying off.',
     formulas: [
       { tex: tex`x_{i+1}=x_i-\gamma\,\nabla f(x_i)+\alpha\,\Delta x_i,\qquad \Delta x_i=x_i-x_{i-1}`, definitions: [tex`\gamma: step size (learning rate)`, tex`\alpha: momentum coefficient, between 0 and 1; alpha = 0 is plain gradient descent`, tex`\Delta x_i: the previous step`] },
       { tex: tex`f(x)=\tfrac12\left(x_1^2+\kappa\,x_2^2\right):\quad \text{plain descent needs}\ \gamma<\tfrac{2}{\kappa}`, definitions: [tex`\kappa: how much steeper one direction is than the other (the condition number); a large kappa is a long, narrow valley`] },
@@ -168,7 +168,7 @@ export const mmlConcepts = [
     group: 'Optimization',
     week: 'MML book §7.2',
     problem: 'It finds the best point when the parameters must satisfy constraints, such as staying on a line or inside a ball of limited size.',
-    intuition: 'Draw the level curves of the function you want to minimize, and the constraint you must stay on. Walking along the constraint, f keeps decreasing until the constraint just touches a level curve without crossing it. At that touching point the curves are tangent, so their gradients are parallel: grad f = -lambda grad h. The size of the number lambda, the Lagrange multiplier, tells how fast the best value would change if the constraint were loosened. The Lagrangian L = f + lambda h packages everything: setting all its partial derivatives to zero gives the tangency condition and the constraint together. For an inequality g(x) <= 0 the multiplier must be nonnegative, and it is zero when the constraint is not active at the answer. Ridge and lasso can be read this way: minimizing the loss inside a ball ||theta|| <= t gives the same answer as adding a penalty lambda ||theta|| (squared for ridge) for some lambda >= 0 that depends on t.',
+    intuition: 'With a constraint, you must stay on a path. Walk along it while the function keeps dropping, until the path just touches a level curve without crossing it: that touching point is the constrained minimum.',
     formulas: [
       { tex: tex`\min_x f(x)\ \text{s.t.}\ h(x)=0:\qquad \nabla f(x^*)+\lambda\,\nabla h(x^*)=0,\quad h(x^*)=0`, definitions: [tex`f: objective to minimize`, tex`h: equality constraint function`, tex`\lambda: Lagrange multiplier`, tex`x^*: the constrained minimizer`] },
       { tex: tex`L(x,\lambda)=f(x)+\lambda\,h(x),\qquad \nabla_xL=0,\quad \frac{\partial L}{\partial\lambda}=h(x)=0`, definitions: [tex`L: the Lagrangian`] },

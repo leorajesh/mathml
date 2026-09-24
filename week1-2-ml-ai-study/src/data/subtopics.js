@@ -159,7 +159,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W1C1',
     problem: 'It measures how long a vector is and how much two vectors point the same way, the arithmetic behind angles, projections, and every linear model.',
-    intuition: 'A vector is an arrow, or equally an ordered list of numbers, one for each direction. The dot product multiplies matching entries and adds them up. It is large and positive when two arrows point the same way, zero when they are perpendicular, and negative when they point apart. The dot product of a vector with itself is its length squared, and dividing a dot product by both lengths gives the cosine of the angle between the vectors.',
+    intuition: 'A vector is an arrow, or equally a list of numbers, one per direction. The dot product asks one question: how much do two arrows point the same way?',
     formulas: [
       { tex: tex`u=[u_1,\ldots,u_d]^T\in\mathbb{R}^d`, definitions: [tex`d: number of entries (the dimension)`, tex`u_i: entry i of u`, tex`\mathbb{R}^d: all lists of d real numbers`] },
       { tex: tex`u\cdot v=\sum_{i=1}^{d}u_iv_i=\lVert u\rVert\,\lVert v\rVert\cos\varphi`, definitions: [tex`u\cdot v: dot product, a single number`, tex`\varphi: angle between u and v`] },
@@ -178,7 +178,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Production ML W1',
     problem: 'They turn real things (an email, a house, a photo) into lists of numbers, so a model can compare and score them.',
-    intuition: 'A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age]. Choosing features is a design decision: yes/no facts become 0 or 1, categories become one-hot lists with a single 1, and features on very different scales are often standardized. To score an example, give each feature a weight that says how much it matters and whether it helps or hurts, then add up weight times value. That sum is the dot product theta dot x: a big positive total means "strong yes", negative means "lean no". Good features make the information about the label easy to reach: the notes\' face example describes images by the outputs of simple detectors (edges, colour patches, textures) rather than raw pixel values. The same recipe must be used for training examples and for every new example, or new examples will "look" different to the classifier; and the training examples must be representative of the ones the model will see later (a tumour classifier trained on one tumour type has little reason to work on another).',
+    intuition: 'A model cannot read an email or look at a house: it needs numbers. A feature vector is a short list of measurements, like describing a house as [bedrooms, size, age].',
     formulas: [
       { tex: tex`x=\varphi(\text{example})\in\mathbb{R}^d`, definitions: [tex`\varphi: feature map, the rule that turns an example into numbers`, tex`d: number of features`] },
       { tex: tex`\theta\cdot x=\sum_{i=1}^{d}\theta_ix_i`, definitions: [tex`\theta_i: weight on feature i, learned from data`, tex`\theta\cdot x: model score before thresholding`] },
@@ -199,7 +199,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Math W0',
     problem: 'They give us a precise way to talk about collections of things, like the training examples or the possible labels, and how collections combine.',
-    intuition: 'A set is a bag of distinct items where order does not matter, like the emails in your inbox. You can combine two bags: union takes everything in either bag, intersection keeps only what is in both, difference keeps what is in the first but not the second, and the complement is everything in the universe (the big bag you are working inside) that is not in the set.',
+    intuition: 'A set is a bag of distinct items where order does not matter, like the emails in your inbox. Sets let us say precisely which examples, labels, or outcomes we are talking about.',
     formulas: [
       { tex: tex`A\cup B=\{x: x\in A\text{ or }x\in B\},\quad A\cap B=\{x: x\in A\text{ and }x\in B\}`, definitions: [tex`A\cup B: union`, tex`A\cap B: intersection`, tex`\in: "is an element of"`] },
       { tex: tex`A\setminus B=\{x\in A: x\notin B\},\quad A^c=U\setminus A`, definitions: [tex`A\setminus B: difference`, tex`A^c: complement of A`, tex`U: universe, the set everything is drawn from`] },
@@ -217,7 +217,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Math W0',
     problem: 'It describes rules that turn each input into exactly one output, and whether such a rule loses or misses information.',
-    intuition: 'A function from A to B is a machine that gives exactly one output in B for every input in A, like a vending machine where each button gives one snack. It is injective (one-to-one) if no two buttons give the same snack, so nothing gets mixed up. It is surjective (onto) if every snack in the machine can be bought with some button, so nothing is missed. It is bijective if it is both, which means every snack comes from exactly one button.',
+    intuition: 'A function is a vending machine: every button gives exactly one snack. The interesting questions are whether snacks get mixed up and whether any snack is out of reach.',
     formulas: [
       { tex: tex`f:A\to B,\quad x\mapsto f(x)`, definitions: [tex`A: domain, the set of inputs`, tex`B: codomain, the set outputs must lie in`, tex`f(A): range or image, the outputs actually reached`] },
       { tex: tex`\text{injective: } f(x_1)=f(x_2)\Rightarrow x_1=x_2,\qquad \text{surjective: } \forall y\in B\ \exists x\in A: f(x)=y`, definitions: [tex`\text{injective}: different inputs give different outputs`, tex`\text{surjective}: every element of B is hit`, tex`\text{bijective}: injective and surjective`] },
@@ -235,7 +235,7 @@ export const subtopicConcepts = [
     group: 'Problem',
     week: 'Math W0',
     problem: 'It explains how to chain functions one after another and when a function can be run backwards to recover its input.',
-    intuition: 'Composition is a production line: g after f means feed x into f, then feed the result into g. Order matters, just as washing then drying is not the same as drying then washing. An inverse function undoes f: running f and then f inverse brings you back to where you started. Only bijections have inverses, because an output shared by two inputs could not tell you which one to go back to.',
+    intuition: 'Composition is a production line: feed x into f, then feed the result into g. An inverse runs the line backwards and hands you back what you started with.',
     formulas: [
       { tex: tex`(g\circ f)(x)=g(f(x))`, definitions: [tex`g\circ f: composition, "g after f"`, tex`f: applied first`, tex`g: applied second`] },
       { tex: tex`f^{-1}(f(x))=x\ \ \forall x\in A,\qquad f(f^{-1}(y))=y\ \ \forall y\in B`, definitions: [tex`f^{-1}: inverse function, exists exactly when f is bijective`] },
@@ -256,7 +256,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W1C2',
     problem: 'It tells us every point we can reach by mixing a given set of vectors, and whether a target vector is one of them.',
-    intuition: 'A linear combination is a recipe: take some amount of each vector and add them up, like mixing paint colors in chosen amounts. The span is every color you can mix from your starting paints. One arrow spans a line through the origin, two arrows in different directions span a plane, and asking "is b in the span?" means solving for the recipe amounts.',
+    intuition: 'A linear combination is a paint recipe: take some amount of each vector and mix. The span is every colour you can mix from your starting paints.',
     formulas: [
       { tex: tex`c_1v_1+c_2v_2+\cdots+c_pv_p`, definitions: [tex`v_k: given vectors`, tex`c_k: scalar amounts, any real numbers`] },
       { tex: tex`\operatorname{span}\{v_1,\ldots,v_p\}=\{c_1v_1+\cdots+c_pv_p: c_k\in\mathbb{R}\}`, definitions: [tex`\operatorname{span}: the set of all linear combinations`] },
@@ -275,7 +275,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Math W1C2-W2C1',
     problem: 'It identifies redundant vectors or features: ones that add nothing new because they are already a mix of the others.',
-    intuition: 'Vectors are independent when none of them can be built from the others, and dependent when at least one is a mix of the rest. The test is to ask whether some mix of them, not all zero amounts, adds up to zero. With three or more vectors, no two need to be copies of each other for the set to still be dependent. Row reduction answers the question: a column without a pivot is a mix of the pivot columns before it.',
+    intuition: 'Vectors are independent when none of them can be built from the others. A dependent one is redundant: it adds no new direction.',
     formulas: [
       { tex: tex`\sum_{k=1}^{p}\alpha_k v_k=0\ \Rightarrow\ \alpha_1=\cdots=\alpha_p=0`, definitions: [tex`v_k: vectors being tested`, tex`\alpha_k: scalar coefficients`, tex`p: number of vectors`] },
       { tex: tex`\{v_1,\ldots,v_p\}\text{ independent}\iff \operatorname{rank}[v_1\ \cdots\ v_p]=p`, definitions: [tex`\operatorname{rank}: number of pivots after row reduction`] },
@@ -293,7 +293,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Math W1C2-W2C1',
     problem: 'It describes the flat regions through the origin, such as lines and planes, where data, predictions, or solutions live.',
-    intuition: 'A subspace is a smaller vector space inside a bigger one: it contains the origin and you can never leave it by adding two of its members or scaling one. A line or plane through the origin passes the test, while the same line shifted off the origin fails. Every matrix brings two important subspaces: the column space (every output Ax can produce) and the null space (every input the matrix sends to zero).',
+    intuition: 'A subspace is a smaller vector space inside a bigger one, like a line or plane through the origin. Adding or scaling its members never takes you out of it.',
     formulas: [
       { tex: tex`0\in W,\quad u,w\in W\Rightarrow u+w\in W,\quad u\in W,\ c\in\mathbb{R}\Rightarrow cu\in W`, definitions: [tex`W: candidate subspace`, tex`\text{closure}: adding or scaling members keeps you inside W`] },
       { tex: tex`\operatorname{Col}(A)=\{Ax: x\in\mathbb{R}^n\},\qquad \operatorname{Null}(A)=\{x: Ax=0\}`, definitions: [tex`\operatorname{Col}(A): column space, the span of the columns of A`, tex`\operatorname{Null}(A): null space, the solutions of Ax = 0`] },
@@ -313,7 +313,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W1C1-W1C2',
     problem: 'It identifies which collections of objects behave like arrows, so the same linear-algebra tools work on all of them.',
-    intuition: 'A vector space is any collection where you can add two members and multiply a member by a number, always landing back inside the collection, with the usual rules of arithmetic holding. Arrows in the plane are the familiar example, but lists of features, matrices of the same shape, and polynomials of degree at most 2 are vector spaces too. Once something is a vector space, ideas like span, basis, and dimension all apply to it.',
+    intuition: 'A vector space is any collection that behaves like arrows: you can add members and scale them by numbers without ever leaving the collection.',
     formulas: [
       { tex: tex`u,v\in V,\ c\in\mathbb{R}\ \Rightarrow\ u+v\in V,\ cv\in V`, definitions: [tex`V: the vector space`, tex`u,v: vectors (members of V)`, tex`c: scalar (a real number)`] },
       { tex: tex`u+v=v+u,\ \ (u+v)+w=u+(v+w),\ \ v+0=v,\ \ v+(-v)=0,\ \ c(u+v)=cu+cv,\ \ (a+b)v=av+bv,\ \ a(bv)=(ab)v,\ \ 1v=v`, definitions: [tex`0: the zero vector, which every vector space must contain`, tex`-v: the opposite of v`] },
@@ -331,7 +331,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W1C2',
     problem: 'It gives every vector a unique address, a list of coordinates, using the smallest possible set of directions.',
-    intuition: 'A basis is like a set of map directions, such as "east" and "north". You can reach any point by combining them (they span the space), and none of them is a repeat of the others (they are independent). Because of that, every point has exactly one address in those directions: its coordinates in that basis.',
+    intuition: 'A basis is a set of map directions, like east and north. Using it, every point gets exactly one address: its coordinates.',
     formulas: [
       { tex: tex`v=c_1b_1+c_2b_2+\cdots+c_nb_n`, definitions: [tex`b_k: basis vectors`, tex`c_k: coordinates of v in this basis`] },
       { tex: tex`\{b_1,\ldots,b_n\}\text{ is a basis}\iff\text{it spans }V\text{ and is linearly independent}`, definitions: [tex`V: the vector space`] },
@@ -349,7 +349,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W1C2',
     problem: 'It counts how many independent directions a space has, which is the true number of free numbers needed to describe its members.',
-    intuition: 'Every basis of a space has the same number of vectors, and that number is the dimension: 2 for a flat map, 3 for the room you are in, n for lists of n features. It tells you the limits of any set of vectors: in an n-dimensional space, more than n vectors must be dependent, and fewer than n cannot span. A line through the origin has dimension 1 and a plane has dimension 2, even when they sit inside a bigger space.',
+    intuition: 'Dimension counts the independent directions in a space: 2 for a flat map, 3 for the room you are in, n for lists of n features.',
     formulas: [
       { tex: tex`\dim V=\text{number of vectors in any basis of }V`, definitions: [tex`\dim V: dimension of V`] },
       { tex: tex`\dim\mathbb{R}^n=n,\qquad \dim P_2=3,\qquad \dim\mathbb{R}^{m\times n}=mn`, definitions: [tex`P_2: polynomials of degree at most 2, with basis 1, x, x^2`, tex`\mathbb{R}^{m\times n}: m by n matrices`] },
@@ -370,7 +370,7 @@ export const subtopicConcepts = [
     group: 'Model',
     week: 'Math W2',
     problem: 'It explains how a bias term lets a model shift away from the origin, and why solution sets of Ax = b are shifted subspaces.',
-    intuition: 'A linear map must keep the origin fixed. An affine map is a linear map followed by a shift: f(x) = Ax + b. That shift is exactly the bias or intercept in a model, and it is what lets a line or decision boundary sit anywhere instead of always passing through the origin. The same idea gives affine sets: a subspace slid away from the origin, like the solutions of Ax = b.',
+    intuition: 'A linear map must keep the origin fixed. An affine map adds a shift: f(x) = Ax + b. That shift is exactly the bias term in a model.',
     formulas: [
       { tex: tex`f(x)=Ax+b`, definitions: [tex`A: linear part`, tex`b: shift (bias or translation)`, tex`f(0)=b: so f is linear only when b = 0`] },
       { tex: tex`\{x: Ax=b\}=x_p+\operatorname{Null}(A)`, definitions: [tex`x_p: any one solution`, tex`\operatorname{Null}(A): directions you can move without changing Ax`] },
@@ -389,7 +389,7 @@ export const subtopicConcepts = [
     group: 'Generalization',
     week: 'Math W1C2 AI applications',
     problem: 'It compresses data into fewer numbers by keeping only the most informative directions, accepting that some detail is lost.',
-    intuition: 'Dimensionality reduction is like describing a 3D object by its 2D shadow: you keep fewer numbers, so some detail is lost for good and cannot be undone. Mathematically, you project each point onto a few chosen directions (an orthonormal basis U of a subspace), store only those coordinates, and rebuild an approximation from them. The skill is choosing directions that lose the least, by dropping those in which the data barely varies, which is what PCA does using eigenvectors.',
+    intuition: 'Dimensionality reduction is like describing a 3D object by its 2D shadow: you keep fewer numbers, and some detail is lost for good.',
     formulas: [
       { tex: tex`z=U^Tx,\qquad \hat{x}=Uz=UU^Tx`, definitions: [tex`U: orthonormal basis for a k-dimensional subspace (as columns)`, tex`z: compressed coordinates, k numbers instead of d`, tex`\hat{x}: reconstruction`] },
       { tex: tex`\text{error}=\lVert x-\hat{x}\rVert^2`, definitions: [tex`\text{error}: squared reconstruction error, the information lost`] },
@@ -409,7 +409,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W2C1',
     problem: 'It counts how many independent directions a matrix keeps and how many it flattens to zero, which tells you how much information survives.',
-    intuition: 'Feed every possible input into a matrix. The outputs fill the column space, and its dimension is the rank: how many independent directions come out. Some input directions may be squashed to zero; they form the null space, and its dimension is the nullity. Every input direction is either kept or squashed, so rank plus nullity always equals the number of columns.',
+    intuition: 'Feed every possible input into a matrix. Some directions come out; others are squashed to zero. Rank-nullity is the bookkeeping: every input direction is either kept or squashed.',
     formulas: [
       { tex: tex`\operatorname{rank}(A)=\dim\operatorname{Col}(A)=\text{number of pivots}`, definitions: [tex`\operatorname{Col}(A): column space`] },
       { tex: tex`\operatorname{nullity}(A)=\dim\operatorname{Null}(A)=\text{number of free variables}`, definitions: [tex`\operatorname{Null}(A): null space`] },
@@ -429,7 +429,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W2C2',
     problem: 'It turns "does this square matrix squash space flat?" into a single number you can compute.',
-    intuition: 'Apply a 2 by 2 matrix to the unit square and it becomes a parallelogram. The determinant is that parallelogram\'s area, with a minus sign if the matrix flips orientation, like a mirror. In 3D it is the volume scale factor. A determinant of 0 means some direction was flattened, so information is lost and the matrix cannot be undone. Determinants also multiply: doing two maps in a row multiplies their area scales.',
+    intuition: 'Apply a 2 by 2 matrix to the unit square and it becomes a parallelogram. The determinant is its area, with a minus sign if the map flips orientation like a mirror.',
     formulas: [
       { tex: tex`\det\begin{bmatrix}a&b\\c&d\end{bmatrix}=ad-bc`, definitions: [tex`a,b,c,d: entries of a 2 by 2 matrix`, tex`\det: signed area of the image of the unit square`] },
       { tex: tex`\det(AB)=\det(A)\det(B),\qquad \det(A^{-1})=\frac{1}{\det(A)},\qquad \det(A^T)=\det(A)`, definitions: [tex`A,B: square matrices of the same size`] },
@@ -450,7 +450,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It identifies bowl-shaped functions, where walking downhill can never get stuck in a false valley: any low point you reach is the lowest.',
-    intuition: 'A function is convex if the straight line (chord) between any two points on its graph never dips below the graph, like a bowl. Bowls have no false valleys: any local minimum is the global minimum, so an optimizer cannot get stuck in the wrong dip. For smooth functions of one variable, convex means the second derivative is never negative, so the slope only increases. Sums and maximums of convex functions are convex, which is why losses built from them are too. Non-convex functions are harder: an optimizer can get stuck in a local minimum, or slow down at a saddle point, a flat "pass" where the function curves up in one direction and down in another. One precision: convexity guarantees that every local minimum has the same, globally lowest value, but that value can be reached at several parameter settings (a flat-bottomed bowl), as the Week 1 notes point out.',
+    intuition: 'A convex function is shaped like a bowl. Walk downhill from anywhere and you reach the bottom: there are no false valleys to get stuck in.',
     formulas: [
       { tex: tex`f(\lambda a+(1-\lambda)b)\le \lambda f(a)+(1-\lambda)f(b)\quad \forall a,b,\ \lambda\in[0,1]`, definitions: [tex`\lambda: position along the chord, between 0 and 1`] },
       { tex: tex`f''(x)\ge0\ \ \forall x\quad\text{or}\quad \nabla^2 f(x)\succeq0\ \ \forall x`, definitions: [tex`f'': second derivative (test for twice-differentiable f on a convex domain)`, tex`\nabla^2 f: Hessian, the matrix of second derivatives`, tex`\succeq0: positive semidefinite`] },
@@ -469,7 +469,7 @@ export const subtopicConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It explains why we train with a convex, easier-to-optimize stand-in loss, such as hinge or logistic loss, instead of directly counting mistakes.',
-    intuition: 'Counting mistakes gives a staircase-shaped loss: flat almost everywhere, so there is no slope to follow downhill. A surrogate loss is a convex stand-in that sits on or above the mistake count and still pushes decisions the right way. Hinge loss charges for being wrong or barely right; logistic loss charges smoothly and never quite reaches zero. Lowering the surrogate tends to lower the real error. Why not minimize the mistake count directly? The zero-one loss is non-convex, and when the data are not linearly separable, finding the classifier with the fewest training mistakes is computationally hard (NP-hard), as the Lesson 2 slides point out. Convex problems can be solved efficiently, so we minimize a convex upper bound instead.',
+    intuition: 'Counting mistakes is what we care about, but it is a staircase: flat almost everywhere, with no slope to follow. So we train on a smooth, convex stand-in that pushes in the same direction.',
     formulas: [
       { tex: tex`L_{0/1}(z)=\mathbb{1}\{z\le0\}\le L_{\text{hinge}}(z)=\max(0,1-z)`, definitions: [tex`z: signed margin y(theta dot x)`, tex`L_{\text{hinge}}: convex surrogate`] },
       { tex: tex`L_{\text{logistic}}(z)=\log_2(1+e^{-z})\ \ge L_{0/1}(z)`, definitions: [tex`L_{\text{logistic}}: logistic loss in base 2, which equals 1 at z = 0`] },
@@ -489,7 +489,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1-W2',
     problem: 'It finds good parameters by repeatedly taking small steps downhill on the loss, useful when there is no direct formula for the answer.',
-    intuition: 'Imagine standing on a foggy hillside and wanting to reach the valley. You feel which way the ground slopes (the gradient points uphill) and take a step the opposite way, then repeat. The learning rate is your step size: too small is slow, too large overshoots or even climbs out of the valley. On a smooth convex loss, small enough steps keep going downhill toward the bottom. Gradient descent is a first-order method: it only uses slopes, so in general it finds a local minimum, which is the global one when the function is convex. Stochastic gradient descent estimates the gradient from one random example: each step is much cheaper and it often gets close faster, but its path is erratic.',
+    intuition: 'You are on a foggy hillside and want to reach the valley. Feel which way the ground slopes, step the opposite way, and repeat. That is gradient descent.',
     formulas: [
       { tex: tex`\theta^{(k+1)}=\theta^{(k)}-\alpha\nabla J(\theta^{(k)})`, definitions: [tex`\alpha: learning rate (step size)`, tex`\nabla J: gradient, the direction of steepest increase`, tex`k: step number`] },
       { tex: tex`J(\theta)=(\theta-3)^2:\quad \theta^{(k+1)}-3=(1-2\alpha)(\theta^{(k)}-3)`, definitions: [tex`1-2\alpha: shrink factor; converges when |1 - 2 alpha| < 1, that is 0 < alpha < 1`] },
@@ -507,7 +507,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Production ML W1',
     problem: 'It lets us run gradient descent on losses with sharp corners, such as hinge loss and absolute value, where the ordinary slope does not exist.',
-    intuition: 'At a corner, like the bottom of |x|, there is no single slope. A subgradient is any slope g whose straight line through that point stays on or below the whole function. For a convex function such lines always exist. Away from corners the only choice is the ordinary slope; at a corner there is a whole range of valid slopes, and any one of them can be used for the descent step.',
+    intuition: 'At a sharp corner, like the bottom of |x|, there is no single slope. A subgradient is any slope whose line through that point stays on or below the whole function.',
     formulas: [
       { tex: tex`g\in\partial f(x_0)\iff f(x)\ge f(x_0)+g\,(x-x_0)\ \ \forall x`, definitions: [tex`g: a subgradient at x_0`, tex`\partial f(x_0): subdifferential, the set of all subgradients`] },
       { tex: tex`\partial|x|=\begin{cases}\{-1\},&x<0\\ [-1,1],&x=0\\ \{1\},&x>0\end{cases}`, definitions: [tex`[-1,1]: every slope between -1 and 1 works at the corner`] },
@@ -528,7 +528,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Production ML W2',
     problem: 'It keeps models simple by pushing unhelpful feature weights to exactly zero, which also tells you which features matter.',
-    intuition: 'Lasso adds a penalty equal to the total absolute size of the weights. Unlike ridge, whose pull toward zero weakens as a weight gets small, lasso\'s pull stays the same size, so small weights are pulled all the way to zero. Geometrically, the L1 penalty\'s diamond shape has corners on the axes, and the best fit often lands on a corner, where some weights are exactly zero.',
+    intuition: 'Lasso penalizes the total absolute size of the weights. Its pull toward zero never weakens, so unhelpful weights are pulled all the way to exactly zero, and the model tells you which features it does not need.',
     formulas: [
       { tex: tex`J(\theta)=\frac{1}{2n}\sum_{t=1}^{n}(y^{(t)}-\theta\cdot x^{(t)})^2+\lambda\lVert\theta\rVert_1,\qquad \lVert\theta\rVert_1=\sum_i|\theta_i|`, definitions: [tex`\lambda: regularization strength`, tex`\lVert\theta\rVert_1: L1 norm`, tex`\tfrac{1}{2n}: the half makes the formulas below exact (the same convention as scikit-learn); it only rescales lambda`] },
       { tex: tex`\hat\theta=\operatorname{sign}(w)\max(|w|-\lambda,0)`, definitions: [tex`w: least-squares weight for one standardized feature, meaning (1/n) sum of x^2 = 1, so w = (1/n) sum of x y`, tex`\text{soft-thresholding}: shrink by lambda, stop at 0`] },
@@ -547,7 +547,7 @@ export const subtopicConcepts = [
     group: 'Complexity',
     week: 'Production ML W2',
     problem: 'It combines lasso\'s ability to drop features with ridge\'s stability, which matters when several features carry the same information.',
-    intuition: 'Elastic net charges both penalties at once: an L1 part that can set weights exactly to zero and an L2 part that shrinks everything smoothly. When two features are strongly correlated, lasso tends to pick one of them almost at random; the L2 part makes elastic net share the weight between them more evenly (the grouping effect). With one feature, the rule is simple: soft-threshold like lasso, then shrink like ridge.',
+    intuition: 'Elastic net charges both penalties at once: lasso\'s L1 part, which can drop features, and ridge\'s L2 part, which shrinks everything smoothly.',
     formulas: [
       { tex: tex`J(\theta)=\frac{1}{2n}\sum_{t}(y^{(t)}-\theta\cdot x^{(t)})^2+\lambda_1\lVert\theta\rVert_1+\frac{\lambda_2}{2}\lVert\theta\rVert_2^2`, definitions: [tex`\lambda_1: L1 strength (sparsity)`, tex`\lambda_2: L2 strength (stability)`] },
       { tex: tex`\hat\theta=\frac{\operatorname{sign}(w)\max(|w|-\lambda_1,0)}{1+\lambda_2}`, definitions: [tex`w: least-squares weight for one standardized feature ((1/n) sum of x^2 = 1); the halves in J make this formula exact`] },
@@ -567,7 +567,7 @@ export const subtopicConcepts = [
     group: 'Generalization',
     week: 'Production ML W2',
     problem: 'It keeps learning, choosing settings, and final grading separate, so the reported score is an honest estimate for new data.',
-    intuition: 'Split the data three ways, like a course: homework to learn from (training), practice tests to choose settings such as polynomial degree or lambda (validation), and one final exam taken only once (test). If you keep peeking at the final exam while tuning, you slowly tune to it, and its score stops predicting how you will do on truly new data. All three sets should come from the same kind of data the model will see in use.',
+    intuition: 'Split the data like a course: homework to learn from (training), practice tests to choose settings (validation), and one final exam taken only once (test).',
     formulas: [
       { tex: tex`\hat\theta_\lambda=\arg\min_\theta J_{\text{train}}(\theta;\lambda),\qquad \lambda^*=\arg\min_\lambda E_{\text{val}}(\hat\theta_\lambda)`, definitions: [tex`\lambda: a hyperparameter, a setting not learned from training data`, tex`E_{\text{val}}: error on the validation set`] },
       { tex: tex`\text{report } E_{\text{test}}(\hat\theta_{\lambda^*})\text{ once}`, definitions: [tex`E_{\text{test}}: error on the untouched test set`] },
@@ -585,7 +585,7 @@ export const subtopicConcepts = [
     group: 'Generalization',
     week: 'Production ML W2',
     problem: 'It gives a more reliable validation score from limited data by letting every example take a turn in the validation set.',
-    intuition: 'Cut the non-test data into k equal chunks (folds). Train k times, each time holding out a different fold for validation and training on the rest, then average the k validation scores. Every example is used for validation exactly once, so the estimate wastes less data and depends less on one lucky or unlucky split. Pick the setting with the best average, refit on all the non-test data, and test once.',
+    intuition: 'Do not trust one lucky or unlucky split. Cut the non-test data into k folds and let each fold take a turn as the validation set.',
     formulas: [
       { tex: tex`\operatorname{CV}_k(\lambda)=\frac{1}{k}\sum_{j=1}^{k}E_{\text{val}}^{(j)}(\lambda)`, definitions: [tex`k: number of folds`, tex`E_{\text{val}}^{(j)}: validation error when fold j is held out`] },
       { tex: tex`\lambda^*=\arg\min_\lambda\operatorname{CV}_k(\lambda)`, definitions: [tex`\lambda^*: chosen hyperparameter`] },
@@ -605,7 +605,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Math W3C1',
     problem: 'It rewrites a matrix in its eigenvector coordinates, where it just stretches each axis, so repeated application becomes easy to compute and understand.',
-    intuition: 'If an n by n matrix has n independent eigenvectors, use them as the grid. In that grid the matrix only stretches each axis by its eigenvalue, so A = PDP^{-1}: change into eigen-coordinates (P^{-1}), stretch (D), change back (P). Applying A k times only needs D^k, which is each eigenvalue raised to the power k. Directions with eigenvalue above 1 in size grow, below 1 fade, which explains long-run behavior.',
+    intuition: 'Use a matrix\'s eigenvectors as the grid. In that grid, the matrix only stretches each axis, and repeated application becomes easy.',
     formulas: [
       { tex: tex`A=PDP^{-1}`, definitions: [tex`P: matrix whose columns are n independent eigenvectors`, tex`D: diagonal matrix of the matching eigenvalues`] },
       { tex: tex`A^k=PD^kP^{-1}`, definitions: [tex`k: number of repeated applications`, tex`D^k: diagonal entries raised to the kth power`] },
@@ -624,7 +624,7 @@ export const subtopicConcepts = [
     group: 'Model',
     week: 'Math W3C1',
     problem: 'It ranks web pages by how often a random surfer would end up on each one, which turns out to be an eigenvector problem.',
-    intuition: 'Imagine a surfer who keeps clicking random links. A link matrix M records the chance of moving from each page to each other page; its columns add up to 1. For well-connected link graphs like this example, applying M over and over from any starting mix settles to a steady state r with Mr = r: the eigenvector with eigenvalue 1. (A graph that just cycles between two pages would keep oscillating.) PageRank adds damping: with probability 1 - d the surfer jumps to a random page, which guarantees for every graph a single steady state that the iteration always reaches.',
+    intuition: 'Imagine a surfer who keeps clicking random links. Pages the surfer visits most often rank highest, and finding those visit rates is an eigenvector problem.',
     formulas: [
       { tex: tex`r^{(k+1)}=M\,r^{(k)},\qquad r=Mr`, definitions: [tex`M: column-stochastic link matrix (nonnegative, columns sum to 1)`, tex`r: probabilities of being on each page, summing to 1`] },
       { tex: tex`G=dM+\frac{1-d}{n}\mathbf{1}\mathbf{1}^T,\qquad r=Gr`, definitions: [tex`d: damping factor, typically 0.85`, tex`n: number of pages`, tex`\mathbf{1}\mathbf{1}^T: all-ones matrix (jump to any page)`] },
@@ -644,7 +644,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W3C2',
     problem: 'It explains why perpendicular directions are so convenient: coordinates become simple dot products and inverses become simple transposes.',
-    intuition: 'Two vectors are orthogonal when they meet at a right angle, so their dot product is 0 and neither has any component along the other. An orthonormal basis is a set of mutually perpendicular unit-length directions. In such a basis, finding a coordinate is just a dot product, no equations to solve. A square matrix Q whose columns are orthonormal is an orthogonal matrix: it rotates or reflects without stretching, and Q^T undoes it.',
+    intuition: 'Two vectors are orthogonal when they meet at a right angle: their dot product is 0, and neither has any component along the other.',
     formulas: [
       { tex: tex`u\perp v\iff u\cdot v=0,\qquad \lVert u\rVert=\sqrt{u\cdot u}`, definitions: [tex`u\perp v: u is orthogonal to v`, tex`\lVert u\rVert: length (norm)`] },
       { tex: tex`x=\sum_k (q_k\cdot x)\,q_k`, definitions: [tex`q_k: orthonormal basis vectors (unit length, mutually orthogonal)`, tex`q_k\cdot x: the coordinate of x along q_k`] },
@@ -663,7 +663,7 @@ export const subtopicConcepts = [
     group: 'Representation',
     week: 'Math W3C2',
     problem: 'It guarantees that every real symmetric matrix can be understood as pure stretching along perpendicular axes.',
-    intuition: 'A symmetric matrix equals its own transpose. The spectral theorem says every real symmetric matrix has real eigenvalues and a full set of perpendicular eigenvectors. So in the right rotated axes it only stretches, by its eigenvalues, like pulling a rubber sheet along perpendicular directions: A = Q Lambda Q^T. Covariance matrices are symmetric, which is why PCA always finds perpendicular principal directions.',
+    intuition: 'Every real symmetric matrix is pure stretching along perpendicular axes, like pulling a rubber sheet in perpendicular directions.',
     formulas: [
       { tex: tex`A=A^T\ \Rightarrow\ A=Q\Lambda Q^T`, definitions: [tex`A: real symmetric matrix`, tex`Q: orthogonal matrix of eigenvectors`, tex`\Lambda: diagonal matrix of real eigenvalues`] },
       { tex: tex`A=\sum_i\lambda_i\,q_iq_i^T`, definitions: [tex`q_i: unit eigenvectors, mutually orthogonal`, tex`\lambda_i: matching eigenvalues`] },
@@ -683,7 +683,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Math W3C2',
     problem: 'It stores the work of Gaussian elimination so that solving Ax = b for many different right-hand sides b becomes fast.',
-    intuition: 'Gaussian elimination turns A into an upper triangular U. Record the multipliers you used in a lower triangular L with 1s on the diagonal, and A = LU. Solving Ax = b then becomes two easy triangular solves: first Ly = b from the top down, then Ux = y from the bottom up. If a zero pivot appears, rows must be swapped first, which is recorded as a permutation: PA = LU.',
+    intuition: 'LU decomposition saves the work of Gaussian elimination, so solving Ax = b for many different right-hand sides b becomes fast.',
     formulas: [
       { tex: tex`PA=LU`, definitions: [tex`P: permutation matrix (row swaps); P = I when no pivoting is needed`, tex`L: lower triangular with 1s on the diagonal (the elimination multipliers)`, tex`U: upper triangular (the result of elimination)`] },
       { tex: tex`Ax=b\ \Rightarrow\ Ly=Pb,\ \ Ux=y`, definitions: [tex`y: intermediate vector from forward substitution`] },
@@ -701,7 +701,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Math W3C2',
     problem: 'It is a fast, numerically stable way to factor symmetric positive definite matrices, such as the X^T X of least squares when the features are linearly independent, for solving and sampling.',
-    intuition: 'For a symmetric positive definite matrix A (symmetric, and x^T A x > 0 for every nonzero x), there is a lower triangular L with positive diagonal such that A = L L^T. It works like a matrix square root. It needs about half the work of LU and never needs row swaps. If the algorithm hits a zero or negative number under a square root, the matrix was not positive definite.',
+    intuition: 'Cholesky is a matrix square root for symmetric positive definite matrices: A = L L^T, with L lower triangular and a positive diagonal.',
     formulas: [
       { tex: tex`A=LL^T`, definitions: [tex`A: symmetric positive definite matrix`, tex`L: lower triangular with positive diagonal (Cholesky factor)`] },
       { tex: tex`\begin{bmatrix}a&b\\b&d\end{bmatrix}=\begin{bmatrix}\sqrt a&0\\ b/\sqrt a&\sqrt{d-b^2/a}\end{bmatrix}\begin{bmatrix}\sqrt a&b/\sqrt a\\0&\sqrt{d-b^2/a}\end{bmatrix}`, definitions: [tex`a>0,\ d-b^2/a>0: both needed, which is positive definiteness for a 2 by 2 matrix`] },
@@ -719,7 +719,7 @@ export const subtopicConcepts = [
     group: 'Optimization',
     week: 'Math W3C2',
     problem: 'It breaks any matrix, of any shape, into rotate-stretch-rotate, revealing its most important directions and its best low-rank approximations.',
-    intuition: 'Every matrix, square or not, can be written as A = W Sigma V^T: rotate (or reflect) the input with V^T, stretch along the axes by the singular values in Sigma, then rotate into the output space with W. The singular values are the square roots of the eigenvalues of A^T A, listed from largest to smallest. Keeping only the largest few gives the best low-rank approximation, the idea behind image compression and PCA.',
+    intuition: 'Every matrix, square or not, does three simple things: rotate, stretch, rotate. The SVD writes this as A = W Sigma V^T.',
     formulas: [
       { tex: tex`A=W\Sigma V^T`, definitions: [tex`W,V: orthogonal matrices (W is usually called U; renamed to avoid clashing with LU)`, tex`\Sigma: m by n diagonal matrix with sigma_1 >= sigma_2 >= ... >= 0`] },
       { tex: tex`\sigma_i=\sqrt{\lambda_i(A^TA)},\qquad Av_i=\sigma_i w_i`, definitions: [tex`v_i: eigenvectors of A^T A (right singular vectors)`, tex`w_i: left singular vectors`] },

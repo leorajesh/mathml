@@ -174,6 +174,7 @@ export const workedExampleMath = {
     tex`y=1,\quad h=0.2,\quad L=-\log(0.2)\approx1.609`,
     tex`1.609-0.223=1.386`,
     tex`\prod_t p_t\text{ can underflow and is hard to differentiate; }\sum_t\log p_t\text{ has the same maximizer and becomes a sum.}`,
+    tex`h=\sigma(0)=0.5,\quad \nabla J=(0.5-1)\begin{bmatrix}1\\2\end{bmatrix}=\begin{bmatrix}-0.5\\-1\end{bmatrix},\quad \theta=\begin{bmatrix}0\\0\end{bmatrix}-0.5\begin{bmatrix}-0.5\\-1\end{bmatrix}=\begin{bmatrix}0.25\\0.5\end{bmatrix}`,
   ],
   'classification-metrics': [
     tex`TP=8,\quad FP=2,\quad TN=90,\quad FN=10`,

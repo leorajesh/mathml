@@ -275,10 +275,22 @@ function LinearBoundaryGraph({ values }) {
 }
 
 function PerceptronGraph({ values }) {
+  // Labels here are y = +1, so the update theta <- theta + x happens only on a mistake: theta . x <= 0.
   const before = { x: values.theta1, y: values.theta2 };
-  const after = { x: values.theta1 + values.x1, y: values.theta2 + values.x2 };
   const x = { x: values.x1, y: values.x2 };
-  return <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(before.x)} ${sy(before.y)}`} /><path className="vector-b" d={`M ${sx(before.x)} ${sy(before.y)} L ${sx(after.x)} ${sy(after.y)}`} /><path className="result-vector" d={`M ${sx(0)} ${sy(0)} L ${sx(after.x)} ${sy(after.y)}`} />{circlePoint(x, 'point-b', 'x')}{circlePoint(after, 'active-dot', 'theta new')}</g>;
+  const agreement = before.x * x.x + before.y * x.y;
+  const mistake = agreement <= 0;
+  const after = mistake ? { x: before.x + x.x, y: before.y + x.y } : before;
+  const content = mistake
+    ? <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(before.x)} ${sy(before.y)}`} /><path className="vector-b" d={`M ${sx(before.x)} ${sy(before.y)} L ${sx(after.x)} ${sy(after.y)}`} /><path className="result-vector" d={`M ${sx(0)} ${sy(0)} L ${sx(after.x)} ${sy(after.y)}`} />{circlePoint(x, 'point-b', 'x')}{circlePoint(after, 'active-dot', 'theta new')}</g>
+    : <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(before.x)} ${sy(before.y)}`} />{circlePoint(x, 'point-b', 'x')}{circlePoint(before, 'active-dot', 'theta (unchanged)')}</g>;
+  return {
+    content,
+    readout: [
+      `y (theta . x) before = ${agreement.toFixed(2)}`,
+      mistake ? `mistake (<= 0), so theta += x; after = ${(agreement + x.x ** 2 + x.y ** 2).toFixed(2)}` : 'already correct (> 0): no update',
+    ],
+  };
 }
 
 function LossCurveGraph({ values, mode }) {
@@ -346,11 +358,12 @@ function GeneralizationGraph({ values }) {
   const train = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: toY(trainAt(c)) }; });
   const test = Array.from({ length: 101 }, (_, index) => { const c = index / 10; return { x: c - 5, y: toY(clamp(testAt(c), 0, 5.8)) }; });
   const c = values.complexity;
+  const heldOut = values.validation ? 'validation' : 'test';
   let best = 0;
   for (let k = 0; k <= 100; k += 1) if (testAt(k / 10) < testAt(best)) best = k / 10;
   return {
-    content: <g><path className="line-a" d={linePath(train)} /><path className="line-b" d={linePath(test)} /><path className="tick" strokeDasharray="4 4" d={`M ${sx(best - 5)} ${sy(-4.6)} L ${sx(best - 5)} ${sy(4.6)}`} />{circlePoint({ x: c - 5, y: toY(trainAt(c)) }, 'point-a', 'train')}{circlePoint({ x: c - 5, y: toY(clamp(testAt(c), 0, 5.8)) }, 'point-b', 'test')}</g>,
-    readout: [`train loss ${trainAt(c).toFixed(2)}, test loss ${testAt(c).toFixed(2)}, gap ${(testAt(c) - trainAt(c)).toFixed(2)}`, c < best - 0.5 ? 'underfitting: both losses are high' : c > best + 0.5 ? 'overfitting: the gap keeps growing' : 'near the best complexity (dashed line)'],
+    content: <g><path className="line-a" d={linePath(train)} /><path className="line-b" d={linePath(test)} /><path className="tick" strokeDasharray="4 4" d={`M ${sx(best - 5)} ${sy(-4.6)} L ${sx(best - 5)} ${sy(4.6)}`} />{circlePoint({ x: c - 5, y: toY(trainAt(c)) }, 'point-a', 'train')}{circlePoint({ x: c - 5, y: toY(clamp(testAt(c), 0, 5.8)) }, 'point-b', heldOut)}</g>,
+    readout: [`train loss ${trainAt(c).toFixed(2)}, ${heldOut} loss ${testAt(c).toFixed(2)}, gap ${(testAt(c) - trainAt(c)).toFixed(2)}`, c < best - 0.5 ? 'underfitting: both losses are high' : c > best + 0.5 ? 'overfitting: the gap keeps growing' : 'near the best complexity (dashed line)'],
   };
 }
 
@@ -1376,7 +1389,7 @@ function DriftRetrainGraph({ values }) {
   for (let m = 0; m <= 24; m += 0.05) points.push({ x: X(m), y: Y(Math.max(accuracy(m), 0)) });
   let sum = 0;
   const samples = 2400;
-  for (let k = 0; k < samples; k += 1) sum += accuracy((24 * k) / samples);
+  for (let k = 0; k < samples; k += 1) sum += accuracy((24 * (k + 0.5)) / samples);
   const retrains = interval >= 24 ? 0 : Math.ceil(24 / interval) - 1;
   return {
     content: <g><path className="axis" d={`M ${sx(X(0))} ${sy(Y(0))} L ${sx(X(24))} ${sy(Y(0))}`} />{[0, 6, 12, 18, 24].map((m) => <text key={m} x={sx(X(m))} y={sy(Y(0)) + 16} textAnchor="middle">{m}</text>)}{[0, 50, 100].map((a) => <text key={a} x={sx(X(0)) - 6} y={sy(Y(a)) + 4} textAnchor="end">{a}</text>)}<path className="noise-line" d={linePath([{ x: X(0), y: Y(A0) }, { x: X(24), y: Y(A0) }])} /><path className="boundary" d={linePath(points)} /></g>,

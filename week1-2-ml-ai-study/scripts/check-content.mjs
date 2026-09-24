@@ -13,6 +13,7 @@ import { courseBooks, courseReferences, caseStudies } from '../src/data/courseRe
 import { mathLinks } from '../src/data/mathLinks.js';
 import { intuitionDetails } from '../src/data/intuitionDetails.js';
 import { codingGuides } from '../src/data/codingGuides.js';
+import { projects } from '../src/data/projects.js';
 import { trackOrder } from '../src/data/learningTracks.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -122,6 +123,16 @@ for (const [id, steps] of Object.entries(codingGuides)) {
     if (!item.label || !item.text) problems.push(`${id}: coding-guide step needs a label and text`);
     else if (words(item.text) > 70) problems.push(`${id}: coding-guide step "${item.label}" is over 70 words`);
     if (item.code && item.code.includes('\t')) problems.push(`${id}: coding-guide code "${item.label}" uses tabs`);
+  }
+}
+// End-to-end projects: a known anchor page, 3-6 stages linking known pages, code and expected output.
+for (const [key, project] of Object.entries(projects)) {
+  if (!conceptMap[project.anchor]) problems.push(`project "${key}": unknown anchor page "${project.anchor}"`);
+  if (!project.code || !project.expected) problems.push(`project "${key}" needs code and expected output`);
+  if (project.steps.length < 3 || project.steps.length > 6) problems.push(`project "${key}" needs 3 to 6 stages`);
+  for (const item of project.steps) {
+    if (words(item.text) > 45) problems.push(`project "${key}": stage "${item.label}" is over 45 words`);
+    for (const id of item.pages) if (!conceptMap[id]) problems.push(`project "${key}": stage "${item.label}" links unknown page "${id}"`);
   }
 }
 for (const [id, figure] of Object.entries(figures)) {

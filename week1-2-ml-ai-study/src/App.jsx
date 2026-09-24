@@ -10,6 +10,8 @@ import { learningObjectives, selfChecksByConcept } from './data/learningObjectiv
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { intuitionDetails } from './data/intuitionDetails.js';
+import { codingGuides } from './data/codingGuides.js';
+import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
 import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
 import { mathLinks, mlUsesOf } from './data/mathLinks.js';
@@ -228,7 +230,9 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
       </OrderedSection>
 
       <OrderedSection number="6" title="Try It in Python">
+        <CodingGuide steps={codingGuides[concept.id]} />
         <PythonRunner conceptId={concept.id} original={codeExamples[concept.id] ?? '# No code example available yet.\nprint("Hello from Python")'} />
+        <EndToEndProjects conceptId={concept.id} onSelect={onSelect} />
       </OrderedSection>
 
       <OrderedSection number="7" title="Common Misconception">
@@ -331,6 +335,55 @@ function FormulaDefinition({ definition }) {
 }
 
 // ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
+// The end-to-end project anchored on this page: stages with links, a runnable program, and its output.
+function EndToEndProjects({ conceptId, onSelect }) {
+  const anchored = Object.entries(projects).filter(([, project]) => project.anchor === conceptId);
+  return anchored.map(([key, project]) => (
+    <div className="end-to-end" id={`project-${key}`} key={key}>
+      <h3>End-to-end project: {project.title}</h3>
+      <p>{project.intro}</p>
+      <ol>
+        {project.steps.map((item) => (
+          <li key={item.label}>
+            <strong>{item.label}.</strong> {item.text}{' '}
+            <span className="end-to-end-pages">
+              ({item.pages.map((id, index) => (
+                <React.Fragment key={id}>
+                  {index > 0 && ', '}
+                  {id === conceptId ? <span>this page</span> : <button onClick={() => onSelect(id)}>{conceptMap[id]?.title ?? id}</button>}
+                </React.Fragment>
+              ))})
+            </span>
+          </li>
+        ))}
+      </ol>
+      <PythonRunner conceptId={`project-${key}`} original={project.code} />
+      <details className="course-notes">
+        <summary>Output you should see</summary>
+        <pre>{project.expected}</pre>
+      </details>
+    </div>
+  ));
+}
+
+// Practical steps from the formulas to a working program, shown above the runnable example.
+function CodingGuide({ steps }) {
+  if (!steps) return null;
+  return (
+    <div className="coding-guide">
+      <h3>From formula to code</h3>
+      <ol>
+        {steps.map((item) => (
+          <li key={item.label}>
+            <strong>{item.label}.</strong> {item.text}
+            {item.code && <pre><code>{item.code}</code></pre>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // A short hook, then labelled key ideas, then (collapsed) notes tied to the course materials.
 function IntuitionBody({ concept }) {
   const details = intuitionDetails[concept.id];

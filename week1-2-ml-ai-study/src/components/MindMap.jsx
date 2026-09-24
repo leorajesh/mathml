@@ -76,6 +76,13 @@ const domains = [
     summary: 'Derivatives, the chain rule, gradients, Jacobians, gradients of loss functions, backpropagation, Taylor approximation, and the Hessian, and the optimization and loss pages that use them.',
     concepts: ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
   },
+  {
+    id: 'overview-probability',
+    title: 'Probability and Statistics for ML',
+    group: 'Generalization',
+    summary: 'Exponentials and logarithms, probability and Bayes\' rule, expectation and variance, covariance and the Gaussian, maximum likelihood, and the ML pages built on them.',
+    concepts: ['exp-log', 'probability-statistics', 'logistic-loss', 'bias-variance', 'classification-metrics'],
+  },
 ];
 
 const overviewEdges = [
@@ -94,6 +101,8 @@ const overviewEdges = [
   ['overview-linear-algebra', 'overview-vector-calculus'],
   ['overview-vector-calculus', 'overview-optimization'],
   ['overview-vector-calculus', 'overview-regression'],
+  ['overview-foundations', 'overview-probability'],
+  ['overview-probability', 'overview-generalization'],
 ];
 
 function wrapTitle(title, maxLength = 22) {

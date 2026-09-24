@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -70,6 +70,10 @@ const plotAxes = {
   logLoss: { x: 'predicted probability h (0 to 1)', y: 'loss' },
   gradient: { x: 'theta', y: 'loss J(theta)' },
   ssgdHinge: { x: 'step k', y: 'training hinge risk R_n (0 to 1.2)' },
+  sigmoidLogit: { x: 'score s (-6 to 6)', y: 'sigma(s) (0 to 1)' },
+  bayesSquare: { x: '', y: '' },
+  sampleMeans: { x: 'average of n die rolls (1 to 6)', y: 'how often' },
+  likelihoodCurve: { x: 'parameter mu (0 to 1)', y: 'log-likelihood' },
   surrogate: { x: 'margin z = y (theta . x)', y: 'loss' },
   generalization: { x: 'model complexity', y: 'loss' },
   diagonalization: { x: '', y: 'size after k steps' },
@@ -136,6 +140,11 @@ function renderGraph(type, values) {
     case 'zeroOne': return LossCurveGraph({ values, mode: 'zeroOne' });
     case 'hinge': return LossCurveGraph({ values, mode: 'hinge' });
     case 'surrogate': return SurrogateGraph({ values });
+    case 'sigmoidLogit': return SigmoidLogitGraph({ values });
+    case 'bayesSquare': return BayesSquareGraph({ values });
+    case 'sampleMeans': return SampleMeansGraph({ values });
+    case 'gaussianCloud': return GaussianCloudGraph({ values });
+    case 'likelihoodCurve': return LikelihoodCurveGraph({ values });
     case 'ssgdHinge': return SsgdHingeGraph({ values });
     case 'perceptronMistakes': return PerceptronMistakesGraph({ values });
     case 'gradient': return GradientGraph({ values });
@@ -359,6 +368,118 @@ function PerceptronMistakesGraph({ values }) {
   return {
     content: <g><path className="tick" strokeDasharray="6 6" d={linePath([{ x: -6, y: 6 }, { x: 6, y: -6 }])} /><path className="boundary" d={linePath(learned)} />{points.map((p, index) => <circle key={index} className={p.label > 0 ? 'class-pos' : 'class-neg'} cx={sx(p.x)} cy={sy(p.y)} r="6" />)}<text className="graph-note" x="44" y="48">dashed: true separator with margin gamma; berry: the perceptron's final boundary</text></g>,
     readout: [`margin gamma = ${gamma.toFixed(2)}, R = ${R.toFixed(2)}`, `mistakes made: ${mistakes}; bound (R/gamma)^2 = ${((R / gamma) ** 2).toFixed(1)}`, 'smaller margin: more mistakes allowed; the bound is a worst case, often far above the actual count'],
+  };
+}
+
+// The sigmoid on s in [-6, 6]: the points at s and -s have heights that add up to 1.
+function SigmoidLogitGraph({ values }) {
+  const sig = (v) => 1 / (1 + Math.exp(-v));
+  const X = (v) => (v * 5) / 6;
+  const Y = (p) => -4 + 8 * p;
+  const curve = Array.from({ length: 121 }, (_, index) => { const v = -6 + index * 0.1; return { x: X(v), y: Y(sig(v)) }; });
+  const s = values.s;
+  return {
+    content: <g><path className="tick" strokeDasharray="4 4" d={linePath([{ x: -5, y: 0 }, { x: 5, y: 0 }])} /><path className="loss-line" d={linePath(curve)} />{circlePoint({ x: X(s), y: Y(sig(s)) }, 'active-dot', 's')}{circlePoint({ x: X(-s), y: Y(sig(-s)) }, 'point-a', '-s')}</g>,
+    readout: [`sigma(${s.toFixed(1)}) = ${sig(s).toFixed(4)}, sigma(${(-s).toFixed(1)}) = ${sig(-s).toFixed(4)}, sum = ${(sig(s) + sig(-s)).toFixed(4)}`, `logit(${sig(s).toFixed(4)}) = ln(p/(1 - p)) = ${Math.log(sig(s) / (1 - sig(s))).toFixed(2)}: back to s`],
+  };
+}
+
+// The unit square is everyone; the left strip has the disease; shaded parts test positive.
+function BayesSquareGraph({ values }) {
+  const { prevalence, sensitivity, fpr } = values;
+  const left = -4.5;
+  const size = 9;
+  const split = left + size * prevalence;
+  const bottom = -4.5;
+  const rect = (x0, x1, y0, y1, className) => <rect className={className} x={sx(x0)} y={sy(y1)} width={sx(x1) - sx(x0)} height={sy(y0) - sy(y1)} />;
+  const tp = prevalence * sensitivity;
+  const fp = (1 - prevalence) * fpr;
+  return {
+    content: <g>{rect(left, left + size, bottom, bottom + size, 'bayes-cell')}{rect(left, split, bottom, bottom + size * sensitivity, 'bayes-tp')}{rect(split, left + size, bottom, bottom + size * fpr, 'bayes-fp')}<path className="tick" d={linePath([{ x: split, y: bottom }, { x: split, y: bottom + size }])} /><text className="graph-note" x={sx(left)} y={sy(bottom + size) - 8}>disease (left strip)</text><text className="graph-note" x={sx(left + size)} y={sy(bottom + size) - 8} textAnchor="end">healthy</text></g>,
+    readout: [`P(+) = ${tp.toFixed(3)} + ${fp.toFixed(3)} = ${(tp + fp).toFixed(3)}`, `P(disease | +) = ${tp.toFixed(3)} / ${(tp + fp).toFixed(3)} = ${(tp + fp > 0 ? tp / (tp + fp) : 0).toFixed(3)}`, `P(+ | disease) = ${sensitivity.toFixed(2)}: a different question`],
+  };
+}
+
+// A small, well-mixed seeded generator (mulberry32) for the probability simulations; the simple
+// Lehmer generator used elsewhere correlates consecutive values, which distorts Box-Muller pairs.
+function mulberry32(seedValue) {
+  let a = seedValue >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// 400 simulated experiments, each the average of n fair die rolls (fixed seed).
+function SampleMeansGraph({ values }) {
+  const n = values.n;
+  const random = mulberry32(3);
+  const means = Array.from({ length: 400 }, () => { let total = 0; for (let k = 0; k < n; k += 1) total += 1 + Math.floor(random() * 6); return total / n; });
+  // An average of n rolls is always a multiple of 1/n between 1 and 6, so each possible value gets a bar.
+  const bins = 5 * n + 1;
+  const counts = Array(bins).fill(0);
+  for (const m of means) counts[Math.round((m - 1) * n)] += 1;
+  const X = (v) => -4.5 + ((v - 0.5) / 6) * 9;
+  const tallest = Math.max(...counts);
+  const Y = (c) => -4.5 + (8.5 * c) / Math.max(tallest, 1);
+  const avg = means.reduce((a, b) => a + b, 0) / means.length;
+  const sd = Math.sqrt(means.reduce((a, b) => a + (b - avg) ** 2, 0) / means.length);
+  return {
+    content: <g>{counts.map((c, index) => { const x0 = X(1 + (index - 0.5) / n); const x1 = X(1 + (index + 0.5) / n); return <rect key={index} className="bar-fill" x={sx(x0) + 1} y={sy(Y(c))} width={Math.max(sx(x1) - sx(x0) - 2, 1)} height={sy(-4.5) - sy(Y(c))} />; })}<path className="line-b" d={linePath([{ x: X(3.5), y: -4.5 }, { x: X(3.5), y: 4.5 }])} /></g>,
+    readout: [`average of the 400 averages: ${avg.toFixed(3)} (expected 3.5)`, `their standard deviation: ${sd.toFixed(3)}; theory sqrt(2.917/${n}) = ${Math.sqrt(35 / 12 / n).toFixed(3)}`],
+  };
+}
+
+// 200 points from a 2D Gaussian with standard deviations 1 and sd2 and correlation rho (fixed seed).
+function GaussianCloudGraph({ values }) {
+  const { rho, sd2 } = values;
+  const uniform = mulberry32(5);
+  const random = () => (uniform() * 4294967295 + 0.5) / 4294967296;
+  const points = Array.from({ length: 200 }, () => {
+    const r = Math.sqrt(-2 * Math.log(random()));
+    const angle = 2 * Math.PI * random();
+    const z1 = r * Math.cos(angle);
+    const z2 = r * Math.sin(angle);
+    return { x: z1, y: sd2 * (rho * z1 + Math.sqrt(1 - rho * rho) * z2) };
+  });
+  const mean = { x: points.reduce((a, p) => a + p.x, 0) / 200, y: points.reduce((a, p) => a + p.y, 0) / 200 };
+  const sxx = points.reduce((a, p) => a + (p.x - mean.x) ** 2, 0) / 200;
+  const syy = points.reduce((a, p) => a + (p.y - mean.y) ** 2, 0) / 200;
+  const sxy = points.reduce((a, p) => a + (p.x - mean.x) * (p.y - mean.y), 0) / 200;
+  // One-standard-deviation ellipse of the true covariance [[1, c], [c, sd2^2]] from its eigen-decomposition.
+  const c = rho * sd2;
+  const a = 1;
+  const d = sd2 * sd2;
+  const half = (a + d) / 2;
+  const root = Math.sqrt(((a - d) / 2) ** 2 + c * c);
+  const l1 = half + root;
+  const l2 = Math.max(half - root, 0);
+  const theta = Math.abs(c) < 1e-12 ? (a >= d ? 0 : Math.PI / 2) : Math.atan2(l1 - a, c);
+  const ellipse = Array.from({ length: 73 }, (_, index) => { const t = (index / 72) * 2 * Math.PI; const u = Math.sqrt(l1) * Math.cos(t); const v = Math.sqrt(l2) * Math.sin(t); return { x: u * Math.cos(theta) - v * Math.sin(theta), y: u * Math.sin(theta) + v * Math.cos(theta) }; });
+  return {
+    content: <g>{points.map((p, index) => <circle key={index} className="muted-dot" cx={sx(p.x)} cy={sy(clamp(p.y, -5, 5))} r="3.5" />)}<path className="line-b" d={linePath(ellipse)} /><path className="line-a" d={linePath([{ x: -2.4 * Math.cos(theta), y: -2.4 * Math.sin(theta) }, { x: 2.4 * Math.cos(theta), y: 2.4 * Math.sin(theta) }])} /></g>,
+    readout: [`true covariance [[1, ${c.toFixed(2)}], [${c.toFixed(2)}, ${d.toFixed(2)}]]`, `sample covariance [[${sxx.toFixed(2)}, ${sxy.toFixed(2)}], [${sxy.toFixed(2)}, ${syy.toFixed(2)}]], sample correlation ${(sxy / Math.sqrt(sxx * syy)).toFixed(2)}`],
+  };
+}
+
+// Log-likelihood of k ones in 10 Bernoulli trials, as a function of mu.
+function LikelihoodCurveGraph({ values }) {
+  const { k, mu } = values;
+  const n = 10;
+  const ell = (m) => k * Math.log(m) + (n - k) * Math.log(1 - m);
+  const X = (m) => -4.5 + 9 * m;
+  const bottom = -20;
+  const Y = (v) => -4.5 + (9 * (clamp(v, bottom, 0) - bottom)) / -bottom;
+  // Only the part of the curve above the plot's lower edge is drawn (the log-likelihood is concave, so that part is one piece).
+  const curve = Array.from({ length: 99 }, (_, index) => (index + 1) / 100).filter((m) => ell(m) >= bottom).map((m) => ({ x: X(m), y: Y(ell(m)) }));
+  const best = k / n;
+  const bestEll = best === 0 || best === 1 ? 0 : ell(best);
+  return {
+    content: <g><path className="loss-line" d={linePath(curve)} /><path className="tick" strokeDasharray="4 4" d={linePath([{ x: X(best), y: -4.5 }, { x: X(best), y: 4.5 }])} />{circlePoint({ x: X(mu), y: Y(ell(mu)) }, 'active-dot', 'mu')}</g>,
+    readout: [`l(${mu.toFixed(2)}) = ${ell(mu).toFixed(3)}, L = ${Math.exp(ell(mu)).toExponential(2)}, average NLL = ${(-ell(mu) / n).toFixed(3)}`, `maximum at mu_hat = ${k}/10 = ${best.toFixed(1)}, where l = ${bestEll.toFixed(3)}`],
   };
 }
 

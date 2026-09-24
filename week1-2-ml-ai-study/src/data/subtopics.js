@@ -51,6 +51,15 @@ export const topics = [
     children: ['derivatives', 'partial-derivatives-gradient', 'jacobian-chain-rule', 'loss-gradients', 'backpropagation', 'taylor-hessian'],
   },
   {
+    id: 'probability-statistics',
+    title: 'Probability and Statistics: Expectation, Gaussians, and Likelihood',
+    group: 'Generalization',
+    week: 'MML book Ch. 6, §8.3',
+    summary: 'The probability behind the ML pages: conditional probability and Bayes\' rule, expectation and variance, covariance and the Gaussian, and maximum likelihood.',
+    overview: 'Logistic regression outputs a probability, bias and variance are expectations over training sets, PCA diagonalizes a covariance matrix, and both the logistic loss and least squares come from maximum likelihood. Start with probability and Bayes\' rule, then expectation and variance, then covariance and the Gaussian, and finish with likelihood.',
+    children: ['probability-basics', 'expectation-variance', 'covariance-gaussian', 'likelihood-mle'],
+  },
+  {
     id: 'linear-independence-subspaces',
     title: 'Linear Independence, Span, and Subspaces',
     group: 'Complexity',
@@ -220,6 +229,7 @@ export const subtopicConcepts = [
     intuition: 'A function is a vending machine: every button gives exactly one snack. The interesting questions are whether snacks get mixed up and whether any snack is out of reach.',
     formulas: [
       { tex: tex`f:A\to B,\quad x\mapsto f(x)`, definitions: [tex`A: domain, the set of inputs`, tex`B: codomain, the set outputs must lie in`, tex`f(A): range or image, the outputs actually reached`] },
+      { tex: tex`\mathbb 1\{z\le0\}=\begin{cases}1,&z\le0\\0,&z>0\end{cases},\qquad \min_\theta(\theta-3)^2=0,\quad \arg\min_\theta(\theta-3)^2=3`, definitions: ['indicator 1{condition}: 1 when the condition holds, 0 otherwise; the zero-one loss is one', 'argmin: the input where the minimum is reached (min is the minimum value itself); argmax likewise'] },
       { tex: tex`\text{injective: } f(x_1)=f(x_2)\Rightarrow x_1=x_2,\qquad \text{surjective: } \forall y\in B\ \exists x\in A: f(x)=y`, definitions: [tex`\text{injective}: different inputs give different outputs`, tex`\text{surjective}: every element of B is hit`, tex`\text{bijective}: injective and surjective`] },
     ],
     example: ['Take A = {1,2,3} and B = {a,b,c}.', 'f = {1->a, 2->a, 3->b} is not injective (1 and 2 share a) and not surjective (c is never reached).', 'g = {1->a, 2->b, 3->c} is injective and surjective, so it is bijective.', 'For finite sets of equal size, injective and surjective go together: a function that misses an output must also reuse one.'],

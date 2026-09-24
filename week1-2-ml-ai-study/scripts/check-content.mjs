@@ -12,6 +12,8 @@ import { mmlReferences } from '../src/data/mmlReferences.js';
 import { courseBooks, courseReferences, caseStudies } from '../src/data/courseReferences.js';
 import { mathLinks } from '../src/data/mathLinks.js';
 import { intuitionDetails } from '../src/data/intuitionDetails.js';
+import { codingGuides } from '../src/data/codingGuides.js';
+import { projects } from '../src/data/projects.js';
 import { trackOrder } from '../src/data/learningTracks.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -114,6 +116,25 @@ for (const { id } of concepts) {
   for (const note of details.courseNotes ?? []) if (words(note) > 50) problems.push(`${id}: course note over 50 words`);
 }
 for (const id of Object.keys(intuitionDetails)) if (!conceptMap[id]) problems.push(`intuition details for unknown page "${id}"`);
+// "From formula to code" guides: known pages, labelled steps of at most 70 words, code without tabs.
+for (const [id, steps] of Object.entries(codingGuides)) {
+  if (!conceptMap[id]) problems.push(`coding guide for unknown page "${id}"`);
+  for (const item of steps) {
+    if (!item.label || !item.text) problems.push(`${id}: coding-guide step needs a label and text`);
+    else if (words(item.text) > 70) problems.push(`${id}: coding-guide step "${item.label}" is over 70 words`);
+    if (item.code && item.code.includes('\t')) problems.push(`${id}: coding-guide code "${item.label}" uses tabs`);
+  }
+}
+// End-to-end projects: a known anchor page, 3-6 stages linking known pages, code and expected output.
+for (const [key, project] of Object.entries(projects)) {
+  if (!conceptMap[project.anchor]) problems.push(`project "${key}": unknown anchor page "${project.anchor}"`);
+  if (!project.code || !project.expected) problems.push(`project "${key}" needs code and expected output`);
+  if (project.steps.length < 3 || project.steps.length > 6) problems.push(`project "${key}" needs 3 to 6 stages`);
+  for (const item of project.steps) {
+    if (words(item.text) > 45) problems.push(`project "${key}": stage "${item.label}" is over 45 words`);
+    for (const id of item.pages) if (!conceptMap[id]) problems.push(`project "${key}": stage "${item.label}" links unknown page "${id}"`);
+  }
+}
 for (const [id, figure] of Object.entries(figures)) {
   if (!drawnFigures.has(id)) problems.push(`figure "${id}" has no drawing in Figures.jsx`);
   if (!figure.title || !figure.caption || !figure.alt) problems.push(`figure "${id}" needs a title, caption, and alt text`);

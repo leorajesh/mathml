@@ -5,6 +5,7 @@ import { conceptLevel } from '../data/studyGuidance.js';
 import { trackIds, trackOrder, tracks, tracksContaining } from '../data/learningTracks.js';
 import { useProgress } from '../progress.js';
 import { QuizBadge } from './Quiz.jsx';
+import { projects } from '../data/projects.js';
 
 function otherTrack(trackId) {
   return trackIds.find((id) => id !== trackId);
@@ -93,6 +94,11 @@ export function TrackView({ trackId, onOpen, onShowTrack }) {
               );
             })}
           </ol>
+          {Object.values(projects).filter((project) => section.concepts.includes(project.anchor)).map((project) => (
+            <button className="track-project" key={project.anchor} onClick={() => onOpen(project.anchor, trackId)}>
+              End-to-end project: {project.title} <span>(on the page {conceptMap[project.anchor].title})</span>
+            </button>
+          ))}
         </div>
       ))}
     </section>

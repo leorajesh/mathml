@@ -277,6 +277,9 @@ export const intuitionDetails = {
       idea("Discriminative", "It models p(y | x) directly. A generative model instead models p(x | y) and p(y), what each class looks like, then uses Bayes' rule."),
       idea("More than two classes", "One-vs-rest trains one classifier per class (cat vs not cat, dog vs not dog, fish vs not fish) and picks the most probable class."),
     ],
+    courseNotes: [
+      "Lesson 4 gives the chance of y = 0 at score 7 as 0.0001. The correct value is 1 - sigma(7) = 1 - 0.99909 ≈ 0.0009, as on this page (check: e^(-7) ≈ 0.000912).",
+    ],
   },
   "logistic-loss": {
     keyIdeas: [
@@ -328,6 +331,7 @@ export const intuitionDetails = {
   },
   "functions": {
     keyIdeas: [
+      idea("Indicators and argmin", "The indicator 1{condition} is 1 when the condition holds and 0 otherwise (the zero-one loss). argmin f is where f is smallest; min f is that smallest value."),
       idea("Injective (one-to-one)", "No two buttons give the same snack, so nothing gets mixed up."),
       idea("Surjective (onto)", "Every snack can be bought with some button, so nothing is missed."),
       idea("Bijective", "Both at once: every snack comes from exactly one button."),
@@ -343,6 +347,7 @@ export const intuitionDetails = {
   "vectors-dot-product": {
     keyIdeas: [
       idea("How to compute it", "Multiply matching entries and add them up."),
+      idea("Reading sums", "The sum over t of a_t adds a term per example; (1/n) times a sum is an average. Sums are linear: sum of (c a_t + b_t) = c sum a_t + sum b_t."),
       idea("How to read it", "Large and positive: same direction. Zero: perpendicular. Negative: pointing apart."),
       idea("Length and angle", "A vector dotted with itself is its length squared; dividing a dot product by both lengths gives the cosine of the angle between them."),
     ],
@@ -637,10 +642,55 @@ export const intuitionDetails = {
   },
   "pca": {
     keyIdeas: [
-      idea("Center first", "Subtract the mean from every point."),
+      idea("Center first", "Subtract the mean from every point. The variance along a unit direction b is then b^T S b = Var(b^T x) (S divides by N here; np.cov divides by N - 1)."),
       idea("Most spread", "The first principal component is the direction of largest variance: the top eigenvector of the covariance matrix, with the eigenvalue as the variance kept."),
       idea("Then the next", "Each further component is the most-spread direction perpendicular to the ones before."),
       idea("Two views agree", "Maximizing kept variance is the same as minimizing reconstruction error, because by Pythagoras total variance = kept variance + reconstruction error."),
+    ],
+  },
+  "exp-log": {
+    keyIdeas: [
+      idea("Exponent rules", "e^(a + b) = e^a e^b and e^(-a) = 1/e^a. The exponential is always positive and grows very fast."),
+      idea("Log rules", "ln(ab) = ln a + ln b, ln(a/b) = ln a - ln b, and ln(a^k) = k ln a. But ln(a + b) is not ln a + ln b."),
+      idea("Logs keep the winner", "ln is strictly increasing, so whatever maximizes a positive f also maximizes ln f. That is why we maximize log-likelihoods."),
+      idea("The sigmoid and its inverse", "sigma(s) = 1/(1 + e^(-s)) lies strictly between 0 and 1, with sigma(0) = 1/2 and sigma(-s) = 1 - sigma(s). Its inverse is the logit ln(p/(1 - p)), the log-odds."),
+      idea("Change of base", "log_b x = ln x / ln b, so log_2 and ln differ only by the constant factor ln 2 ≈ 0.693."),
+    ],
+  },
+  "probability-basics": {
+    keyIdeas: [
+      idea("Random variables", "A random variable is a number that depends on chance. Discrete ones have probabilities p(x) that sum to 1; continuous ones have a density, and probabilities are areas under it."),
+      idea("Conditioning", "P(A | B) = P(A and B) / P(B): the share of B-cases that are also A. A classifier's h(x) is its estimate of p(y = 1 | x)."),
+      idea("Sum and product rules", "p(x) = sum over y of p(x, y), and p(x, y) = p(y | x) p(x). Everything else follows from these two."),
+      idea("Bayes' rule", "p(y | x) = p(x | y) p(y) / p(x). Generative models learn p(x | y) and p(y) and apply it; logistic regression learns p(y | x) directly."),
+      idea("Independence and i.i.d.", "Independent: p(x, y) = p(x) p(y). Training examples are assumed i.i.d., so the probability of the whole data set is a product."),
+    ],
+  },
+  "expectation-variance": {
+    keyIdeas: [
+      idea("Expectation is linear", "E[aX + bY + c] = a E[X] + b E[Y] + c, always, even when X and Y are dependent."),
+      idea("Variance", "Var X = E[(X - mu)^2] = E[X^2] - mu^2, and Var(aX + b) = a^2 Var X. The standard deviation is its square root, in the original units."),
+      idea("Averages settle down", "The mean of n i.i.d. draws keeps expectation mu but has variance sigma^2/n. So for a fixed model, test error on fresh data estimates the true error; the training error of a fitted model is optimistic."),
+      idea("Bias-variance in one line", "For any constant c, E[(Z - c)^2] = (E Z - c)^2 + Var Z. With Z a model's prediction and c the truth, that is bias squared plus variance."),
+      idea("SGD is right on average", "If t is picked uniformly, the expected one-example gradient equals the average gradient: each noisy step points the right way on average."),
+    ],
+  },
+  "covariance-gaussian": {
+    keyIdeas: [
+      idea("Covariance and correlation", "Cov(X, Y) = E[(X - mu_X)(Y - mu_Y)] is positive when X and Y move together. Correlation divides by both standard deviations, giving a number between -1 and 1."),
+      idea("Uncorrelated is not independent", "Independent quantities have covariance 0, but not the reverse: Y = X^2 with symmetric X is uncorrelated with X yet determined by it."),
+      idea("The covariance matrix", "Sigma collects every pairwise covariance. The variance along a unit direction b is b^T Sigma b, which PCA maximizes."),
+      idea("The bell curve", "N(mu, sigma^2) puts about 68% of its probability within one sigma of the mean and 95% within 1.96 sigma. Probability is area under the density."),
+      idea("Gaussians add up", "The difference of two independent Gaussians is Gaussian, with the variances added. That is why the ROC graph's AUC is Phi(d / sqrt 2)."),
+    ],
+  },
+  "likelihood-mle": {
+    keyIdeas: [
+      idea("A function of the parameters", "The data are fixed; the likelihood L(mu) varies with the parameter. It is not a probability distribution over mu."),
+      idea("Products become sums", "For i.i.d. data the likelihood is a product; its log is a sum, easier to differentiate and safe from underflow. Minimizing the negative log-likelihood (NLL) is equivalent."),
+      idea("Coin flips", "For k ones in n Bernoulli trials, setting the derivative of k ln mu + (n - k) ln(1 - mu) to zero gives mu_hat = k/n, the observed fraction."),
+      idea("Logistic loss is an NLL", "Give each example its own mu_t = sigma(theta . x_t + theta_0). The average NLL of the labels is exactly the logistic (cross-entropy) loss."),
+      idea("Squared error is an NLL too", "If y = theta . x plus Gaussian noise, the NLL is (1/(2 sigma^2)) sum (y - theta . x)^2 plus a constant, so least squares is maximum likelihood."),
     ],
   },
 };

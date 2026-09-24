@@ -1,4 +1,5 @@
 import { calculusConcepts } from './calculusConcepts.js';
+import { mlConcepts } from './mlConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
@@ -43,6 +44,7 @@ export const conceptOrder = [
   'perceptron-convergence',
   'empirical-risk-zero-one',
   'hinge-loss',
+  'max-margin-svm',
   'convex-functions',
   'surrogate-losses',
   'gradient-descent-method',
@@ -53,15 +55,19 @@ export const conceptOrder = [
   'linear-regression',
   'polynomial-regression',
   'least-squares-normal-equation',
+  'feature-scaling',
   'ridge-regularization',
   'lasso',
   'elastic-net',
   'model-complexity-generalization',
+  'bias-variance',
   'train-validation-test',
   'cross-validation',
   'logistic-regression',
   'logistic-loss',
   'classification-metrics',
+  'roc-auc',
+  'ml-in-production',
   'eigenvalues-eigenvectors',
   'trace',
   'diagonalization',
@@ -113,7 +119,7 @@ const baseConcepts = [
     group: 'Problem',
     week: 'Production ML W1',
     problem: 'It turns a vague goal like \'spot spam emails\' into a clear recipe a computer can follow and improve on.',
-    intuition: 'Think of teaching a new employee to sort mail. You decide what they look at (the words, the number of links), what answers they give (spam or not spam), what kind of rule they may use, how you will score their mistakes, and how they will practise. The real test is not the practice pile they have already seen but tomorrow\'s mail. In ML terms: inputs and labels, features, a hypothesis class, a loss, an optimizer, and generalization.',
+    intuition: 'Think of teaching a new employee to sort mail. You decide what they look at (the words, the number of links), what answers they give (spam or not spam), what kind of rule they may use, how you will score their mistakes, and how they will practise. The real test is not the practice pile they have already seen but tomorrow\'s mail. In ML terms: inputs and labels, features, a hypothesis class, a loss, an optimizer, and generalization. Mitchell\'s classic definition says the same thing: a program learns from experience E for a task T, measured by performance P, if its performance at T improves with E. In production the loop continues after training: the model is deployed, monitored, and retrained as the data changes.',
     formulas: [
       {
         tex: tex`S_n = \{(x^{(t)}, y^{(t)})\}_{t=1}^{n}`,
@@ -133,7 +139,7 @@ const baseConcepts = [
     graph: { type: 'workflow', title: 'Move along the ML workflow', sliders: [{ key: 'stage', label: 'Stage', min: 0, max: 5, step: 1, value: 0 }] },
     misconception: 'A high training score is not the final goal; the notes emphasize that the classifier should predict labels for new examples, so generalization is the real target.',
     prerequisites: [],
-    followOns: ['sets', 'feature-representation', 'linear-classifier', 'linear-regression', 'model-complexity-generalization'],
+    followOns: ['sets', 'feature-representation', 'linear-classifier', 'linear-regression', 'model-complexity-generalization', 'ml-in-production'],
     sources: ['Week1_01-Introduction.pdf', 'Production ML slides - Introduction Lesson1.pdf'],
   },
   {
@@ -452,7 +458,7 @@ const baseConcepts = [
     group: 'Loss',
     week: 'Production ML W1',
     problem: 'It replaces the strict right-or-wrong score with one that also rewards being confidently right, which makes learning much easier.',
-    intuition: 'Hinge loss is like a teacher who wants correct answers with room to spare. Being wrong costs a lot, being barely right still costs a little, and only answers that clear the margin (a signed margin of at least 1) cost nothing. The cost falls in a straight line as the margin grows until it reaches 1, then stays at zero, and that slope tells the algorithm which way to move.',
+    intuition: 'Hinge loss is like a teacher who wants correct answers with room to spare. Being wrong costs a lot, being barely right still costs a little, and only answers that clear the margin (a signed margin of at least 1) cost nothing. The cost falls in a straight line as the margin grows until it reaches 1, then stays at zero, and that slope tells the algorithm which way to move. Why demand a margin of 1? Combined with a penalty on ||theta||, it makes the classifier prefer the boundary with the widest gap between the classes: the support vector machine.',
     formulas: [
       { tex: tex`L_{\text{hinge}}(z)=\max(0,1-z)`, definitions: ['z: signed margin y(theta dot x)', '1-z: margin shortfall', 'max: keeps loss nonnegative'] },
       { tex: tex`R_n(\theta)=\frac{1}{n}\sum_{t=1}^{n}L_{\text{hinge}}(y^{(t)}\theta \cdot x^{(t)})`, definitions: ['R_n: empirical hinge risk', ...Object.values(commonSymbols).slice(0, 4)] },
@@ -461,7 +467,7 @@ const baseConcepts = [
     graph: { type: 'hinge', title: 'Hinge loss versus zero-one loss', caption: 'Solid: hinge loss. Dashed: zero-one loss. Hinge sits above zero-one everywhere and still slopes for correct points with margin below 1.', sliders: [{ key: 'margin', label: 'signed margin z', min: -3, max: 3, step: 0.1, value: 0.2 }] },
     misconception: 'Hinge loss is not the actual test error; it is a surrogate chosen because it is easier to optimize and gives richer feedback.',
     prerequisites: ['empirical-risk-zero-one', 'perceptron'],
-    followOns: ['surrogate-losses', 'gradient-descent-method', 'ridge-regularization'],
+    followOns: ['max-margin-svm', 'surrogate-losses', 'gradient-descent-method', 'ridge-regularization'],
     sources: ['Week1_03-HingeLoss.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf'],
   },
   {
@@ -478,7 +484,7 @@ const baseConcepts = [
     example: ['Let y = +1, x = [2,1], theta = [0,0], and eta = 0.2.', 'The margin is 0, which is < 1, so update. (Shrinking theta by (1 - eta lambda) has no effect yet because theta is zero.)', 'theta becomes [0,0] + 0.2*[2,1] = [0.4,0.2].', 'The update is smaller than perceptron because the learning rate is 0.2 instead of 1.'],
     graph: { type: 'stochasticGradient', title: 'Noisy descent still trends downward', caption: 'Each step uses a noisy gradient estimate, so the path jitters. Turn noise to 0 to recover full gradient descent.', sliders: [{ key: 'alpha', label: 'learning rate alpha', min: 0.02, max: 0.9, step: 0.02, value: 0.2 }, { key: 'noise', label: 'gradient noise', min: 0, max: 6, step: 0.5, value: 3 }, { key: 'steps', label: 'steps', min: 1, max: 30, step: 1, value: 15 }] },
     misconception: 'A stochastic training curve need not decrease every step; that is noise, not necessarily failure.',
-    prerequisites: ['gradient-descent-method', 'subgradients'],
+    prerequisites: ['gradient-descent-method', 'subgradients', 'max-margin-svm'],
     followOns: ['ridge-regularization', 'logistic-loss'],
     sources: ['Week1_03-HingeLoss.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
@@ -492,12 +498,14 @@ const baseConcepts = [
     formulas: [
       { tex: tex`f(x;\theta,\theta_0)=\theta \cdot x + \theta_0`, definitions: ['f: predicted numeric response', 'theta: feature weights', 'theta_0: intercept', 'x: feature vector'] },
       { tex: tex`\hat{y}=\theta_1x+\theta_0`, definitions: ['single-feature case of linear regression', 'theta_1: slope', 'theta_0: intercept'] },
+      { tex: tex`R_n(\theta,\theta_0)=\frac1n\sum_{t=1}^{n}\bigl(y^{(t)}-\theta\cdot x^{(t)}-\theta_0\bigr)^2`, definitions: [tex`R_n: mean squared error on the training set, the loss that learning minimizes`] },
+      { tex: tex`\nabla_\theta R_n=-\frac2n\sum_{t=1}^{n}\bigl(y^{(t)}-\theta\cdot x^{(t)}-\theta_0\bigr)\,x^{(t)},\qquad \frac{\partial R_n}{\partial\theta_0}=-\frac2n\sum_{t=1}^{n}\bigl(y^{(t)}-\theta\cdot x^{(t)}-\theta_0\bigr)`, definitions: [tex`\nabla_\theta R_n: gradient; gradient descent repeats theta <- theta - alpha grad R_n (and the same for theta_0)`] },
     ],
-    example: ['Let theta_1 = 2 and theta_0 = 1.', 'For x = 3, prediction y_hat = 2*3 + 1 = 7.', 'If the true y is 9, residual = y - y_hat = 9 - 7 = 2.'],
+    example: ['Let theta_1 = 2 and theta_0 = 1.', 'For x = 3, prediction y_hat = 2*3 + 1 = 7.', 'If the true y is 9, residual = y - y_hat = 9 - 7 = 2.', 'Learning by gradient descent: fit y = theta x through the origin to the points (1, 2) and (2, 3). Then R_n(theta) = [(2 - theta)^2 + (3 - 2theta)^2]/2 and its derivative is -[(2 - theta)*1 + (3 - 2theta)*2] = -(8 - 5theta).', 'From theta = 0 with alpha = 0.1: the gradient is -8, so theta = 0.8; then the gradient is -4, so theta = 1.2. The steps shrink toward theta = 1.6, the same answer the normal equation gives directly.'],
     graph: { type: 'linearRegression', title: 'Line fitted to numeric responses', sliders: [{ key: 'slope', label: 'slope theta_1', min: -3, max: 5, step: 0.1, value: 1.2 }, { key: 'intercept', label: 'intercept theta_0', min: -5, max: 5, step: 0.1, value: 0.5 }] },
     misconception: 'Linear regression is linear in the parameters, not necessarily limited to raw straight-line features; transformed features can still produce curved relationships in the original input.',
     prerequisites: ['feature-representation', 'gradient-descent-method'],
-    followOns: ['polynomial-regression', 'least-squares-normal-equation', 'ridge-regularization'],
+    followOns: ['polynomial-regression', 'least-squares-normal-equation', 'feature-scaling', 'ridge-regularization'],
     sources: ['Week2_notes01-LinearRegression.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
@@ -628,7 +636,7 @@ const baseConcepts = [
     graph: { type: 'threshold', title: 'Threshold changes the positive/negative trade-off', caption: 'Twenty examples sorted by predicted probability. Points right of the threshold are predicted positive. Raising the threshold usually raises precision and lowers recall.', sliders: [{ key: 'threshold', label: 'decision threshold', min: 0.05, max: 0.95, step: 0.05, value: 0.5 }] },
     misconception: 'High accuracy can be useless when positives are rare; always predicting negative can score well while recall is zero.',
     prerequisites: ['logistic-regression', 'logistic-loss', 'train-validation-test'],
-    followOns: [],
+    followOns: ['roc-auc', 'ml-in-production'],
     sources: ['Production ML Slides Lesson 4 - Logistic Regression.pdf'],
   },
   {
@@ -651,7 +659,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 
@@ -719,6 +727,7 @@ export const mindMapEdges = [
   ['feature-vectors', 'linear-classifier'], ['linear-classifier', 'linear-classifier-through-origin'], ['linear-classifier-through-origin', 'linear-separability'], ['linear-separability', 'perceptron'], ['linear-classifier', 'empirical-risk-zero-one'], ['perceptron', 'perceptron-convergence'], ['perceptron-convergence', 'hinge-loss'], ['empirical-risk-zero-one', 'hinge-loss'], ['hinge-loss', 'convexity-surrogate-losses'], ['convexity-surrogate-losses', 'gradient-descent'], ['gradient-descent', 'stochastic-subgradient-descent'],
   ['feature-vectors', 'linear-regression'], ['linear-regression', 'polynomial-regression'], ['linear-regression', 'least-squares-normal-equation'], ['rank-inverse-determinant', 'least-squares-normal-equation'], ['least-squares-normal-equation', 'ridge-regularization'], ['ridge-regularization', 'lasso-elastic-net'], ['lasso-elastic-net', 'model-complexity-generalization'],
   ['model-complexity-generalization', 'validation-cross-validation'], ['validation-cross-validation', 'logistic-regression'], ['linear-classifier', 'logistic-regression'], ['logistic-regression', 'logistic-loss'], ['gradient-descent', 'logistic-loss'], ['logistic-loss', 'classification-metrics'],
+  ['hinge-loss', 'max-margin-svm'], ['max-margin-svm', 'stochastic-subgradient-descent'], ['least-squares-normal-equation', 'feature-scaling'], ['feature-scaling', 'ridge-regularization'], ['model-complexity-generalization', 'bias-variance'], ['bias-variance', 'validation-cross-validation'], ['classification-metrics', 'roc-auc'], ['roc-auc', 'ml-in-production'], ['ml-workflow', 'ml-in-production'],
   ['vector-calculus', 'gradient-descent'], ['vector-calculus', 'least-squares-normal-equation'], ['vector-calculus', 'logistic-loss'], ['vector-calculus', 'convexity-surrogate-losses'],
   ['feature-vectors', 'norms-inner-products'], ['norms-inner-products', 'orthogonality-spectral-theorem'], ['norms-inner-products', 'projections-gram-schmidt'], ['orthogonality-spectral-theorem', 'projections-gram-schmidt'], ['rank-inverse-determinant', 'projections-gram-schmidt'], ['projections-gram-schmidt', 'least-squares-normal-equation'], ['projections-gram-schmidt', 'pca'], ['eigenvalues-eigenvectors', 'trace'], ['trace', 'pca'], ['orthogonality-spectral-theorem', 'pca'], ['affine-dimensionality-reduction', 'pca'], ['matrix-decompositions', 'pca'], ['gradient-descent', 'lagrange-multipliers'], ['lagrange-multipliers', 'ridge-regularization'], ['lagrange-multipliers', 'lasso-elastic-net'],
     ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'eigenvalues-eigenvectors'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],

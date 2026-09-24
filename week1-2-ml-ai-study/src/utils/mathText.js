@@ -38,21 +38,21 @@ export function normalizeDefinitionSymbol(symbol) {
 
   let normalized = symbol
     .replace(/\^\(([^)]+)\)/g, '^{$1}')
-    .replace(/\btheta\b/g, '\\theta')
-    .replace(/\blambda\b/g, '\\lambda')
-    .replace(/\balpha\b/g, '\\alpha')
-    .replace(/\bsigma\b/g, '\\sigma')
-    .replace(/\bLambda\b/g, '\\Lambda')
-    .replace(/\bSigma\b/g, '\\Sigma')
-    .replace(/\bdot\b/g, '\\cdot')
-    .replace(/\bnabla\b/g, '\\nabla')
-    .replace(/\bpartial\b/g, '\\partial')
-    .replace(/\brank\(/g, '\\operatorname{rank}(')
-    .replace(/\bnullity\(/g, '\\operatorname{nullity}(')
-    .replace(/\bdet\(/g, '\\det(')
-    .replace(/\bdim\(/g, '\\dim(')
-    .replace(/\bmax\b/g, '\\max')
-    .replace(/\blog\b/g, '\\log');
+    .replace(/(?<!\\)\btheta\b/g, '\\theta')
+    .replace(/(?<!\\)\blambda\b/g, '\\lambda')
+    .replace(/(?<!\\)\balpha\b/g, '\\alpha')
+    .replace(/(?<!\\)\bsigma\b/g, '\\sigma')
+    .replace(/(?<!\\)\bLambda\b/g, '\\Lambda')
+    .replace(/(?<!\\)\bSigma\b/g, '\\Sigma')
+    .replace(/(?<!\\)\bdot\b/g, '\\cdot')
+    .replace(/(?<!\\)\bnabla\b/g, '\\nabla')
+    .replace(/(?<!\\)\bpartial\b/g, '\\partial')
+    .replace(/(?<!\\)\brank\(/g, '\\operatorname{rank}(')
+    .replace(/(?<!\\)\bnullity\(/g, '\\operatorname{nullity}(')
+    .replace(/(?<!\\)\bdet\(/g, '\\det(')
+    .replace(/(?<!\\)\bdim\(/g, '\\dim(')
+    .replace(/(?<!\\)\bmax\b/g, '\\max')
+    .replace(/(?<!\\)\blog\b/g, '\\log');
 
   if (/^[A-Za-z][A-Za-z\s-]+$/.test(normalized) && normalized.includes(' ')) {
     normalized = `\\text{${normalized}}`;

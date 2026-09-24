@@ -390,3 +390,23 @@ fieldset:disabled .quiz-option { cursor: default; }
 .plot .node-grad { font-size: 11px; font-weight: 700; fill: var(--rust); }
 .fn-curve { stroke: #2f3436; stroke-width: 3; fill: none; }
 .fig-vector.small { stroke-width: 2; }
+
+/* Math-ML bridge and course books */
+.math-bridge { margin-top: 18px; padding: 12px 14px; border-radius: 6px; }
+.math-bridge.to-math { border-left: 4px solid var(--teal); background: rgba(47, 125, 128, 0.08); }
+.math-bridge.to-ml { border-left: 4px solid var(--rust); background: rgba(217, 93, 57, 0.07); }
+.math-bridge h3, .course-references h3 { margin: 0 0 6px; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+.math-bridge ul, .course-references ul { margin: 0; padding-left: 20px; }
+.math-bridge li, .course-references li { margin: 4px 0; line-height: 1.45; }
+.inline-link { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--blue); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }
+.course-references { margin-top: 16px; padding: 12px 14px; border-left: 4px solid var(--blue); background: rgba(50, 104, 168, 0.07); border-radius: 6px; }
+.course-references p { margin: 6px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+/* Graphs for the ML reading-list pages */
+.margin-line { stroke: var(--berry); stroke-width: 2; stroke-dasharray: 7 6; fill: none; }
+.support-ring { fill: none; stroke: var(--ink); stroke-width: 2; }
+.noise-line { stroke: #9aa29e; stroke-width: 2; stroke-dasharray: 3 5; fill: none; }
+.roc-box { fill: #fffdf8; stroke: #b3a996; stroke-width: 1.5; }
+.fig-ring { fill: rgba(217, 93, 57, 0.12); stroke: var(--rust); stroke-width: 1.5; }
+.fig-ring.light { fill: #fffdf8; }
+.fig-dot.blue-dot { fill: var(--blue); }

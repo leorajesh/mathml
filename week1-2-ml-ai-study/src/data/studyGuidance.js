@@ -1,4 +1,6 @@
 export const advancedConceptIds = new Set([
+  'max-margin-svm',
+  'roc-auc',
   'jacobian-chain-rule',
   'backpropagation',
   'taylor-hessian',
@@ -36,18 +38,33 @@ export function conceptLevel(id) {
 }
 
 export const recommendedPaths = {
-  'overview-foundations': ['ml-workflow', 'sets-functions', 'feature-vectors'],
+  'overview-foundations': ['ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
   'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
-  'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss'],
+  'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
-  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net'],
-  'overview-generalization': ['model-complexity-generalization', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics'],
+  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'ridge-regularization', 'lasso-elastic-net'],
+  'overview-generalization': ['model-complexity-generalization', 'bias-variance', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc', 'ml-in-production'],
   'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
   'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
 };
 
 export const guidedSelfChecks = {
+  'max-margin-svm': [
+    { question: 'Why does requiring signed margins of at least 1 not restrict the boundary?', answer: 'Scaling theta and theta_0 by the same positive number keeps the same boundary but scales every signed margin. The "at least 1" rule only fixes that scale, so that minimizing ||theta|| really widens the geometric gap 2/||theta||.' },
+  ],
+  'feature-scaling': [
+    { question: 'Why must the scaler be fitted on the training set only, even inside cross-validation?', answer: 'Each validation fold stands in for unseen data. If its values help set the mean and standard deviation, information about it leaks into training and the validation score is optimistic. So the scaler is refitted on the training folds of every split.' },
+  ],
+  'bias-variance': [
+    { question: 'How do more training data and stronger regularization each affect bias and variance?', answer: 'More data mainly reduces variance (the fit depends less on any few points) and leaves bias about the same. Stronger regularization also reduces variance, but it pulls the model toward simpler fits and so increases bias.' },
+  ],
+  'roc-auc': [
+    { question: 'When would you prefer a precision-recall curve to an ROC curve?', answer: 'When positives are rare. FPR divides by the large number of negatives, so thousands of false alarms can still look like a small FPR; precision shows directly how many flagged cases are real.' },
+  ],
+  'ml-in-production': [
+    { question: 'How can you notice distribution shift before labels arrive?', answer: 'Monitor the inputs and outputs: compare feature distributions and the distribution of predicted scores with those seen in training (for example with summary statistics or a two-sample test). A change is a warning even before live accuracy can be measured.' },
+  ],
   derivatives: [
     { question: 'Why does the chain rule multiply the two derivatives instead of adding them?', answer: 'Rates of change compound. If f grows 2 times as fast as x and g grows 3 times as fast as f, then g grows 3 * 2 = 6 times as fast as x.' },
   ],

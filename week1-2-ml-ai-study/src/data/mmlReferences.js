@@ -72,9 +72,9 @@ export const mmlReferences = {
   'linear-classifier-through-origin': [ref('12.1', 'Separating Hyperplanes', 372)],
   'linear-separability': [ref('12.1', 'Separating Hyperplanes', 372)],
   'empirical-risk-zero-one': [ref('8.2', 'Empirical Risk Minimization', 258), ref('8.2.2', 'Loss Function for Training', 260)],
-  'hinge-loss': [ref('12.2', 'Primal Support Vector Machine (hinge loss)', 381)],
+  'hinge-loss': [ref('12.2.5', 'Soft Margin SVM: Loss Function View (hinge loss)', 380)],
   'convex-functions': [ref('7.3', 'Convex Optimization', 236)],
-  'surrogate-losses': [ref('8.2.2', 'Loss Function for Training', 260), ref('12.2', 'Primal Support Vector Machine (hinge loss)', 381)],
+  'surrogate-losses': [ref('8.2.2', 'Loss Function for Training', 260), ref('12.2.5', 'Soft Margin SVM: Loss Function View (hinge loss)', 380)],
   'gradient-descent-method': [ref('7.1', 'Optimization Using Gradient Descent', 227), ref('7.1.1', 'Step-size', 229)],
   momentum: [ref('7.1.2', 'Gradient Descent With Momentum', 230)],
   subgradients: [ref('7.4', 'Further Reading (subgradient methods)', 246)],
@@ -89,6 +89,9 @@ export const mmlReferences = {
   'train-validation-test': [ref('8.2.4', 'Cross-Validation to Assess the Generalization Performance', 263)],
   'cross-validation': [ref('8.2.4', 'Cross-Validation to Assess the Generalization Performance', 263), ref('8.6.1', 'Nested Cross-Validation', 284)],
   'logistic-regression': [ref('9.5', 'Further Reading (logistic regression)', 315), ref('6.6', 'Conjugacy and the Exponential Family (the sigmoid)', 213)],
+  'max-margin-svm': [ref('12.2', 'Primal Support Vector Machine', 374), ref('12.2.1', 'Concept of the Margin', 374), ref('12.2.4', 'Soft Margin SVM: Geometric View', 379)],
+  'feature-scaling': [ref('10.6', 'Key Steps of PCA in Practice (standardizing the data)', 336)],
+  'bias-variance': [ref('9.2.2', 'Overfitting in Linear Regression (related reading)', 298), ref('8.2.3', 'Regularization to Reduce Overfitting (related reading)', 262)],
   'logistic-loss': [ref('8.3.1', 'Maximum Likelihood Estimation', 265), ref('5.5', 'Useful Identities for Computing Gradients', 158)],
 };
 

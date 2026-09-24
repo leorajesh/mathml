@@ -420,7 +420,18 @@ print("residual y - y_hat =", y_true - y_hat)
 xs = np.array([0.0, 1.0, 2.0, 3.0])
 print("predictions:", theta1 * xs + theta0)
 
-# Try: which theta0 would make the residual at x = 3 zero?`,
+# Learning theta by gradient descent: fit y = theta x to (1, 2) and (2, 3)
+X = np.array([1.0, 2.0])
+y = np.array([2.0, 3.0])
+theta, alpha = 0.0, 0.1
+for step in range(1, 31):
+    grad = -2 * np.mean((y - theta * X) * X)     # derivative of the mean squared error
+    theta -= alpha * grad
+    if step <= 2 or step % 10 == 0:
+        print(f"step {step:2d}: theta = {theta:.4f}")
+print("normal equation answer:", (X @ y) / (X @ X))
+
+# Try: which theta0 would make the residual at x = 3 zero? Then try alpha = 0.5 in the loop.`,
 
   'polynomial-regression': py`import numpy as np
 
@@ -1511,4 +1522,153 @@ step = p - sp.hessian(g, (a, b)).inv() * grad
 print("Newton step from (5, 5):", list(step))
 
 # Try: f = a**2 + b**2 + a*b. Is the origin now a minimum?`,
+
+  'max-margin-svm': py`import numpy as np
+
+# The two-point example: support vectors on the margin lines
+X = np.array([[2.0, 2.0], [0.0, 0.0]])
+y = np.array([1, -1])
+theta, theta0 = np.array([0.5, 0.5]), -1.0
+print("signed margins:", y * (X @ theta + theta0))
+print("margin width 2/||theta|| =", round(2 / np.linalg.norm(theta), 4), " distance between points:", round(np.linalg.norm(X[0] - X[1]), 4))
+
+# Soft-margin SVM by subgradient descent on (lambda/2)||theta||^2 + mean hinge loss
+rng = np.random.default_rng(0)
+pos = rng.normal([2, 2], 0.8, size=(20, 2))
+neg = rng.normal([-1, -1], 0.8, size=(20, 2))
+X = np.vstack([pos, neg]); y = np.r_[np.ones(20), -np.ones(20)]
+
+def train(lam, steps=6000):
+    th, th0 = np.zeros(2), 0.0
+    avg, avg0 = np.zeros(2), 0.0
+    for k in range(1, steps + 1):
+        eta = 1 / (lam * (k + 10))
+        viol = y * (X @ th + th0) < 1
+        g = lam * th - (y[viol, None] * X[viol]).sum(axis=0) / len(y)
+        g0 = -y[viol].sum() / len(y)
+        th, th0 = th - eta * g, th0 - eta * g0
+        if k > steps // 2:                    # average the second half of the iterates
+            avg += th / (steps - steps // 2); avg0 += th0 / (steps - steps // 2)
+    return avg, avg0
+
+for lam in [0.01, 0.1, 1.0]:
+    th, th0 = train(lam)
+    m = y * (X @ th + th0)
+    print(f"lambda = {lam:<4}: margin width {2 / np.linalg.norm(th):.2f}, points on or inside margin {np.sum(m <= 1.001)}, training errors {np.sum(m <= 0)}")
+
+# Try: move the negative cloud to [1, 1] so the classes overlap. What happens to the errors?`,
+
+  'feature-scaling': py`import numpy as np
+
+area = np.array([1000.0, 1500.0, 2000.0])     # training values
+mu, sigma = area.mean(), area.std()            # statistics from the TRAINING set only
+print("mu =", mu, " sigma =", round(sigma, 1))
+print("standardized training values:", np.round((area - mu) / sigma, 2))
+print("test house 2500 ->", round((2500 - mu) / sigma, 2))
+
+# Leakage: statistics recomputed with the test point shift every value
+leaky = np.append(area, 2500.0)
+print("with leakage, the same training values become:", np.round((area - leaky.mean()) / leaky.std(), 2))
+
+# Why it matters for gradient descent: count steps to fit y = w1 x1 + w2 x2
+rng = np.random.default_rng(0)
+x1 = rng.normal(size=200)
+x2 = rng.normal(size=200) * 1000               # a feature measured in much larger units
+y = 3 * x1 + 0.002 * x2 + rng.normal(scale=0.1, size=200)
+
+def steps_needed(X):
+    H = X.T @ X / len(X)
+    alpha = 1 / np.linalg.eigvalsh(H).max()    # the largest safe-ish step
+    w = np.zeros(2)
+    best = np.linalg.lstsq(X, y, rcond=None)[0]
+    for k in range(1, 200001):
+        w -= alpha * X.T @ (X @ w - y) / len(X)
+        if np.linalg.norm(X @ (w - best)) < 1e-3 * np.linalg.norm(X @ best):
+            return k
+    return "over 200000"
+
+raw = np.column_stack([x1, x2])
+std = (raw - raw.mean(axis=0)) / raw.std(axis=0)
+print("condition number raw:", round(np.linalg.cond(raw.T @ raw)), " standardized:", round(np.linalg.cond(std.T @ std), 2))
+print("gradient steps raw:", steps_needed(raw), " standardized:", steps_needed(std))
+
+# Try: scale x2 by 10 instead of 1000. How do the condition number and the step count change?`,
+
+  'bias-variance': py`import numpy as np
+
+# The three-prediction example from the page
+f_true = 2.0
+for name, preds in [("simple", [1.5, 1.6, 1.4]), ("flexible", [1.2, 2.9, 2.0])]:
+    p = np.array(preds)
+    print(f"{name:8s}: bias^2 = {(p.mean() - f_true) ** 2:.4f}, variance = {p.var():.4f}")
+
+# Simulation: fit polynomials to many noisy training sets from a sine curve
+rng = np.random.default_rng(1)
+f = lambda x: np.sin(2 * np.pi * x)
+x = np.linspace(0, 1, 12)                      # 12 fixed, evenly spaced inputs
+x_test = x
+noise = 0.4
+for degree in [0, 1, 3, 5, 9]:
+    preds = []
+    for _ in range(200):                       # 200 training sets: same inputs, fresh noise
+        y = f(x) + rng.normal(scale=noise, size=12)
+        coef = np.polyfit(x, y, degree)
+        preds.append(np.polyval(coef, x_test))
+    preds = np.array(preds)
+    bias2 = np.mean((preds.mean(axis=0) - f(x_test)) ** 2)
+    var = np.mean(preds.var(axis=0))
+    print(f"degree {degree}: bias^2 = {bias2:.3f}  variance = {var:.3f}  expected test error = {bias2 + var + noise ** 2:.3f}")
+
+# Try: use 48 training points instead of 12. Which term shrinks?`,
+
+  'roc-auc': py`import numpy as np
+
+pos = np.array([0.9, 0.8, 0.4])
+neg = np.array([0.7, 0.3, 0.2])
+
+for t in [0.75, 0.5, 0.35]:
+    print(f"threshold {t}: TPR = {np.mean(pos > t):.3f}, FPR = {np.mean(neg > t):.3f}")
+
+# AUC = fraction of positive-negative pairs ranked correctly (ties count 1/2)
+pairs = [(p > n) + 0.5 * (p == n) for p in pos for n in neg]
+print("AUC from pairs:", round(np.mean(pairs), 4))
+
+# The ROC curve: sweep the threshold over every score
+scores = np.r_[pos, neg]; labels = np.r_[np.ones(3), np.zeros(3)]
+points = [(0.0, 0.0)]
+for t in sorted(scores, reverse=True):
+    points.append((np.mean(neg >= t), np.mean(pos >= t)))
+print("ROC points (FPR, TPR):", [(round(float(a), 3), round(float(b), 3)) for a, b in points])
+fpr, tpr = zip(*points)
+print("AUC by the trapezoid rule:", round(np.trapezoid(tpr, fpr) if hasattr(np, "trapezoid") else np.trapz(tpr, fpr), 4))
+
+# Try: give the third positive a score of 0.75. What happens to the AUC?`,
+
+  'ml-in-production': py`import numpy as np
+
+# Accuracy decay and retraining (the page's example)
+A0, decay = 92.0, 1.5
+months = np.arange(0, 24, 0.01)
+for T in [1, 3, 6, 24]:
+    acc = A0 - decay * (months % T)
+    print(f"retrain every {T:2d} months: average accuracy {acc.mean():.2f}%, retrains in 2 years: {int(np.ceil(24 / T)) - 1}")
+
+# Covariate shift in action: a model trained on one input range, used on another
+rng = np.random.default_rng(0)
+def make(n, center):
+    x = rng.normal(center, 1.0, n)
+    y = (np.sin(x) > 0).astype(int)            # the true rule is not linear
+    return x, y
+x_tr, y_tr = make(2000, 1.0)
+X = np.c_[np.ones_like(x_tr), x_tr]
+w = np.zeros(2)
+for _ in range(3000):                          # logistic regression by gradient descent
+    p = 1 / (1 + np.exp(-X @ w))
+    w -= 0.5 * X.T @ (p - y_tr) / len(y_tr)
+for center in [1.0, 2.0, 3.0]:
+    x, yv = make(2000, center)
+    pred = (np.c_[np.ones_like(x), x] @ w > 0).astype(int)
+    print(f"inputs centred at {center}: accuracy {np.mean(pred == yv):.3f}")
+
+# Try: retrain on data centred at 3.0. Does the accuracy there recover?`,
 };

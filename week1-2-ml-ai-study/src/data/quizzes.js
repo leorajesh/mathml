@@ -3,6 +3,36 @@
 // Topic pages combine the questions of their subtopics. Checked by scripts/check-content.mjs.
 
 export const quizzes = {
+  "exp-log": [
+    {"question": "What is ln(a b) for positive a and b?", "answer": "ln a + ln b", "wrong": ["ln a × ln b", "ln(a + b)", "b ln a"], "why": "Logs turn products into sums; that is why log-likelihoods are sums."},
+    {"question": "sigma(2) ≈ 0.881. What is sigma(-2)?", "answer": "0.119", "wrong": ["-0.881", "0.881", "0.5"], "why": "sigma(-s) = 1 - sigma(s), so 1 - 0.881 = 0.119."},
+    {"question": "Why can we maximize ln L instead of L?", "answer": "ln is strictly increasing, so the same parameter maximizes both", "wrong": ["ln L is always larger than L", "The log removes the need for data", "The log makes every function convex"], "why": "An increasing transform never changes where the maximum is."},
+    {"question": "What is logit(0.5)?", "answer": "0", "wrong": ["0.5", "1", "ln 0.5"], "why": "ln(0.5/0.5) = ln 1 = 0, matching sigma(0) = 0.5."},
+  ],
+  "probability-basics": [
+    {"question": "TP = 8, FP = 2, TN = 90, FN = 10. What is P(y_hat = 1 | y = 1)?", "answer": "8/18 ≈ 0.444 (the recall)", "wrong": ["8/10 = 0.8", "18/110 ≈ 0.164", "10/110 ≈ 0.091"], "why": "Condition on the 18 real positives: 8 of them were predicted positive."},
+    {"question": "A disease has 1% prevalence; a test has 90% sensitivity and 5% false positives. About what is P(disease | positive)?", "answer": "0.15", "wrong": ["0.90", "0.95", "0.01"], "why": "0.009/(0.009 + 0.0495) ≈ 0.154: most positives come from the large healthy group."},
+    {"question": "Why is the probability of an i.i.d. training set a product of per-example probabilities?", "answer": "The examples are independent, so the joint probability factors", "wrong": ["Probabilities always multiply", "The examples are disjoint events", "Bayes' rule requires it"], "why": "Independence means p(x, y) = p(x) p(y), and likewise for n examples."},
+    {"question": "Which rule turns p(x | y) and p(y) into p(y | x)?", "answer": "Bayes' rule", "wrong": ["The sum rule alone", "The complement rule", "Independence"], "why": "p(y | x) = p(x | y) p(y) / p(x)."},
+  ],
+  "expectation-variance": [
+    {"question": "If Var X = 3, what is Var(2X + 5)?", "answer": "12", "wrong": ["6", "11", "17"], "why": "Var(aX + b) = a^2 Var X = 4 × 3; the shift adds nothing."},
+    {"question": "A die roll has variance 2.917. What is the variance of the average of 4 independent rolls?", "answer": "About 0.729", "wrong": ["2.917", "11.67", "About 1.458"], "why": "Var of an average of n independent draws is sigma^2/n = 2.917/4."},
+    {"question": "What is E[X^2] - (E[X])^2?", "answer": "The variance of X", "wrong": ["Always 0", "The standard deviation of X", "The bias"], "why": "Var X = E[X^2] - mu^2, so E[X^2] and (E X)^2 differ unless X is constant."},
+    {"question": "Why does stochastic gradient descent point downhill on average?", "answer": "With t chosen uniformly, the expected one-example gradient equals the full average gradient", "wrong": ["Each single gradient is exact", "The learning rate cancels the noise", "Random examples always have larger gradients"], "why": "E_t[grad loss_t] = (1/n) sum of the gradients = grad R_n."},
+  ],
+  "covariance-gaussian": [
+    {"question": "What range can a correlation take?", "answer": "From -1 to 1", "wrong": ["From 0 to 1", "Any real number", "From 0 to infinity"], "why": "Dividing the covariance by both standard deviations bounds it by the Cauchy-Schwarz inequality."},
+    {"question": "S = [[2, 0.5], [0.5, 3.5]]. What is the variance along b = [1, 1]/sqrt 2?", "answer": "3.25", "wrong": ["2.75", "6", "2.5"], "why": "b^T S b = (2 + 3.5 + 2 × 0.5)/2 = 3.25."},
+    {"question": "If Cov(X, Y) = 0, are X and Y independent?", "answer": "Not necessarily", "wrong": ["Yes, always", "Only if both are positive", "Yes, if they have the same variance"], "why": "Y = X^2 with symmetric X has zero covariance with X but depends on it completely. (For jointly Gaussian variables it does imply independence.)"},
+    {"question": "About what share of a Gaussian lies within one standard deviation of the mean?", "answer": "About 68%", "wrong": ["About 50%", "About 95%", "About 99.7%"], "why": "68% within 1 sigma, 95% within 1.96 sigma, 99.7% within 3 sigma."},
+  ],
+  "likelihood-mle": [
+    {"question": "7 ones in 10 coin flips. What is the maximum likelihood estimate of mu?", "answer": "0.7", "wrong": ["0.5", "0.3", "1"], "why": "mu_hat = k/n = 7/10."},
+    {"question": "Why do we usually maximize the log-likelihood?", "answer": "It has the same maximizer and turns a product into a sum that is easier to handle", "wrong": ["It gives a different, better estimate", "It makes the likelihood a probability", "It removes the need for derivatives"], "why": "ln is increasing, so the maximizer is unchanged."},
+    {"question": "Minimizing the average logistic loss is the same as what?", "answer": "Maximizing the Bernoulli likelihood of the labels", "wrong": ["Minimizing the squared error", "Maximizing the number of correct predictions", "Maximizing the margin"], "why": "The average NLL of Bernoulli labels with mu_t = sigma(theta . x_t + theta_0) is exactly the logistic loss."},
+    {"question": "What is the likelihood L(mu)?", "answer": "The probability of the observed data, viewed as a function of mu", "wrong": ["The probability that mu is correct", "A probability distribution over mu", "The error rate of the model"], "why": "The data are fixed and the parameter varies; it is not a distribution over mu."},
+  ],
   "ml-workflow": [
     {"question": "Why is a model judged on data it did not train on?", "answer": "Because the goal is to predict well on new examples, not to memorize the training set", "wrong": ["Because training data is always mislabeled", "Because the test set is larger", "Because the loss cannot be computed on training data"], "why": "Generalization to unseen examples is the real target; a model can score perfectly on training data by memorizing it."},
     {"question": "In the spam example, theta = [2, 1] and theta_0 = -2. What is the score of x = [1, 1]?", "answer": "1", "wrong": ["3", "-1", "0"], "why": "2*1 + 1*1 - 2 = 1, so the email is predicted as spam (+1)."},

@@ -4,6 +4,127 @@
 const py = String.raw;
 
 export const codeExamples = {
+  'exp-log': py`import numpy as np
+
+def sigmoid(s):
+    return 1 / (1 + np.exp(-s))
+
+def logit(p):
+    return np.log(p / (1 - p))
+
+print("sigma(2) =", round(sigmoid(2), 4), " sigma(-2) =", round(sigmoid(-2), 4), " sum =", round(sigmoid(2) + sigmoid(-2), 4))
+print("logit(0.8) =", round(logit(0.8), 4), " sigma(logit(0.8)) =", round(sigmoid(logit(0.8)), 4))
+
+p = np.array([0.9, 0.8, 0.6])
+print("product:", round(p.prod(), 4), " sum of logs:", round(np.log(p).sum(), 4), " ln(product):", round(np.log(p.prod()), 4))
+print("-ln sigma(2) =", round(-np.log(sigmoid(2)), 4), " ln(1 + e^-2) =", round(np.log1p(np.exp(-2)), 4))
+print("log2(8) =", np.log2(8), "  ln 8 / ln 2 =", round(np.log(8) / np.log(2), 6))
+
+# Try: check numerically that ln(2 + 3) is NOT ln 2 + ln 3, but ln(2 * 3) is.`,
+
+  'probability-basics': py`import numpy as np
+
+TP, FP, TN, FN = 8, 2, 90, 10
+n = TP + FP + TN + FN
+p_y1 = (TP + FN) / n            # P(y = 1)
+p_pred1 = (TP + FP) / n         # P(y_hat = 1)
+recall = TP / (TP + FN)         # P(y_hat = 1 | y = 1)
+precision = TP / (TP + FP)      # P(y = 1 | y_hat = 1)
+print(f"P(y=1) = {p_y1:.3f}, P(y_hat=1) = {p_pred1:.3f}")
+print(f"recall = P(y_hat=1 | y=1) = {recall:.3f}, precision = P(y=1 | y_hat=1) = {precision:.3f}")
+print(f"Bayes: recall * P(y=1) / P(y_hat=1) = {recall * p_y1 / p_pred1:.3f}")
+
+# Base rates: a rare disease and a good test
+prevalence, sensitivity, fpr = 0.01, 0.9, 0.05
+p_pos = sensitivity * prevalence + fpr * (1 - prevalence)
+print(f"P(disease | positive) = {sensitivity * prevalence / p_pos:.3f}")
+
+# The same answer by simulating 200,000 people (independent, identically distributed)
+rng = np.random.default_rng(0)
+sick = rng.random(200_000) < prevalence
+positive = np.where(sick, rng.random(sick.size) < sensitivity, rng.random(sick.size) < fpr)
+print(f"simulated P(disease | positive) = {sick[positive].mean():.3f}")
+
+# Try: raise the prevalence to 0.2. How much does P(disease | positive) change?`,
+
+  'expectation-variance': py`import numpy as np
+
+faces = np.arange(1, 7)
+mean = faces.mean()
+var = (faces ** 2).mean() - mean ** 2
+print(f"die: E[X] = {mean}, E[X^2] = {(faces ** 2).mean():.3f}, Var X = {var:.3f}")
+
+# Averages of n rolls: same mean, variance divided by n
+rng = np.random.default_rng(1)
+for n in [1, 4, 16]:
+    avgs = rng.integers(1, 7, size=(100_000, n)).mean(axis=1)
+    print(f"n = {n:2d}: mean of averages {avgs.mean():.3f}, variance {avgs.var():.3f} (theory {var / n:.3f})")
+
+# Bias-variance identity E[(Z - c)^2] = (E Z - c)^2 + Var Z
+Z, c = np.array([1.2, 2.9, 2.0]), 2.0
+print(f"bias^2 = {(Z.mean() - c) ** 2:.4f}, variance = {Z.var():.4f}, sum = {(Z.mean() - c) ** 2 + Z.var():.4f}, E[(Z - c)^2] = {((Z - c) ** 2).mean():.4f}")
+
+# Standardizing: divide by n (NumPy default) or by n - 1 (ddof=1, as pandas does)
+x = np.array([1000.0, 1500.0, 2000.0])
+print("std with 1/n:", round(x.std(), 1), " with 1/(n-1):", round(x.std(ddof=1), 1))
+z = (x - x.mean()) / x.std()
+print("z =", np.round(z, 3), " mean", round(z.mean(), 3), " std", round(z.std(), 3))
+
+# Try: compute E[X^2] and (E[X])^2 for the die. Their difference is the variance.`,
+
+  'covariance-gaussian': py`import numpy as np
+from math import erf, sqrt
+
+X = np.array([[0.0, 0.0], [2.0, 2.0], [4.0, 1.0], [2.0, 5.0]])
+centred = X - X.mean(axis=0)
+S = centred.T @ centred / len(X)             # divide by N; np.cov(X.T) divides by N - 1
+print("mean:", X.mean(axis=0), "\nS =\n", S)
+print("np.cov(X.T, bias=True) agrees:", np.allclose(S, np.cov(X.T, bias=True)))
+print("correlation:", round(S[0, 1] / sqrt(S[0, 0] * S[1, 1]), 3))
+
+b = np.array([1.0, 1.0]) / sqrt(2)
+proj = centred @ b
+print("b^T S b =", round(b @ S @ b, 4), " variance of the projections =", round(proj.var(), 4))
+
+Phi = lambda v: 0.5 * (1 + erf(v / sqrt(2)))
+d, t = 1.5, 0.8
+print(f"TPR = {Phi(d - t):.3f}, FPR = {1 - Phi(t):.3f}, AUC = Phi(d/sqrt 2) = {Phi(d / sqrt(2)):.3f}")
+rng = np.random.default_rng(0)
+pos, neg = rng.normal(d, 1, 200_000), rng.normal(0, 1, 200_000)
+print("simulated AUC:", round(np.mean(pos > neg), 3))
+
+# Try: Y = X^2 for X uniform on [-1, 1]. Estimate their correlation. Are they independent?`,
+
+  'likelihood-mle': py`import numpy as np
+
+y = np.array([1, 1, 0, 1])
+mu = np.linspace(0.01, 0.99, 99)
+loglik = y.sum() * np.log(mu) + (len(y) - y.sum()) * np.log(1 - mu)
+print("L(0.5) =", 0.5 ** 3 * 0.5, " L(0.75) =", round(0.75 ** 3 * 0.25, 4))
+print("grid maximum of the log-likelihood at mu =", round(mu[np.argmax(loglik)], 2), " (k/n =", y.mean(), ")")
+
+nll = lambda m: -np.mean(y * np.log(m) + (1 - y) * np.log(1 - m))
+print("average NLL at 0.75:", round(nll(0.75), 3), " at 0.5:", round(nll(0.5), 3), " (ln 2 =", round(np.log(2), 3), ")")
+
+# The logistic loss is the NLL of Bernoulli labels with mu_t = sigma(theta . x_t)
+rng = np.random.default_rng(0)
+X = np.c_[np.ones(6), [0.5, 1.5, 2.0, 2.5, 3.0, 3.5]]
+labels = np.array([0, 0, 1, 0, 1, 1])
+theta = np.array([-2.0, 1.0])
+h = 1 / (1 + np.exp(-X @ theta))
+cross_entropy = np.mean(-labels * np.log(h) - (1 - labels) * np.log(1 - h))
+likelihood = np.prod(h ** labels * (1 - h) ** (1 - labels))
+print("logistic loss:", round(cross_entropy, 4), " -ln(likelihood)/n:", round(-np.log(likelihood) / len(labels), 4))
+
+# Least squares is Gaussian maximum likelihood: the NLL is SSE/(2 sigma^2) + const
+xs = rng.uniform(0, 3, 50); ys = 2 * xs + rng.normal(0, 0.5, 50)
+for slope in [1.8, 2.0, 2.2]:
+    sse = np.sum((ys - slope * xs) ** 2)
+    gauss_nll = -np.sum(-0.5 * np.log(2 * np.pi * 0.25) - (ys - slope * xs) ** 2 / (2 * 0.25))
+    print(f"slope {slope}: SSE {sse:.2f}, Gaussian NLL {gauss_nll:.2f} = SSE/0.5 + {gauss_nll - sse / 0.5:.2f}")
+
+# Try: 7 ones in 10 flips. Where is the maximum of the log-likelihood?`,
+
   'ml-workflow': py`import numpy as np
 
 # Features: [contains_free, link_count]; labels: spam = +1, not spam = -1

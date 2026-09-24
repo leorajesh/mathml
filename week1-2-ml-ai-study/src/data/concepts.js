@@ -1,6 +1,7 @@
 import { calculusConcepts } from './calculusConcepts.js';
 import { mlConcepts } from './mlConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
+import { probabilityConcepts } from './probabilityConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
 // Reading order of every concept page (topics are overview pages, not listed here).
@@ -11,6 +12,7 @@ export const conceptOrder = [
   'sets',
   'functions',
   'inverse-composition',
+  'exp-log',
   'vectors-dot-product',
   'norms',
   'matrix-operations',
@@ -84,6 +86,10 @@ export const conceptOrder = [
   'loss-gradients',
   'backpropagation',
   'taylor-hessian',
+  'probability-basics',
+  'expectation-variance',
+  'covariance-gaussian',
+  'likelihood-mle',
   'pca',
 ];
 
@@ -94,13 +100,13 @@ export const sourceNotes = [
   'Mathematics for AI Week 1: Matrices, Linear Systems, Vector Spaces, Bases, Linear Transformations',
   'Mathematics for AI Week 2: Invertible Matrices, Rank/Nullity, Affine Spaces, Determinants, Change of Basis',
   'Mathematics for AI Week 3: Eigenvalues, Eigenvectors, Diagonalization, PageRank, Spectral Theorem, Cholesky, LU, SVD',
-  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
+  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, Ch. 6 probability (§6.1-6.5), §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
 ];
 
 export const notCovered = [
   'Administrative course logistics and syllabus items were omitted because they do not teach the requested ML or mathematics concepts.',
   'Later Production ML topics such as kernel SVMs (only the linear max-margin idea is covered, as an extension), clustering, decision trees, ensemble methods, HMMs, reinforcement learning, and anomaly detection were listed in the introduction slides but fall outside Week 1-2 coverage.',
-  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-5, 7, and 10, plus least squares as a projection); probability, Bayesian regression, Gaussian mixtures, and the book\'s SVM chapter are not converted (the max-margin page draws on Bishop and ISL instead).',
+  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-5, the probability basics of Chapter 6, §8.3 maximum likelihood, 7, and 10, plus least squares as a projection); Bayesian inference and MAP, Bayesian regression, Gaussian mixtures, and the book\'s SVM chapter are not converted (the max-margin page draws on Bishop and ISL instead).',
   'Long theorem proofs were compressed into intuition, formulas, and numeric examples so the app stays focused on conceptual understanding.',
 ];
 
@@ -646,7 +652,7 @@ const baseConcepts = [
       { tex: tex`\operatorname{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}`, definitions: [tex`TP: true positives`, tex`TN: true negatives`, tex`FP: false positives`, tex`FN: false negatives`] },
       { tex: tex`\operatorname{Precision}=\frac{TP}{TP+FP},\quad \operatorname{Recall}=\frac{TP}{TP+FN},\quad \operatorname{Specificity}=\frac{TN}{TN+FP}`, definitions: [tex`\operatorname{Precision}: reliability of positive predictions`, tex`\operatorname{Recall}: sensitivity`, tex`\operatorname{Specificity}: true-negative rate`] },
       { tex: tex`\text{Error rate}=1-\operatorname{Accuracy}=\frac{FP+FN}{TP+TN+FP+FN}`, definitions: ['Error rate: fraction of examples classified wrongly'] },
-      { tex: tex`F_1=\frac{2\,\operatorname{Precision}\cdot\operatorname{Recall}}{\operatorname{Precision}+\operatorname{Recall}}`, definitions: [tex`F_1: harmonic mean of precision and recall; for the first example 2(0.8)(0.444)/1.244 ≈ 0.571`] },
+      { tex: tex`F_1=\frac{2\,\operatorname{Precision}\cdot\operatorname{Recall}}{\operatorname{Precision}+\operatorname{Recall}}`, definitions: [tex`F_1: harmonic mean of precision and recall, 2/(1/P + 1/R); for the first example 2/(1.25 + 2.25) ≈ 0.571`] },
     ],
     example: ['Suppose TP = 8, FP = 2, TN = 90, and FN = 10.', 'Accuracy = (8 + 90) / 110 = 0.891.', 'Precision = 8 / (8 + 2) = 0.8.', 'Recall = 8 / (8 + 10) = 0.444, so high accuracy still misses many positives.', 'A cat detector tested on 25 images (the table used in Lesson 4): TP = 11, FN = 3, FP = 2, TN = 9.', 'Accuracy = 20/25 = 0.8, so the error rate is 0.2. Precision = 11/13 ≈ 0.846, recall = 11/14 ≈ 0.786, specificity = 9/11 ≈ 0.818.'],
     graph: { type: 'threshold', title: 'Threshold changes the positive/negative trade-off', caption: 'Twenty examples sorted by predicted probability. Points right of the threshold are predicted positive. Raising the threshold usually raises precision and lowers recall.', sliders: [{ key: 'threshold', label: 'decision threshold', min: 0.05, max: 0.95, step: 0.05, value: 0.5 }] },
@@ -675,7 +681,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 
@@ -745,6 +751,7 @@ export const mindMapEdges = [
   ['model-complexity-generalization', 'validation-cross-validation'], ['validation-cross-validation', 'logistic-regression'], ['linear-classifier', 'logistic-regression'], ['logistic-regression', 'logistic-loss'], ['gradient-descent', 'logistic-loss'], ['logistic-loss', 'classification-metrics'],
   ['ml-landscape', 'ml-workflow'], ['ml-landscape', 'ml-in-production'],
   ['hinge-loss', 'max-margin-svm'], ['max-margin-svm', 'stochastic-subgradient-descent'], ['least-squares-normal-equation', 'feature-scaling'], ['feature-scaling', 'ridge-regularization'], ['model-complexity-generalization', 'bias-variance'], ['bias-variance', 'validation-cross-validation'], ['classification-metrics', 'roc-auc'], ['roc-auc', 'ml-in-production'], ['ml-workflow', 'ml-in-production'],
+  ['probability-statistics', 'logistic-loss'], ['probability-statistics', 'bias-variance'], ['probability-statistics', 'classification-metrics'], ['sets-functions', 'probability-statistics'],
   ['vector-calculus', 'gradient-descent'], ['vector-calculus', 'least-squares-normal-equation'], ['vector-calculus', 'logistic-loss'], ['vector-calculus', 'convexity-surrogate-losses'],
   ['feature-vectors', 'norms-inner-products'], ['norms-inner-products', 'orthogonality-spectral-theorem'], ['norms-inner-products', 'projections-gram-schmidt'], ['orthogonality-spectral-theorem', 'projections-gram-schmidt'], ['rank-inverse-determinant', 'projections-gram-schmidt'], ['projections-gram-schmidt', 'least-squares-normal-equation'], ['projections-gram-schmidt', 'pca'], ['eigenvalues-eigenvectors', 'trace'], ['trace', 'pca'], ['orthogonality-spectral-theorem', 'pca'], ['affine-dimensionality-reduction', 'pca'], ['matrix-decompositions', 'pca'], ['gradient-descent', 'lagrange-multipliers'], ['lagrange-multipliers', 'ridge-regularization'], ['lagrange-multipliers', 'lasso-elastic-net'],
     ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'taylor-hessian'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],

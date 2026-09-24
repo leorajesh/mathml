@@ -41,6 +41,7 @@ export const recommendedPaths = {
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
   'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'ridge-regularization', 'lasso-elastic-net'],
   'overview-generalization': ['model-complexity-generalization', 'bias-variance', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc', 'ml-in-production'],
+  'overview-probability': ['exp-log', 'probability-statistics', 'logistic-regression', 'logistic-loss', 'bias-variance', 'classification-metrics'],
   'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
   'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
@@ -100,6 +101,21 @@ export const guidedSelfChecks = {
   ],
   trace: [
     { question: 'Can two matrices with the same trace and determinant have different eigenvalues?', answer: 'Not for 2 by 2 matrices: the eigenvalues solve lambda^2 - tr(A) lambda + det(A) = 0, so trace and determinant fix them. For larger matrices they can differ, because more coefficients of the characteristic polynomial are needed.' },
+  ],
+  'exp-log': [
+    { question: 'Why do we maximize the log-likelihood instead of the likelihood itself?', answer: 'ln is strictly increasing, so the parameter that maximizes the likelihood also maximizes its log. The log turns a product of many small probabilities into a sum, which is easier to differentiate and does not underflow.' },
+  ],
+  'probability-basics': [
+    { question: 'Why are precision and recall different numbers even though they use the same true positives?', answer: 'They condition on different events. Recall is P(predicted yes | actually yes), divided by all real positives; precision is P(actually yes | predicted yes), divided by all predicted positives. Bayes\' rule links them through the base rates.' },
+  ],
+  'expectation-variance': [
+    { question: 'Why does a larger training set make the training error a more reliable estimate of the true error?', answer: 'The training error is an average of n losses. If the examples are independent, the average has the true error as its mean and a variance that shrinks like 1/n (for a fixed model).' },
+  ],
+  'covariance-gaussian': [
+    { question: 'How is the variance of the data along a direction b computed from the covariance matrix, and why does PCA care?', answer: 'Var(b^T x) = b^T Sigma b. PCA looks for the unit direction b that makes this as large as possible, which is the top eigenvector of Sigma.' },
+  ],
+  'likelihood-mle': [
+    { question: 'In what sense is the logistic loss "maximum likelihood"?', answer: 'Treat each label as a Bernoulli draw with probability mu_t = sigma(theta . x_t + theta_0). The negative log of the likelihood of all labels, divided by n, is exactly the average logistic loss, so minimizing the loss maximizes the likelihood.' },
   ],
   pca: [
     { question: 'Why do the maximum-variance and minimum-reconstruction-error views of PCA give the same answer?', answer: 'For each centered point, the squared length splits into the part kept by the projection and the part lost (Pythagoras). The total is fixed, so maximizing the kept variance is the same as minimizing the average lost error.' },

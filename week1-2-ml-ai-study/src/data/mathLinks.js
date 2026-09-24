@@ -7,6 +7,7 @@ const use = (id, why) => ({ id, why });
 
 export const mathLinks = {
   'ml-landscape': [
+    use('probability-basics', 'Supervised learning estimates p(y | x); reinforcement learning maximizes an expected total reward.'),
     use('functions', 'Supervised learning looks for a function h from the input space X to the output space Y.'),
     use('vectors-dot-product', 'Each example, such as a tumour with 30 measurements, becomes a vector in R^30.'),
   ],
@@ -40,6 +41,7 @@ export const mathLinks = {
   ],
   'empirical-risk-zero-one': [
     use('functions', 'The zero-one loss is an indicator function: 1 for a mistake, 0 otherwise.'),
+    use('expectation-variance', 'Training error is an average of losses, an estimate of the expected error on new data.'),
   ],
   'hinge-loss': [
     use('derivatives', 'Hinge loss is piecewise linear with a corner at margin 1: slope -1 on one side, 0 on the other.'),
@@ -53,6 +55,7 @@ export const mathLinks = {
     use('derivatives', 'In one variable, f\'\' >= 0 everywhere is the quick convexity test.'),
   ],
   'surrogate-losses': [
+    use('exp-log', 'The logistic surrogate log_2(1 + e^(-z)) is the natural-log loss divided by ln 2.'),
     use('derivatives', 'Hinge and logistic losses have useful slopes where the zero-one loss is flat, which is what gradient methods need.'),
   ],
   'gradient-descent-method': [
@@ -69,12 +72,13 @@ export const mathLinks = {
   ],
   'stochastic-subgradient-descent': [
     use('loss-gradients', 'Each step uses a subgradient of one example\'s hinge loss (plus lambda theta if the SVM penalty is added); the hinge has a corner.'),
-    use('partial-derivatives-gradient', 'On average the one-example gradient equals the full gradient, so the steps point downhill on average.'),
+    use('expectation-variance', 'If t is picked uniformly, the expected one-example gradient equals the full gradient, so the steps point downhill on average.'),
   ],
   'lagrange-multipliers': [
     use('partial-derivatives-gradient', 'At a constrained minimum the gradients of f and of the constraint are parallel.'),
   ],
   'linear-regression': [
+    use('likelihood-mle', 'With Gaussian noise, least squares is maximum likelihood.'),
     use('matrix-multiplication-outer-product', 'All predictions at once are one matrix-vector product, y_hat = X theta.'),
     use('matrix-systems', 'With more examples than features, X theta = y usually has no exact solution, so we minimize the error instead.'),
     use('loss-gradients', 'The gradient of the squared error is what gradient descent follows.'),
@@ -90,6 +94,7 @@ export const mathLinks = {
     use('rank-nullity', 'X^T X is invertible exactly when rank(X) equals the number of features.'),
   ],
   'feature-scaling': [
+    use('expectation-variance', 'Standardizing subtracts the mean and divides by the standard deviation, giving mean 0 and spread 1.'),
     use('taylor-hessian', 'Rescaling a feature changes the curvature of the loss, and so how fast gradient descent converges.'),
     use('norms', 'Penalties and distances add up coordinates, so they depend on the units of each feature.'),
     use('pca', 'PCA looks for directions of largest variance, so features must be standardized first or the largest-unit feature wins.'),
@@ -106,19 +111,40 @@ export const mathLinks = {
     use('norms', 'The penalty mixes the L1 and squared L2 norms.'),
   ],
   'model-complexity-generalization': [
+    use('expectation-variance', 'Test error is an expectation over the data distribution; training error is a sample average that estimates it.'),
     use('dimension', 'Model complexity often grows with the number of free parameters, the dimension of the hypothesis space.'),
   ],
   'logistic-regression': [
+    use('exp-log', 'The sigmoid 1/(1 + e^(-s)) and its inverse, the logit ln(p/(1 - p)), connect scores and probabilities.'),
+    use('probability-basics', 'h(x) = p(y = 1 | x) is a conditional probability, and Bayes\' rule is what a generative model uses instead.'),
     use('derivatives', 'The sigmoid\'s derivative is sigma(1 - sigma), which keeps the gradients simple.'),
     use('vectors-dot-product', 'The probability depends on x only through the score theta . x + theta_0.'),
   ],
   'logistic-loss': [
     use('loss-gradients', 'The gradient of the average logistic loss is (1/n) sum (h - y) x: prediction error times input.'),
     use('backpropagation', 'The chain rule through the sigmoid is backpropagation on a two-step computation graph.'),
-    use('taylor-hessian', 'The Hessian X^T S X is positive semidefinite, which is why logistic loss is convex.'),
+    use('loss-gradients', 'The Hessian (1/n) X^T S X, with S = diag(h(1 - h)), is positive semidefinite, which is why logistic loss is convex.'),
+    use('likelihood-mle', 'The logistic loss is the average negative log-likelihood of Bernoulli labels.'),
   ],
   'roc-auc': [
     use('functions', 'The ROC curve is a function from a threshold to a pair (FPR, TPR); sweeping the threshold traces it.'),
+    use('probability-basics', 'TPR and FPR are conditional probabilities P(score >= t | class), and AUC is P(positive score > negative score).'),
+    use('covariance-gaussian', 'The graph uses Gaussian scores; the difference of two independent Gaussians gives AUC = Phi(d / sqrt 2).'),
+  ],
+  'classification-metrics': [
+    use('probability-basics', 'Recall is P(predict yes | truly yes) and precision is P(truly yes | predict yes): the same counts, conditioned differently.'),
+  ],
+  'bias-variance': [
+    use('expectation-variance', 'Expected error = bias^2 + variance + noise follows from E[(Z - c)^2] = (E Z - c)^2 + Var Z.'),
+  ],
+  'train-validation-test': [
+    use('expectation-variance', 'A held-out error is an average over examples drawn like future data, so it estimates the expected error.'),
+  ],
+  'cross-validation': [
+    use('expectation-variance', 'Averaging k fold scores gives a steadier estimate than one split, because averages have smaller variance.'),
+  ],
+  'ml-in-production': [
+    use('probability-basics', 'Drift is a change in the joint distribution P(x, y) = P(x) P(y | x): covariate shift changes P(x), concept drift P(y | x).'),
   ],
 };
 

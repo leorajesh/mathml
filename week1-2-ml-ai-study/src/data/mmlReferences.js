@@ -21,6 +21,7 @@ export function mmlLink(page) {
 const ref = (section, title, page) => ({ section, title, page });
 
 export const mmlReferences = {
+  'ml-landscape': [ref('8.1', 'Data, Models, and Learning', 251)],
   'ml-workflow': [ref('8.1', 'Data, Models, and Learning', 251)],
   'feature-representation': [ref('8.1.1', 'Data as Vectors', 252)],
   functions: [ref('2.7', 'Linear Mappings (injective, surjective, bijective)', 48)],

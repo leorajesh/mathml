@@ -10,6 +10,26 @@ const tex = String.raw;
 
 export const mlConcepts = [
   {
+    id: 'ml-landscape',
+    title: 'Machine Learning and MLOps: The Big Picture',
+    group: 'Problem',
+    week: 'Production ML W1 (Lesson 1)',
+    problem: 'It places machine learning within AI, names the main kinds of learning problems, and explains why a production course also needs MLOps: the practices that take a model from a notebook to reliable use.',
+    intuition: 'Artificial intelligence is the broad goal of machines doing things we associate with minds. Machine learning is the part of AI that learns from data instead of following hand-written rules, improving with experience. Deep learning is the part of ML built from layered neural networks. Learning problems come in a few kinds. Supervised learning is given inputs with labels and learns the mapping: classification when the label is a category, regression when it is a number. Unsupervised learning finds patterns in unlabeled data. Classification can be binary (two classes) or multi-class (several). Reinforcement learning learns which actions earn the most reward over time, and semi-supervised learning mixes a few labels with many unlabeled examples. Why now? Large datasets, better models, and lots of computation all arrived together. Building the model is only part of the job: in production, ML is a cycle, and most of the value and most of the failures sit outside the model. DevOps joined software development (Dev) and IT operations (Ops) teams so that software could be delivered continuously; MLOps, derived from it, is a set of tools, processes, and mindset that makes the ML lifecycle reproducible, trackable, testable, and maintainable. It runs in three phases: a data phase (business and data understanding, designing the ML-powered software), a model phase (data and model engineering, delivering a stable model), and an operations phase (deployment, testing, versioning, continuous delivery, and monitoring). ML needs more than DevOps because data changes everything: a model can get worse without any code changing. Easy but limited shortcuts create technical debt, the future cost of reworking them, so tools for the stack are chosen by the 4 Cs: cost, coverage, complexity, and community. An MLOps engineer mixes software development, machine learning, and data engineering. A notation warning: the slides write m examples with n attributes (and sometimes y in {0, 1}), while the lecture notes and this site write n examples with d features and y in {-1, +1}.',
+    formulas: [
+      { tex: tex`\text{supervised: } S_n=\{(x^{(t)},y^{(t)})\}_{t=1}^{n},\ \ h:\mathcal{X}\to\mathcal{Y};\qquad \mathcal{Y}=\{-1,+1\}\ \text{(classification)},\ \ \mathcal{Y}=\mathbb{R}\ \text{(regression)}`, definitions: [tex`\mathcal{X}: input space, for example 30 real-valued measurements per tumour`, tex`\mathcal{Y}: output space; a category for classification, a number for regression`] },
+      { tex: tex`\text{unsupervised: } \{x^{(t)}\}_{t=1}^{n}\ \text{only};\qquad \text{reinforcement: choose actions } a_t \text{ to maximize } \mathbb{E}\Bigl[\sum_t r_t\Bigr]`, definitions: [tex`r_t: reward received at time t`] },
+      { tex: tex`\text{MLOps}=\text{tools}+\text{processes}+\text{mindset}\ \Rightarrow\ \text{a reproducible, trackable, testable, maintainable ML lifecycle}`, definitions: ['phases: data, then model, then operations, repeated as the data changes'] },
+    ],
+    example: ['The breast cancer case study from the Lesson 1 slides: each row of the table is one tumour (a training example or instance), described by 30 real-valued features measured from images of its cells.', 'Predicting the outcome, recurrence (R) or no recurrence (N), is binary classification: the label is a category, which can be encoded as +1 and -1.', 'Predicting the time until recurrence (or the time the patient stays disease-free) is regression: the target is a number.', 'Across the lifecycle, the data phase fixes the question and collects labelled rows, the model phase trains and validates a model, and the operations phase deploys, versions, and monitors it, checking that new patients still look like the training data.'],
+    graph: { type: 'mlopsPhases', title: 'The three phases of MLOps', caption: 'Move through the phases of the ML lifecycle. Each phase lists its main activities; the loop back from operations to data is where monitoring triggers new data collection and retraining.', sliders: [{ key: 'phase', label: 'phase (1 = data, 2 = model, 3 = operations)', min: 1, max: 3, step: 1, value: 1 }] },
+    figure: 'ml-lifecycle',
+    misconception: 'Production ML is not ML with a deployment step bolted on at the end. Most of the work, and most of the ways a system fails, lie outside the model: data, pipelines, infrastructure, and monitoring. The slides quote the Hidden Technical Debt paper: Knight Capital lost $465 million in 45 minutes, apparently because of unexpected behaviour from obsolete experimental code paths.',
+    prerequisites: [],
+    followOns: ['ml-workflow', 'feature-representation', 'linear-classifier', 'linear-regression', 'ml-in-production'],
+    sources: ['Production ML slides - Introduction Lesson1.pdf', 'Week1_01-Introduction.pdf'],
+  },
+  {
     id: 'max-margin-svm',
     title: 'Maximum Margin and the Regularized Hinge Objective (SVM)',
     group: 'Loss',
@@ -54,7 +74,7 @@ export const mlConcepts = [
     group: 'Generalization',
     week: 'Production ML W2 · ISL §2.2.2 · Bishop §3.2',
     problem: 'It explains why test error is U-shaped in model complexity: error comes from a model that is too rigid (bias), one too sensitive to its particular training set (variance), and noise that no model can remove.',
-    intuition: 'Imagine training the same kind of model on many different training sets drawn from the same source, and predicting at one input x each time. Bias is how far the average prediction is from the truth: a straight line fitted to a curve is wrong in the same way every time. Variance is how much the predictions scatter from one training set to the next: a wiggly degree-9 polynomial changes a lot when a few points move. Noise is the randomness in the labels themselves. For squared error, the expected test error is exactly bias squared plus variance plus noise. More complexity lowers bias but raises variance, so the best model sits in between. More training data lowers variance without adding bias; regularization lowers variance at the cost of some extra bias.',
+    intuition: 'Imagine training the same kind of model on many different training sets drawn from the same source, and predicting at one input x each time. Bias is how far the average prediction is from the truth: a straight line fitted to a curve is wrong in the same way every time. Variance is how much the predictions scatter from one training set to the next: a wiggly degree-9 polynomial changes a lot when a few points move. Noise is the randomness in the labels themselves. The Week 2 notes call bias the structural error (the model family cannot express the true relationship, however much data you have) and variance the estimation error (a small, noisy training set pins down the parameters only roughly; more data shrinks it). For squared error, the expected test error is exactly bias squared plus variance plus noise. More complexity lowers bias but raises variance, so the best model sits in between. More training data lowers variance without adding bias; regularization lowers variance at the cost of some extra bias.',
     formulas: [
       { tex: tex`\mathbb{E}\bigl[(y-\hat h(x))^2\bigr]=\underbrace{\bigl(\mathbb{E}[\hat h(x)]-f(x)\bigr)^2}_{\text{bias}^2}+\underbrace{\mathbb{E}\bigl[(\hat h(x)-\mathbb{E}[\hat h(x)])^2\bigr]}_{\text{variance}}+\underbrace{\sigma^2}_{\text{noise}}`, definitions: [tex`f(x): the true regression function`, tex`\hat h(x): prediction of a model trained on a random training set`, tex`\mathbb{E}: average over training sets (and over the label noise)`, tex`\sigma^2: noise variance, the irreducible error`] },
       { tex: tex`y=f(x)+\varepsilon,\qquad \mathbb{E}[\varepsilon]=0,\quad \operatorname{Var}(\varepsilon)=\sigma^2`, definitions: [tex`\varepsilon: label noise, independent of the training set`] },
@@ -65,7 +85,7 @@ export const mlConcepts = [
     misconception: 'Variance here is not the spread of the data. It is how much the fitted model would change if it were trained on a different sample, so a model can have low training error and still high variance.',
     prerequisites: ['model-complexity-generalization', 'polynomial-regression'],
     followOns: ['ridge-regularization', 'train-validation-test', 'cross-validation'],
-    sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf', 'James et al. §2.2.2', 'Bishop §3.2'],
+    sources: ['Week2_notes01-LinearRegression.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf', 'James et al. §2.2.2', 'Bishop §3.2'],
   },
   {
     id: 'roc-auc',
@@ -101,7 +121,7 @@ export const mlConcepts = [
     graph: { type: 'driftRetrain', title: 'Accuracy decay and retraining', caption: 'Accuracy of a deployed model over two years when the data drifts and the model is retrained every T months (T = 24 means never). Frequent retraining keeps accuracy high but costs more compute and engineering time.', sliders: [{ key: 'decay', label: 'accuracy lost per month (points)', min: 0, max: 3.5, step: 0.1, value: 1.5 }, { key: 'interval', label: 'retrain every T months', min: 1, max: 24, step: 1, value: 3 }] },
     figure: 'ml-lifecycle',
     misconception: 'A model with excellent test accuracy is not finished. Test accuracy measures one snapshot of the data; without monitoring, a shift in the data can make the deployed model quietly worse.',
-    prerequisites: ['ml-workflow', 'train-validation-test', 'classification-metrics'],
+    prerequisites: ['ml-landscape', 'ml-workflow', 'train-validation-test', 'classification-metrics'],
     followOns: [],
     sources: ['Production ML slides - Introduction Lesson1.pdf', 'Huyen Ch. 1, 2, 8', 'Sculley et al. (2014)'],
   },

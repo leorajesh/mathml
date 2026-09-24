@@ -124,6 +124,7 @@ export const workedExampleMath = {
   'hinge-loss': [
     tex`\max(0,1-1.5)=0,\quad \max(0,1-0.2)=0.8,\quad \max(0,1-(-1))=2`,
     tex`R_n=\frac{0+0.8+2}{3}=0.933\ldots`,
+    tex`(-1,\,0.4)\mapsto1.4,\qquad (+1,\,-0.9)\mapsto1.9,\qquad (+1,\,0.7)\mapsto0.3`,
   ],
   'stochastic-subgradient-descent': [
     tex`y=+1,\quad x=\begin{bmatrix}2\\1\end{bmatrix},\quad \theta=\begin{bmatrix}0\\0\end{bmatrix},\quad \eta=0.2`,
@@ -135,8 +136,8 @@ export const workedExampleMath = {
     tex`\theta_1=2,\quad \theta_0=1`,
     tex`\hat y=2\cdot3+1=7`,
     tex`y-\hat y=9-7=2`,
-    tex`R_n(\theta)=\tfrac12\bigl[(2-\theta)^2+(3-2\theta)^2\bigr],\qquad R_n'(\theta)=-(8-5\theta)`,
-    tex`\theta:\ 0\ \xrightarrow{-0.1\cdot(-8)}\ 0.8\ \xrightarrow{-0.1\cdot(-4)}\ 1.2\ \to\ \cdots\ \to\ 1.6`,
+    tex`R_n(\theta)=\tfrac14\bigl[(2-\theta)^2+(3-2\theta)^2\bigr],\qquad R_n'(\theta)=-\tfrac12(8-5\theta)`,
+    tex`\theta:\ 0\ \xrightarrow{-0.2\cdot(-4)}\ 0.8\ \xrightarrow{-0.2\cdot(-2)}\ 1.2\ \to\ \cdots\ \to\ 1.6`,
   ],
   'polynomial-regression': [
     tex`\varphi(x)=\begin{bmatrix}x\\x^2\\x^3\end{bmatrix}`,
@@ -165,6 +166,8 @@ export const workedExampleMath = {
     tex`s=\theta\cdot x+\theta_0=2`,
     tex`\sigma(2)=\frac{e^2}{1+e^2}\approx\frac{7.389}{8.389}\approx0.881`,
     tex`0.881\ge0.5\Rightarrow \hat y=1`,
+    tex`z=-3+1+1=-1<0\Rightarrow\hat y=0,\qquad \sigma(-1)\approx0.269,\quad 1-0.269=0.731`,
+    tex`z=-1+2^2+2^2=7\ge0\Rightarrow\hat y=1,\qquad \sigma(7)\approx0.9991`,
   ],
   'logistic-loss': [
     tex`y=1,\quad h=0.8,\quad L=-\log(0.8)\approx0.223`,
@@ -177,6 +180,8 @@ export const workedExampleMath = {
     tex`\operatorname{Accuracy}=\frac{8+90}{110}=0.891`,
     tex`\operatorname{Precision}=\frac{8}{8+2}=0.8`,
     tex`\operatorname{Recall}=\frac{8}{8+10}=0.444`,
+    tex`TP=11,\quad FN=3,\quad FP=2,\quad TN=9`,
+    tex`\operatorname{Acc}=\tfrac{20}{25}=0.8,\ \text{err}=0.2,\ \operatorname{Prec}=\tfrac{11}{13}\approx0.846,\ \operatorname{Rec}=\tfrac{11}{14}\approx0.786,\ \operatorname{Spec}=\tfrac{9}{11}\approx0.818`,
   ],
   'eigenvalues-eigenvectors': [
     tex`A=\begin{bmatrix}2&0\\0&3\end{bmatrix},\quad v=\begin{bmatrix}1\\0\end{bmatrix}`,
@@ -479,5 +484,11 @@ export const workedExampleMath = {
     null,
     tex`92-1.5\cdot12=74\%`,
     tex`\bar A=92-\frac{1.5\cdot3}{2}=89.75\%,\qquad T=1:\ \bar A=92-0.75=91.25\%`,
+  ],
+  'ml-landscape': [
+    tex`x^{(t)}\in\mathbb{R}^{30}:\ \text{one tumour per row}`,
+    tex`y^{(t)}\in\{R,N\}\ \to\ \{+1,-1\}\quad\text{(classification)}`,
+    tex`y^{(t)}\in\mathbb{R}_{\ge0}\ \text{(months)}\quad\text{(regression)}`,
+    null,
   ],
 };

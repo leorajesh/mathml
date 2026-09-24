@@ -2,9 +2,10 @@ export const learningObjectives = [
   {
     area: 'Introduction to ML Modelling',
     items: [
-      { objective: 'Explain what machine learning is and what kinds of prediction problems it solves.', concepts: ['ml-workflow'], check: 'Can you explain why memorizing the training set is not the same as learning?' },
+      { objective: 'Explain what machine learning is and what kinds of prediction problems it solves.', concepts: ['ml-landscape', 'ml-workflow'], check: 'Can you explain why memorizing the training set is not the same as learning?' },
       { objective: 'Identify the essential components of an ML model: data, features, hypothesis class, loss, optimization, and generalization.', concepts: ['ml-workflow', 'feature-representation', 'model-complexity-generalization'], check: 'Given a new task, can you name the input, output, model family, loss, and optimizer?' },
-      { objective: 'Distinguish classification from regression.', concepts: ['linear-classifier', 'linear-regression', 'logistic-regression'], check: 'Is the target a label or a real number, and how does that change the loss?' },
+      { objective: 'Distinguish classification from regression.', concepts: ['ml-landscape', 'linear-classifier', 'linear-regression', 'logistic-regression'], check: 'Is the target a label or a real number, and how does that change the loss?' },
+      { objective: 'Name the main types of machine learning and explain what production ML and MLOps add: the data, model, and operations phases, and technical debt.', concepts: ['ml-landscape', 'ml-in-production'], check: 'Why does ML need more than DevOps?' },
     ],
   },
   {

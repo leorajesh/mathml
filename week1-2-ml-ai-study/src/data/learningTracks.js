@@ -28,7 +28,7 @@ export const tracks = {
     short: 'ML',
     description: 'Machine learning from the supervised workflow through classifiers, margins, losses, optimization, regression, generalization, logistic regression, and what changes once a model is in production. Each page lists the course books to read and the math pages it builds on.',
     sections: [
-      { title: 'The learning problem', concepts: ['ml-workflow', 'feature-representation'] },
+      { title: 'The learning problem', concepts: ['ml-landscape', 'ml-workflow', 'feature-representation'] },
       { title: 'Linear classification', concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence'] },
       { title: 'Losses and convexity', concepts: ['empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm', 'convex-functions', 'surrogate-losses'] },
       { title: 'Optimization', concepts: ['gradient-descent-method', 'momentum', 'subgradients', 'stochastic-subgradient-descent', 'lagrange-multipliers'] },

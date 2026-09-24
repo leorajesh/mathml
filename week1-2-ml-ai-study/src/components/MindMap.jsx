@@ -18,7 +18,7 @@ const domains = [
     title: 'Introduction to ML Modelling',
     group: 'Problem',
     summary: 'Input-output pairs, feature representations, hypothesis classes, error functions, learning algorithms, and generalization.',
-    concepts: ['ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
+    concepts: ['ml-landscape', 'ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
   },
   {
     id: 'overview-linear-algebra',

@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -69,7 +69,8 @@ const plotAxes = {
   sigmoid: { x: 'score s', y: 'probability (0 to 1)' },
   logLoss: { x: 'predicted probability h (0 to 1)', y: 'loss' },
   gradient: { x: 'theta', y: 'loss J(theta)' },
-  stochasticGradient: { x: 'theta', y: 'loss J(theta)' },
+  ssgdHinge: { x: 'step k', y: 'training hinge risk R_n (0 to 1.2)' },
+  surrogate: { x: 'margin z = y (theta . x)', y: 'loss' },
   generalization: { x: 'model complexity', y: 'loss' },
   diagonalization: { x: '', y: 'size after k steps' },
   shrinkage: { x: 'penalty strength lambda (0 to 5)', y: 'fitted weight' },
@@ -134,6 +135,9 @@ function renderGraph(type, values) {
     case 'perceptron': return PerceptronGraph({ values });
     case 'zeroOne': return LossCurveGraph({ values, mode: 'zeroOne' });
     case 'hinge': return LossCurveGraph({ values, mode: 'hinge' });
+    case 'surrogate': return SurrogateGraph({ values });
+    case 'ssgdHinge': return SsgdHingeGraph({ values });
+    case 'perceptronMistakes': return PerceptronMistakesGraph({ values });
     case 'gradient': return GradientGraph({ values });
     case 'linearRegression': return LinearRegressionGraph({ values });
     case 'squaredLoss': return SquaredLossGraph({ values });
@@ -145,7 +149,6 @@ function renderGraph(type, values) {
     case 'diagonalization': return DiagonalizationGraph({ values });
     case 'spectral': return SpectralGraph({ values });
     case 'decomposition': return DecompositionGraph({ values });
-    case 'stochasticGradient': return StochasticGradientGraph({ values });
     case 'shrinkage': return ShrinkageGraph({ values });
     case 'threshold': return ThresholdGraph({ values });
     case 'venn': return VennGraph({ values });
@@ -293,6 +296,72 @@ function PerceptronGraph({ values }) {
   };
 }
 
+// Zero-one, hinge, and base-2 logistic loss as functions of the margin z; both surrogates lie on or above zero-one.
+function SurrogateGraph({ values }) {
+  const zs = Array.from({ length: 121 }, (_, index) => -3 + index * 0.05);
+  const hinge = (z) => Math.max(0, 1 - z);
+  const logistic = (z) => Math.log2(1 + Math.exp(-z));
+  const zeroOne = [{ x: -3, y: 1 }, { x: 0, y: 1 }, { x: 0, y: 0 }, { x: 3, y: 0 }];
+  const z = values.margin;
+  return {
+    content: <g><path className="zero-one-line" d={linePath(zeroOne)} /><path className="loss-line" d={linePath(zs.map((v) => ({ x: v, y: clamp(hinge(v), 0, 4.5) })))} /><path className="line-a" d={linePath(zs.map((v) => ({ x: v, y: clamp(logistic(v), 0, 4.5) })))} />{circlePoint({ x: z, y: clamp(hinge(z), 0, 4.5) }, 'active-dot')}{circlePoint({ x: z, y: clamp(logistic(z), 0, 4.5) }, 'point-a')}<text className="graph-note" x="44" y="48">dashed: zero-one, berry: hinge, blue: logistic (base 2)</text></g>,
+    readout: [`at z = ${z.toFixed(2)}: zero-one ${z <= 0 ? 1 : 0}, hinge ${hinge(z).toFixed(3)}, logistic ${logistic(z).toFixed(3)}`, z <= 0 ? 'a mistake: both surrogates charge at least 1' : z < 1 ? 'correct but not confident: hinge still charges, logistic too' : 'confident and correct: hinge is 0, logistic is small but positive'],
+  };
+}
+
+// The course's stochastic subgradient descent on the hinge risk of a small non-separable dataset,
+// with a constant step or eta_k = 1/(k + 1), tracking the best theta seen so far.
+const ssgdData = [[2, 1, 1], [1, 2, 1], [3, 0.5, 1], [0.5, 3, 1], [1.5, 1.5, 1], [-2, -1, -1], [-1, -2.5, -1], [-3, -0.5, -1], [-1, -1, -1], [1, 0.2, -1], [-0.5, 1, 1]];
+function hingeRisk(theta) { return ssgdData.reduce((sum, [a, b, y]) => sum + Math.max(0, 1 - y * (theta[0] * a + theta[1] * b)), 0) / ssgdData.length; }
+function SsgdHingeGraph({ values }) {
+  let seed = 11;
+  const random = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  let theta = [0, 0];
+  const risks = [hingeRisk(theta)];
+  let best = risks[0];
+  let bestStep = 0;
+  const bestSoFar = [best];
+  for (let k = 0; k < values.steps; k += 1) {
+    const [a, b, y] = ssgdData[Math.floor(random() * ssgdData.length)];
+    const eta = values.schedule >= 1 ? 1 / (k + 1) : values.eta;
+    if (y * (theta[0] * a + theta[1] * b) <= 1) theta = [theta[0] + eta * y * a, theta[1] + eta * y * b];
+    const r = hingeRisk(theta);
+    risks.push(r);
+    if (r < best) { best = r; bestStep = k + 1; }
+    bestSoFar.push(best);
+  }
+  const X = (k) => -4.6 + (9.2 * k) / values.steps;
+  const Y = (r) => -4.5 + 7.5 * clamp(r, 0, 1.2);
+  return {
+    content: <g><path className="line-b" d={linePath(risks.map((r, k) => ({ x: X(k), y: Y(r) })))} /><path className="line-a" d={linePath(bestSoFar.map((r, k) => ({ x: X(k), y: Y(r) })))} />{circlePoint({ x: X(bestStep), y: Y(best) }, 'active-dot', 'best so far')}<text className="graph-note" x="44" y="48">{values.schedule >= 1 ? 'step size eta_k = 1/(k + 1)' : `constant step size eta = ${values.eta.toFixed(2)}`}; orange: R_n after each step, blue: best so far</text></g>,
+    readout: [`final R_n = ${risks[risks.length - 1].toFixed(3)}, best R_n = ${best.toFixed(3)} (step ${bestStep})`, `final theta = [${theta.map((v) => v.toFixed(2)).join(', ')}]`],
+  };
+}
+
+// Perceptron through the origin on data whose true separator (the diagonal) has margin gamma:
+// counts the mistakes until a full pass is clean and compares them with the bound (R/gamma)^2.
+const mistakeBase = [[-3, 0.2, 1], [-1.5, 0.9, 1], [0, 0, 1], [1.2, 0.5, 1], [2.8, 1.1, 1], [-2.5, 0.4, -1], [-0.8, 0, -1], [0.7, 1, -1], [2, 0.3, -1], [3, 0.7, -1]];
+function PerceptronMistakesGraph({ values }) {
+  const gamma = values.gamma;
+  const h = Math.SQRT1_2;
+  const points = mistakeBase.map(([t, s, y]) => ({ x: -t * h + y * (gamma + s) * h, y: t * h + y * (gamma + s) * h, label: y }));
+  let theta = [0, 0];
+  let mistakes = 0;
+  for (let pass = 0; pass < 2000; pass += 1) {
+    let passMistakes = 0;
+    for (const p of points) if (p.label * (theta[0] * p.x + theta[1] * p.y) <= 0) { theta = [theta[0] + p.label * p.x, theta[1] + p.label * p.y]; mistakes += 1; passMistakes += 1; }
+    if (!passMistakes) break;
+  }
+  const R = Math.max(...points.map((p) => Math.hypot(p.x, p.y)));
+  const norm = Math.hypot(theta[0], theta[1]) || 1;
+  const along = [-theta[1] / norm, theta[0] / norm];
+  const learned = [{ x: -9 * along[0], y: -9 * along[1] }, { x: 9 * along[0], y: 9 * along[1] }];
+  return {
+    content: <g><path className="tick" strokeDasharray="6 6" d={linePath([{ x: -6, y: 6 }, { x: 6, y: -6 }])} /><path className="boundary" d={linePath(learned)} />{points.map((p, index) => <circle key={index} className={p.label > 0 ? 'class-pos' : 'class-neg'} cx={sx(p.x)} cy={sy(p.y)} r="6" />)}<text className="graph-note" x="44" y="48">dashed: true separator with margin gamma; berry: the perceptron's final boundary</text></g>,
+    readout: [`margin gamma = ${gamma.toFixed(2)}, R = ${R.toFixed(2)}`, `mistakes made: ${mistakes}; bound (R/gamma)^2 = ${((R / gamma) ** 2).toFixed(1)}`, 'smaller margin: more mistakes allowed; the bound is a worst case, often far above the actual count'],
+  };
+}
+
 function LossCurveGraph({ values, mode }) {
   const points = Array.from({ length: 121 }, (_, index) => { const z = -3 + index * 0.05; const loss = mode === 'hinge' ? Math.max(0, 1 - z) : z <= 0 ? 1 : 0; return { x: z, y: clamp(loss, 0, 4) }; });
   const loss = mode === 'hinge' ? Math.max(0, 1 - values.margin) : values.margin <= 0 ? 1 : 0;
@@ -316,24 +385,23 @@ function GradientGraph({ values }) {
 // Loss J(theta) = (theta - 3)^2 drawn centered on its minimum and scaled to fit the canvas.
 function bowl(theta) { return ((theta - 3) ** 2) / 4 - 3; }
 
-function StochasticGradientGraph({ values }) {
-  // Fixed pseudo-random noise so the path only changes when a slider changes.
-  let seed = 7;
-  const random = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 - 0.5; };
-  let theta = -1;
-  const path = [{ x: theta }];
-  for (let step = 0; step < values.steps; step += 1) {
-    const noisyGradient = 2 * (theta - 3) + values.noise * 2 * random();
-    theta -= values.alpha * noisyGradient;
-    path.push({ x: theta });
-  }
-  return { content: descentPlot(path, theta, values.alpha), readout: ['start theta = -1', 'Each step = true gradient + random noise'] };
-}
-
 function LinearRegressionGraph({ values }) {
   const data = [{ x: -3, y: -2.5 }, { x: -1, y: -0.4 }, { x: 1, y: 2 }, { x: 3, y: 3.2 }];
-  const line = [{ x: -5, y: values.slope * -5 + values.intercept }, { x: 5, y: values.slope * 5 + values.intercept }];
-  return <g><path className="line-a" d={linePath(line)} />{data.map((p, index) => <circle key={index} className="point-b" cx={sx(p.x)} cy={sy(p.y)} r="7" />)}</g>;
+  const predict = (x) => values.slope * x + values.intercept;
+  const mse = (slope, intercept) => data.reduce((sum, p) => sum + (p.y - slope * p.x - intercept) ** 2, 0) / data.length;
+  // Least-squares line for these four points (closed form for one feature with an intercept).
+  const meanX = data.reduce((sum, p) => sum + p.x, 0) / data.length;
+  const meanY = data.reduce((sum, p) => sum + p.y, 0) / data.length;
+  const bestSlope = data.reduce((sum, p) => sum + (p.x - meanX) * (p.y - meanY), 0) / data.reduce((sum, p) => sum + (p.x - meanX) ** 2, 0);
+  const bestIntercept = meanY - bestSlope * meanX;
+  const line = [{ x: -5, y: predict(-5) }, { x: 5, y: predict(5) }];
+  return {
+    content: <g><path className="line-a" d={linePath(line)} />{data.map((p, index) => <g key={index}><path className="residual" d={`M ${sx(p.x)} ${sy(p.y)} L ${sx(p.x)} ${sy(clamp(predict(p.x), -5, 5))}`} /><circle className="point-b" cx={sx(p.x)} cy={sy(p.y)} r="7" /></g>)}</g>,
+    readout: [
+      `mean squared error (1/n) sum (y - y_hat)^2 = ${mse(values.slope, values.intercept).toFixed(3)}`,
+      `least-squares best: slope ${bestSlope.toFixed(3)}, intercept ${bestIntercept.toFixed(3)}, error ${mse(bestSlope, bestIntercept).toFixed(3)}`,
+    ],
+  };
 }
 
 function SquaredLossGraph({ values }) {

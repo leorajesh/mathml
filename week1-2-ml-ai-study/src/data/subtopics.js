@@ -476,7 +476,7 @@ export const subtopicConcepts = [
       { tex: tex`L_{\text{logistic}}(z)=\log_2(1+e^{-z})\ \ge L_{0/1}(z)`, definitions: [tex`L_{\text{logistic}}: logistic loss in base 2, which equals 1 at z = 0; with y in {-1, +1} the natural-log loss of the logistic-loss page is ln(1 + e^(-z)) = ln 2 times this`] },
     ],
     example: ['For z = 0.7 the prediction is correct, so zero-one loss is 0.', 'Hinge loss is max(0, 1 - 0.7) = 0.3, because the margin is not yet at least 1.', 'For z = -0.4, zero-one loss is 1 and hinge loss is 1.4.', 'Both surrogates sit on or above zero-one loss for every z, so the average surrogate loss is an upper bound on the training error: driving it low forces the mistake count low.'],
-    graph: { type: 'hinge', title: 'Surrogate loss gives useful slope', caption: 'The dashed zero-one loss only tells whether the sign is wrong. The hinge loss also tells how far the point is from a confident margin.', sliders: [{ key: 'margin', label: 'signed margin z', min: -3, max: 3, step: 0.1, value: 0.7 }] },
+    graph: { type: 'surrogate', title: 'Two convex surrogates above the zero-one loss', caption: 'The dashed zero-one loss only tells whether the sign is wrong. Hinge (berry) and base-2 logistic loss (blue) both sit on or above it and slope toward larger margins; hinge reaches exactly 0 at margin 1, logistic never quite does.', sliders: [{ key: 'margin', label: 'signed margin z', min: -3, max: 3, step: 0.1, value: 0.7 }] },
     misconception: 'A surrogate loss is not the metric itself; it is a training objective chosen because it is easier to optimize. Report accuracy or error with the real metric.',
     prerequisites: ['hinge-loss', 'convex-functions'],
     followOns: ['gradient-descent-method', 'logistic-loss'],

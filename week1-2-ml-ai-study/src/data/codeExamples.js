@@ -383,7 +383,7 @@ plt.xlabel("signed margin z"); plt.ylabel("loss"); plt.legend(); plt.title("Hing
 # The page's single step: theta = 0, x = [2, 1], y = +1, eta = 0.2
 theta = np.zeros(2)
 x, y_t, eta, lam = np.array([2.0, 1.0]), 1, 0.2, 0.0
-if y_t * (theta @ x) < 1:
+if y_t * (theta @ x) <= 1:                    # the notes update when the agreement is at most 1
     theta = (1 - eta * lam) * theta + eta * y_t * x
 print("one step:", theta)
 
@@ -391,20 +391,23 @@ print("one step:", theta)
 rng = np.random.default_rng(1)
 X = np.array([[2, 1], [1, 3], [-1, -2], [-2, 0], [1.5, 2], [-1.5, -1]], dtype=float)
 y = np.array([1, 1, -1, -1, -1, 1])
-lam = 0.01
+lam = 0.0                                    # the notes' version; set lam > 0 for the SVM objective (beyond Week 1)
 theta = np.zeros(2)
+risk = lambda th: np.maximum(0, 1 - y * (X @ th)).mean()
+best, best_risk = theta.copy(), risk(theta)
 for k in range(1, 501):
     t = rng.integers(len(X))                 # one random example
-    eta = 0.5 / np.sqrt(k)                   # decaying step size
-    if y[t] * (theta @ X[t]) < 1:
+    eta = 1 / (k + 1)                        # the notes' schedule: sum eta = inf, sum eta^2 < inf
+    if y[t] * (theta @ X[t]) <= 1:
         theta = (1 - eta * lam) * theta + eta * y[t] * X[t]
     else:
         theta = (1 - eta * lam) * theta
+    if risk(theta) < best_risk:              # keep the best theta seen so far
+        best, best_risk = theta.copy(), risk(theta)
     if k in (1, 10, 100, 500):
-        hinge = np.maximum(0, 1 - y * (X @ theta)).mean()
-        print(f"step {k:3d}: theta = {np.round(theta, 3)}, ||theta|| = {np.linalg.norm(theta):.3f}, average hinge = {hinge:.3f}")
+        print(f"step {k:3d}: theta = {np.round(theta, 3)}, average hinge = {risk(theta):.3f}, best so far = {best_risk:.3f}")
 
-# Try: set lam = 1.0. How does ||theta|| at step 500 compare?`,
+# Try: use a fixed eta = 0.1 (popular in practice). Does the current risk bounce more than the best-so-far?`,
 
   'linear-regression': py`import numpy as np
 
@@ -423,15 +426,23 @@ print("predictions:", theta1 * xs + theta0)
 # Learning theta by gradient descent: fit y = theta x to (1, 2) and (2, 3)
 X = np.array([1.0, 2.0])
 y = np.array([2.0, 3.0])
-theta, alpha = 0.0, 0.1
+theta, alpha = 0.0, 0.2
 for step in range(1, 31):
-    grad = -2 * np.mean((y - theta * X) * X)     # derivative of the mean squared error
+    grad = -np.mean((y - theta * X) * X)         # gradient of R_n with the loss z^2/2 (Week 2 notes)
     theta -= alpha * grad
     if step <= 2 or step % 10 == 0:
         print(f"step {step:2d}: theta = {theta:.4f}")
 print("normal equation answer:", (X @ y) / (X @ X))
 
-# Try: which theta0 would make the residual at x = 3 zero? Then try alpha = 0.5 in the loop.`,
+# Stochastic gradient descent, as in the notes: one random example per step, eta_k = 1/(k+1)
+rng = np.random.default_rng(0)
+theta = 0.0
+for k in range(1, 2001):
+    t = rng.integers(len(X))
+    theta += (1 / (k + 1)) * (y[t] - theta * X[t]) * X[t]
+print("SGD after 2000 steps:", round(theta, 3))
+
+# Try: which theta0 would make the residual at x = 3 zero? Then try alpha = 1.0 in the gradient loop.`,
 
   'polynomial-regression': py`import numpy as np
 
@@ -526,6 +537,11 @@ plt.axhline(0.5, linestyle="--", color="gray")
 plt.scatter([score], [prob], color="red", zorder=3)
 plt.xlabel("score s"); plt.ylabel("probability"); plt.title("Sigmoid")
 
+# Lesson 4 examples: theta = (-3, 1, 1) at (1, 1), and the score -1 + x1^2 + x2^2 at (2, 2)
+for name, z in [("(1, 1), straight boundary", -3 + 1 + 1), ("(2, 2), circular boundary", -1 + 2**2 + 2**2)]:
+    p = sigmoid(z)
+    print(f"{name}: score {z}, P(y = 1) = {p:.4f}, P(y = 0) = {1 - p:.4f}, predict {int(z >= 0)}")
+
 # Try: which score gives probability exactly 0.5?`,
 
   'logistic-loss': py`import numpy as np
@@ -571,6 +587,12 @@ print(f"precision   = {precision:.3f}")
 print(f"recall      = {recall:.3f}")
 print(f"specificity = {specificity:.3f}")
 print(f"F1          = {f1:.3f}")
+
+# The cat table from Lesson 4
+TP, FP, TN, FN = 11, 2, 9, 3
+accuracy = (TP + TN) / (TP + TN + FP + FN)
+print(f"cat table: accuracy {accuracy:.3f}, error rate {1 - accuracy:.3f}, precision {TP / (TP + FP):.3f}, "
+      f"recall {TP / (TP + FN):.3f}, specificity {TN / (TN + FP):.3f}")
 
 # Try: a model that always predicts negative has TP = FP = 0. Compute its accuracy and recall.`,
 
@@ -1671,4 +1693,29 @@ for center in [1.0, 2.0, 3.0]:
     print(f"inputs centred at {center}: accuracy {np.mean(pred == yv):.3f}")
 
 # Try: retrain on data centred at 3.0. Does the accuracy there recover?`,
+
+  'ml-landscape': py`import numpy as np
+
+# A tiny table in the style of the Lesson 1 case study: rows are tumours, columns are features
+rng = np.random.default_rng(0)
+n, d = 8, 3                                   # the real data set has 30 features per tumour
+X = rng.normal(size=(n, d))
+recurred = np.where(X[:, 0] + 0.5 * X[:, 1] > 0, 1, -1)       # classification target: +1 = R, -1 = N
+months = np.round(24 + 6 * X[:, 2] - 4 * X[:, 0], 1)          # regression target: months until recurrence
+print("feature matrix X: shape", X.shape, "(examples x features)")
+print("classification labels:", recurred)
+print("regression targets:  ", months)
+
+# Supervised learning fits a mapping for each target
+Xb = np.c_[X, np.ones(n)]                                     # a constant feature for the offset
+w_reg = np.linalg.lstsq(Xb, months, rcond=None)[0]
+print("regression fit (least squares):", np.round(w_reg, 2))
+theta = np.zeros(d + 1)
+for _ in range(20):                                           # perceptron for the class label
+    for t in range(n):
+        if recurred[t] * (theta @ Xb[t]) <= 0:
+            theta += recurred[t] * Xb[t]
+print("classifier training errors:", int(np.sum(recurred * (Xb @ theta) <= 0)))
+
+# Try: shift the new tumours' features by +2 (X + 2). Do the classifier's predictions still make sense?`,
 };

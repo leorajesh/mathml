@@ -91,6 +91,7 @@ const plotAxes = {
   biasVariance: { x: 'polynomial degree (0 to 9)', y: 'error' },
   roc: { x: '', y: '' },
   driftRetrain: { x: 'months after deployment (0 to 24)', y: 'accuracy (%)' },
+  mlopsPhases: { x: '', y: '' },
 };
 
 function renderCanvas(content, axes) {
@@ -181,6 +182,7 @@ function renderGraph(type, values) {
     case 'biasVariance': return BiasVarianceGraph({ values });
     case 'roc': return RocGraph({ values });
     case 'driftRetrain': return DriftRetrainGraph({ values });
+    case 'mlopsPhases': return MlopsPhasesGraph({ values });
     default: return null;
   }
 }
@@ -1379,5 +1381,35 @@ function DriftRetrainGraph({ values }) {
   return {
     content: <g><path className="axis" d={`M ${sx(X(0))} ${sy(Y(0))} L ${sx(X(24))} ${sy(Y(0))}`} />{[0, 6, 12, 18, 24].map((m) => <text key={m} x={sx(X(m))} y={sy(Y(0)) + 16} textAnchor="middle">{m}</text>)}{[0, 50, 100].map((a) => <text key={a} x={sx(X(0)) - 6} y={sy(Y(a)) + 4} textAnchor="end">{a}</text>)}<path className="noise-line" d={linePath([{ x: X(0), y: Y(A0) }, { x: X(24), y: Y(A0) }])} /><path className="boundary" d={linePath(points)} /></g>,
     readout: [`average accuracy over two years: ${(sum / samples).toFixed(2)}%`, `${retrains} retrains in two years${interval >= 24 ? ' (never retrained)' : ''}`, `accuracy just before each retrain (or at month 24): ${Math.max(A0 - decay * Math.min(interval, 24), 0).toFixed(1)}%`],
+  };
+}
+
+// The three MLOps phases from the Lesson 1 slides, with the activities of the selected phase.
+const mlopsPhases = [
+  { name: 'Data phase', items: ['business understanding', 'data understanding', 'design the ML software'], detail: 'business understanding, data understanding, and designing the ML-powered software', skill: 'domain knowledge, data engineering' },
+  { name: 'Model phase', items: ['data engineering', 'model engineering', 'a stable, quality model'], detail: 'data engineering and model engineering, delivering a stable, quality model to run in production', skill: 'machine learning' },
+  { name: 'Operations phase', items: ['deploy to production', 'testing, versioning', 'delivery, monitoring'], detail: 'deploying the model, testing, versioning, continuous delivery, and monitoring', skill: 'software development, operations' },
+];
+
+function MlopsPhasesGraph({ values }) {
+  const active = Math.round(values.phase) - 1;
+  const boxW = 170;
+  const lefts = [40, 235, 430];
+  return {
+    content: (
+      <g>
+        {mlopsPhases.map((phase, index) => (
+          <g key={phase.name}>
+            <rect className={index === active ? 'phase-box active' : 'phase-box'} x={lefts[index]} y={70} width={boxW} height={170} rx="12" />
+            <text className="node-label" x={lefts[index] + boxW / 2} y={98} textAnchor="middle">{phase.name}</text>
+            {phase.items.map((item, k) => <text key={item} x={lefts[index] + 12} y={130 + k * 26} className={index === active ? 'phase-item active' : 'phase-item'}>• {item}</text>)}
+            {index < 2 && <path className="flow-line" d={`M ${lefts[index] + boxW + 4} 155 L ${lefts[index + 1] - 4} 155`} />}
+          </g>
+        ))}
+        <path className="loop-back" d={`M ${lefts[2] + boxW / 2} 244 C ${lefts[2] + boxW / 2} 320, ${lefts[0] + boxW / 2} 320, ${lefts[0] + boxW / 2} 244`} />
+        <text className="graph-note" x="320" y="312" textAnchor="middle">monitoring feeds new data and retraining: the lifecycle is a cycle</text>
+      </g>
+    ),
+    readout: [`${mlopsPhases[active].name}: ${mlopsPhases[active].detail}`, `skills most used here: ${mlopsPhases[active].skill}`, 'an MLOps engineer mixes software development, machine learning, and data engineering'],
   };
 }

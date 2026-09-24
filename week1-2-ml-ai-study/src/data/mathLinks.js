@@ -62,13 +62,13 @@ export const mathLinks = {
   ],
   momentum: [
     use('taylor-hessian', 'A narrow valley is a Hessian whose eigenvalues differ a lot (a large condition number kappa).'),
-    use('eigenvalues-eigenvectors', 'Along each eigenvector of a quadratic loss, each gradient step multiplies the error by its own factor 1 - alpha lambda_i.'),
+    use('eigenvalues-eigenvectors', 'Along each eigenvector of a quadratic loss, a plain gradient step multiplies the error by 1 - gamma lambda_i, so gamma < 2/lambda_max; the flat directions (small lambda_i) then shrink slowly, and momentum speeds them up.'),
   ],
   subgradients: [
     use('derivatives', 'A subgradient extends the derivative to corners, where a whole range of slopes fits under the function.'),
   ],
   'stochastic-subgradient-descent': [
-    use('loss-gradients', 'Each step uses a subgradient of one example\'s regularized hinge loss (the hinge has a corner).'),
+    use('loss-gradients', 'Each step uses a subgradient of one example\'s hinge loss (plus lambda theta if the SVM penalty is added); the hinge has a corner.'),
     use('partial-derivatives-gradient', 'On average the one-example gradient equals the full gradient, so the steps point downhill on average.'),
   ],
   'lagrange-multipliers': [
@@ -85,7 +85,7 @@ export const mathLinks = {
   ],
   'least-squares-normal-equation': [
     use('orthogonal-projections', 'The fitted values X theta_hat are the orthogonal projection of y onto the column space of X.'),
-    use('loss-gradients', 'Setting the gradient -2(y - X theta)^T X to zero gives the normal equation X^T X theta = X^T y.'),
+    use('loss-gradients', 'Setting the gradient -(1/n) X^T (y - X theta) of R_n to zero gives the normal equation X^T X theta = X^T y.'),
     use('invertible-transformations', 'The formula (X^T X)^(-1) X^T y needs X^T X to be invertible, which holds when the columns of X are linearly independent (full column rank).'),
     use('rank-nullity', 'X^T X is invertible exactly when rank(X) equals the number of features.'),
   ],
@@ -95,7 +95,7 @@ export const mathLinks = {
     use('pca', 'PCA looks for directions of largest variance, so features must be standardized first or the largest-unit feature wins.'),
   ],
   'ridge-regularization': [
-    use('norms', 'The penalty lambda ||theta||_2^2 is a squared Euclidean norm.'),
+    use('norms', 'The penalty (lambda/2)||theta||_2^2 is half a squared Euclidean norm.'),
     use('eigenvalues-eigenvectors', 'X^T X has eigenvalues >= 0; adding n lambda I (lambda > 0) raises each by n lambda, since A + cI has eigenvalues lambda_i + c, so the matrix is always invertible.'),
     use('spectral-theorem', 'X^T X is symmetric, so it has orthogonal eigenvectors; ridge shrinks the fit most along the directions with small eigenvalues.'),
   ],

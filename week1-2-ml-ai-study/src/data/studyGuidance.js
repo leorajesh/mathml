@@ -12,8 +12,6 @@ export const advancedConceptIds = new Set([
   'projections-gram-schmidt',
   'lasso',
   'elastic-net',
-  'train-validation-test',
-  'cross-validation',
   'affine-maps',
   'dimensionality-reduction',
   'diagonalization',
@@ -25,7 +23,6 @@ export const advancedConceptIds = new Set([
   'svd',
   'lasso-elastic-net',
   'classification-metrics',
-  'validation-cross-validation',
   'affine-dimensionality-reduction',
   'eigenvalues-eigenvectors',
   'diagonalization-pagerank',
@@ -191,7 +188,7 @@ export const guidedSelfChecks = {
 
   'ml-workflow': [
     { question: 'Can you explain why memorizing the training set is not the same as learning?', answer: 'Memorization can make training error zero without giving a rule that works on unseen examples. Learning means finding a hypothesis that generalizes beyond the sample.' },
-    { question: 'Can you name the six ML design choices in order?', answer: 'Problem/input-output definition, feature representation, hypothesis class, loss, optimization method, and generalization/evaluation strategy.' },
+    { question: 'Can you name the five design steps from the slides, in order?', answer: 'Decide the input-output pairs, decide how to encode inputs and outputs, choose a hypothesis class, choose an error (cost) function, and choose a learning algorithm. All of them serve the goal of generalizing to new data.' },
   ],
   'linear-classifier-through-origin': [
     { question: 'What changes when the bias term theta_0 is removed?', answer: 'The decision boundary becomes theta dot x = 0, so it must pass through the origin. The classifier can rotate the boundary but cannot shift it.' },

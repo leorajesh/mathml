@@ -956,12 +956,13 @@ print("brute-force minimizer:", round(grid[np.argmin(objective)], 4))
   'train-validation-test': py`import numpy as np
 
 rng = np.random.default_rng(0)
-n = 1000
-x = rng.uniform(-1, 1, (n, 5))
-y = x @ np.array([2.0, -1.0, 0.0, 0.0, 0.5]) + 0.5 * rng.normal(size=n)
+n, d = 400, 40                      # many features, few training examples: regularization helps
+x = rng.uniform(-1, 1, (n, d))
+true_theta = np.zeros(d); true_theta[:3] = [2.0, -1.0, 0.5]
+y = x @ true_theta + 1.0 * rng.normal(size=n)
 
 order = rng.permutation(n)
-train, val, test = order[:600], order[600:800], order[800:]
+train, val, test = order[:60], order[60:230], order[230:]
 print("sizes:", len(train), len(val), len(test))
 
 # The page's example: choose the lambda with the lowest validation error
@@ -972,7 +973,7 @@ print("page example -> chosen lambda:", min(page_scores, key=page_scores.get))
 
 def fit_ridge(idx, lam):
     X = x[idx]
-    return np.linalg.solve(X.T @ X + len(idx) * lam * np.eye(5), X.T @ y[idx])
+    return np.linalg.solve(X.T @ X + len(idx) * lam * np.eye(d), X.T @ y[idx])
 
 def mse(theta, idx):
     return np.mean((x[idx] @ theta - y[idx]) ** 2)
@@ -1649,7 +1650,7 @@ pos = np.array([0.9, 0.8, 0.4])
 neg = np.array([0.7, 0.3, 0.2])
 
 for t in [0.75, 0.5, 0.35]:
-    print(f"threshold {t}: TPR = {np.mean(pos > t):.3f}, FPR = {np.mean(neg > t):.3f}")
+    print(f"threshold {t}: TPR = {np.mean(pos >= t):.3f}, FPR = {np.mean(neg >= t):.3f}")
 
 # AUC = fraction of positive-negative pairs ranked correctly (ties count 1/2)
 pairs = [(p > n) + 0.5 * (p == n) for p in pos for n in neg]
@@ -1670,7 +1671,7 @@ print("AUC by the trapezoid rule:", round(np.trapezoid(tpr, fpr) if hasattr(np, 
 
 # Accuracy decay and retraining (the page's example)
 A0, decay = 92.0, 1.5
-months = np.arange(0, 24, 0.01)
+months = np.arange(0.005, 24, 0.01)   # midpoints, so the averages are exact
 for T in [1, 3, 6, 24]:
     acc = A0 - decay * (months % T)
     print(f"retrain every {T:2d} months: average accuracy {acc.mean():.2f}%, retrains in 2 years: {int(np.ceil(24 / T)) - 1}")
@@ -1688,6 +1689,7 @@ for _ in range(3000):                          # logistic regression by gradient
     p = 1 / (1 + np.exp(-X @ w))
     w -= 0.5 * X.T @ (p - y_tr) / len(y_tr)
 for center in [1.0, 2.0, 3.0]:
+    # P(y|x) never changes; accuracy drops because a linear model is only a good approximation near the training inputs
     x, yv = make(2000, center)
     pred = (np.c_[np.ones_like(x), x] @ w > 0).astype(int)
     print(f"inputs centred at {center}: accuracy {np.mean(pred == yv):.3f}")

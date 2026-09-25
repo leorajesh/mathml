@@ -94,6 +94,8 @@ export const codingGuides = {
       'alpha = 2 / (mu + L)\nprint("best step", alpha, " rate per step", (L / mu - 1) / (L / mu + 1))'),
     step('Decide when to stop', 'Stop when the gradient is tiny compared with where you started, with a maximum number of steps as a safety net. Check for divergence by the gradient growing far beyond its starting size, not only for inf or nan: a step slightly above 2/L diverges slowly and can run all the steps without overflowing. If the cap is reached, report that it did not converge.',
       'theta = np.zeros(2)\ng0 = np.linalg.norm(grad(theta))\nconverged = False\nfor k in range(10_000):\n    g = grad(theta)\n    if np.linalg.norm(g) < 1e-8 * max(1.0, g0):\n        converged = True\n        break\n    if not np.isfinite(g).all() or np.linalg.norm(g) > 1e6 * g0:\n        raise RuntimeError(f"diverged at step {k}: use a smaller step")\n    theta = theta - alpha * g\nif not converged:\n    print("did not converge in 10,000 steps: do not trust theta")\nprint(k, "steps, theta =", theta, " exact", np.linalg.solve(A, b))'),
+    step('Predict how many steps you need', 'With alpha = 1/L the slowest direction shrinks by 1 - mu/L per step, so cutting the error to epsilon takes about kappa ln(1/epsilon) steps. Compute it before you run: a huge number means rescale the features, add a ridge penalty, or use momentum.',
+      'kappa = L / mu\nprint("kappa", kappa, " steps for 1e-6 with alpha = 1/L:", int(np.ceil(np.log(1e-6) / np.log(1 - 1 / kappa))))'),
   ],
   'momentum': [
     step('Tune the two settings together', 'With curvatures from mu to L (kappa = L/mu), the classical choice gamma = 4/(sqrt(L) + sqrt(mu))^2, alpha = ((sqrt(kappa) - 1)/(sqrt(kappa) + 1))^2 shrinks the error by about (sqrt(kappa) - 1)/(sqrt(kappa) + 1) per step, instead of (kappa - 1)/(kappa + 1). Without the eigenvalues, try alpha from 0.5 to 0.9 and raise gamma: momentum stays stable up to gamma < 2(1 + alpha)/L.',
@@ -213,6 +215,8 @@ export const codingGuides = {
   'least-squares-normal-equation': [
     step('Solve, do not invert', 'Build X with a column of ones and solve X^T X w = X^T y with np.linalg.solve, or better np.linalg.lstsq, which also copes with nearly dependent columns. Forming the inverse is slower and less accurate.',
       'rng = np.random.default_rng(1)\nx = rng.uniform(0, 10, 30); y = 2 + 3 * x + rng.normal(0, 1, 30)\nX = np.c_[np.ones(len(x)), x]\nw_solve = np.linalg.solve(X.T @ X, X.T @ y)\nw_lstsq = np.linalg.lstsq(X, y, rcond=None)[0]\nprint(w_solve, w_lstsq)'),
+    step('Report RMSE, MAE and R^2 on test data', 'Fit on the training rows only and report all three on the test rows. R^2 uses the test mean as its baseline, as scikit-learn\'s r2_score does; it can be negative there.',
+      'train, test = np.arange(20), np.arange(20, 30)\nw = np.linalg.lstsq(X[train], y[train], rcond=None)[0]\nr = y[test] - X[test] @ w\nrmse, mae = np.sqrt(np.mean(r ** 2)), np.mean(np.abs(r))\nr2 = 1 - np.sum(r ** 2) / np.sum((y[test] - y[test].mean()) ** 2)\nprint(round(rmse, 3), round(mae, 3), round(r2, 3))'),
   ],
   'polynomial-regression': [
     step('The design matrix by hand', 'For the normal equation, standardize x with the training mean and standard deviation, then stack the powers as columns with np.vander (a first column of ones included) and solve by least squares.',
@@ -314,5 +318,20 @@ export const codingGuides = {
   'feature-representation': [
     step('Encode categories and numbers together', 'In scikit-learn a ColumnTransformer applies one-hot encoding to the categorical columns and scaling to the numeric ones, and a Pipeline fits both on training data only. handle_unknown="ignore" turns a category never seen in training into all zeros instead of an error.',
       'from sklearn.compose import ColumnTransformer\nfrom sklearn.preprocessing import OneHotEncoder, StandardScaler\nfrom sklearn.pipeline import Pipeline\nfrom sklearn.linear_model import LogisticRegression\nX = np.array([[25, "basic"], [40, "premium"], [33, "standard"], [51, "basic"], [29, "premium"], [45, "standard"]], dtype=object)\ny = np.array([0, 1, 0, 1, 0, 1])\npre = ColumnTransformer([("num", StandardScaler(), [0]), ("cat", OneHotEncoder(handle_unknown="ignore"), [1])])\nmodel = Pipeline([("pre", pre), ("clf", LogisticRegression())]).fit(X, y)\nprint(model.predict_proba(np.array([[38, "enterprise"]], dtype=object)).round(3))   # unseen category: no error'),
+  ],
+  'multicollinearity': [
+    step('Look at the correlations and eigenvalues', 'Standardize with the training statistics, then take the correlation matrix C = Z^T Z / n. Its smallest eigenvalues, and the biggest entries of their eigenvectors, name the features that nearly duplicate each other.',
+      'from sklearn.datasets import load_diabetes\nX, y = load_diabetes(return_X_y=True, scaled=False)\nnames = ["age", "sex", "BMI", "BP", "TC", "LDL", "HDL", "TCH", "LTG", "GLU"]\nZ = (X - X.mean(0)) / X.std(0)\nC = Z.T @ Z / len(Z)\nev, V = np.linalg.eigh(C)                 # ascending\nprint("smallest eigenvalue", ev[0].round(4), " kappa", round(ev[-1] / ev[0]))\nprint([(names[j], round(float(V[j, 0]), 2)) for j in np.argsort(-np.abs(V[:, 0]))[:4]])'),
+    step('Variance inflation factors', 'VIF_j is the j-th diagonal entry of the inverse correlation matrix. Values above about 10 say that feature j is almost a linear combination of the others.',
+      'vif = np.diag(np.linalg.inv(C))\nprint({names[j]: round(float(vif[j]), 1) for j in np.argsort(-vif)[:4]})'),
+    step('Fix it with ridge and check the weights settle', 'Add lambda to the diagonal and solve again; refit on bootstrap resamples to see the spread of a weight shrink. Choose lambda by cross-validation, not by how the weights look.',
+      'rng = np.random.default_rng(0)\nn = len(y)\nfor lam in [0.0, 0.4]:\n    w = []\n    for _ in range(200):\n        i = rng.integers(0, n, n)                  # one bootstrap resample of patients\n        Zi, yi = Z[i] - Z[i].mean(0), y[i] - y[i].mean()\n        w.append(np.linalg.solve(Zi.T @ Zi / n + lam * np.eye(10), Zi.T @ yi / n)[4])\n    print("lambda", lam, " sd of the TC weight over 200 resamples", round(np.std(w), 1))'),
+  ],
+  'bootstrap': [
+    step('Resample rows, not values', 'Draw n row indices with replacement and index every array with the same indices, so each example keeps its features and label together.',
+      'rng = np.random.default_rng(0)\nX = rng.normal(size=(100, 2)); y = X @ [1.0, -2.0] + rng.normal(0, 1, 100)\nB, n = 1000, len(y)\nw = np.array([np.linalg.lstsq(X[i], y[i], rcond=None)[0] for i in (rng.integers(0, n, n) for _ in range(B))])\nprint("bootstrap SE of the weights", w.std(0, ddof=1).round(3))\nprint("95% interval for the first weight (true value 1.0)", np.percentile(w[:, 0], [2.5, 97.5]).round(3))'),
+    step('Compare two models on the same resamples', 'Score both models on each resample of the test rows and look at the interval of the difference. If it contains 0, the test set cannot tell the models apart.',
+      'err_a = rng.normal(0, 1.0, 200); err_b = 0.97 * err_a + rng.normal(0, 0.2, 200)\nd = []\nfor _ in range(B):\n    i = rng.integers(0, 200, 200)\n    d.append(np.sqrt(np.mean(err_a[i] ** 2)) - np.sqrt(np.mean(err_b[i] ** 2)))\nprint("95% interval of RMSE(A) - RMSE(B)", np.percentile(d, [2.5, 97.5]).round(3))'),
+    step('Resample what is independent', 'If one patient has several rows, draw patients and keep all their rows; for time series, draw whole blocks of consecutive days. Resampling single rows would make the intervals too narrow.'),
   ],
 };

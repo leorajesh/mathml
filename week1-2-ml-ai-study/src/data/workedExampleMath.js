@@ -184,6 +184,7 @@ export const workedExampleMath = {
     tex`X^Ty=1\cdot2+2\cdot3=8`,
     tex`\hat\theta=\frac{8}{5}=1.6,\quad \hat y=[1.6,3.2]`,
     tex`y-\hat y=\begin{bmatrix}0.4\\-0.2\end{bmatrix},\quad X^T(y-\hat y)=1\cdot0.4+2\cdot(-0.2)=0`,
+    tex`\operatorname{RMSE}=\sqrt{\tfrac{0.16+0.04}{2}}\approx0.316,\quad \operatorname{MAE}=\tfrac{0.4+0.2}{2}=0.3,\quad R^2=1-\frac{0.2}{(2-2.5)^2+(3-2.5)^2}=1-\frac{0.2}{0.5}=0.6`,
   ],
   'ridge-regularization': [
     tex`X^TX=5,\quad X^Ty=8`,
@@ -320,6 +321,7 @@ export const workedExampleMath = {
     tex`J'(\theta)=2(\theta-3),\quad J'(0)=-6`,
     tex`\theta^{(1)}=0-0.2(-6)=1.2`,
     tex`J'(1.2)=-3.6,\quad \theta^{(2)}=1.2-0.2(-3.6)=1.92,\quad |\theta-3|:\ 3\to1.8\to1.08`,
+    tex`\kappa=\frac{4.07}{0.0088}\approx464,\qquad k\approx\kappa\ln10^{6}=464\times13.8\approx6400`,
   ],
   'subgradients': [
     tex`f(\theta)=|\theta-2|,\quad \theta^{(0)}=0,\quad \alpha=0.5`,
@@ -524,5 +526,20 @@ export const workedExampleMath = {
     tex`y^{(t)}\in\{R,N\}\ \to\ \{+1,-1\}\quad\text{(classification)}`,
     tex`y^{(t)}\in\mathbb{R}_{\ge0}\ \text{(months)}\quad\text{(regression)}`,
     null,
+  ],
+  'multicollinearity': [
+    tex`C=\begin{bmatrix}1&0.95\\0.95&1\end{bmatrix}`,
+    tex`\lambda_1=1.95,\ v_1=\tfrac{1}{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix};\qquad \lambda_2=0.05,\ v_2=\tfrac{1}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix};\qquad \kappa=\frac{1.95}{0.05}=39`,
+    tex`\operatorname{Var}(v_1^T\hat\theta)=\frac{\sigma^2}{1.95\,n}\approx0.51\,\frac{\sigma^2}{n},\qquad \operatorname{Var}(v_2^T\hat\theta)=\frac{\sigma^2}{0.05\,n}=20\,\frac{\sigma^2}{n}`,
+    tex`\operatorname{VIF}=\frac{1}{1-0.95^2}=\frac{1}{0.0975}\approx10.3`,
+    tex`\frac{0.05}{0.05+0.1}\approx0.33,\qquad \frac{1.95}{1.95+0.1}\approx0.95,\qquad \kappa_{\text{ridge}}=\frac{2.05}{0.15}\approx13.7`,
+    null,
+  ],
+  'bootstrap': [
+    tex`\bar x=\frac{2+4+9}{3}=5`,
+    tex`(2,9,9)\mapsto6.67,\qquad (4,4,2)\mapsto3.33,\qquad 3^3=27\text{ resamples}`,
+    tex`\operatorname{Var}(\bar x^{*})=\frac{1}{3}\cdot\frac{(2-5)^2+(4-5)^2+(9-5)^2}{3}=\frac{26}{9}\approx2.89,\qquad \widehat{\operatorname{SE}}_{\text{boot}}\approx1.70`,
+    tex`\Bigl(\tfrac23\Bigr)^3\approx0.30,\qquad \Bigl(1-\tfrac1n\Bigr)^n\to e^{-1}\approx0.368`,
+    tex`\operatorname{RMSE}_{\text{OLS}}-\operatorname{RMSE}_{\text{ridge}}=-0.12,\qquad 95\%\text{ interval }[-2.54,\ 2.00]\ni0`,
   ],
 };

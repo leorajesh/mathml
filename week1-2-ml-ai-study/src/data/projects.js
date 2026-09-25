@@ -656,4 +656,146 @@ for month in range(1, 9):
 print("registry:", sorted(f for f in os.listdir(registry) if f.endswith(".json")))`,
     expected: "baseline (predict no churn): accuracy 0.792, cost 625\nmodel at t* = 0.20 (formula C_FP/(C_FP+C_FN) = 0.17): recall 0.736, precision 0.300, specificity 0.547, AUC 0.716, cost 380\nmonth 1: spend PSI 0.089 (alarm > 0.100), AUC 0.707  -\nmonth 2: spend PSI 0.338 (alarm > 0.100), AUC 0.691  alarm, but the old model is still better\nmonth 3: spend PSI 0.691 (alarm > 0.100), AUC 0.700  alarm, but the old model is still better\nmonth 4: spend PSI 1.264 (alarm > 0.100), AUC 0.743  alarm, but the old model is still better\nmonth 5: spend PSI 2.745 (alarm > 0.100), AUC 0.746  alarm, but the old model is still better\nmonth 6: spend PSI 2.741 (alarm > 0.100), AUC 0.481  retrained -> v002 (AUC 0.444 -> 0.696)\nmonth 7: spend PSI 0.049 (alarm > 0.100), AUC 0.721  -\nmonth 8: spend PSI 0.216 (alarm > 0.100), AUC 0.714  alarm, but the old model is still better\nregistry: ['model_v001.json', 'model_v002.json']",
   },
+  "diabetes": {
+    anchor: "multicollinearity",
+    title: "Who will get worse? Diabetes progression on real data",
+    intro: "A student capstone on scikit-learn's diabetes data (442 patients, 10 correlated measurements): least squares, curvature, eigenvalues, ridge and the bootstrap, each explaining something the model does, ending in a screening flag checked on held-out patients.",
+    steps: [
+      { label: "Real data, locked test set", text: "442 patients in raw units; 111 are set aside first, and every scaler, lambda and threshold is chosen from the other 331.", pages: ["feature-scaling", "train-validation-test"] },
+      { label: "Least squares and the dot product", text: "Solve the normal equation, check the residual is perpendicular to every column, and split one prediction into its feature terms.", pages: ["least-squares-normal-equation", "vectors-dot-product"] },
+      { label: "Curvature forecasts gradient descent", text: "The Hessian's eigenvalues give kappa = 464 after standardizing (5e7 in raw units) and predict the number of steps: 6,408 forecast for step 1/L, 5,883 observed.", pages: ["gradient-descent-method", "taylor-hessian", "convex-functions"] },
+      { label: "The hidden near-dependency", text: "The smallest eigenvalue, 0.0088, points at the cholesterol tests; their VIFs reach 58, so their weights are unstable.", pages: ["multicollinearity", "eigenvalues-eigenvectors"] },
+      { label: "Ridge, cross-validation and the bootstrap", text: "Choose lambda by 5-fold CV with the one-standard-error rule; kappa falls to 10 and the bootstrap spread of the TC weight from 22.0 to 1.5.", pages: ["ridge-regularization", "cross-validation", "bootstrap", "bias-variance"] },
+      { label: "Test once, then screen", text: "RMSE, MAE and R^2 on the test set, a paired bootstrap interval showing OLS and ridge tie, and a screening flag whose recall and precision are linked by Bayes' rule.", pages: ["classification-metrics", "probability-basics", "roc-auc"] },
+    ],
+    code: py`# End-to-end: who will get worse? One-year diabetes progression, with the maths doing the work
+import numpy as np
+from sklearn.datasets import load_diabetes
+
+rng = np.random.default_rng(42)
+names = ["age", "sex", "BMI", "BP", "TC", "LDL", "HDL", "TCH", "LTG", "GLU"]
+rmse = lambda y, p: np.sqrt(np.mean((y - p) ** 2))
+mae = lambda y, p: np.mean(np.abs(y - p))
+r2 = lambda y, p: 1 - np.sum((y - p) ** 2) / np.sum((y - y.mean()) ** 2)
+
+# 1. Real data in raw units; lock a test set first, standardize with training statistics only
+X_all, y_all = load_diabetes(return_X_y=True, scaled=False)
+perm = rng.permutation(len(y_all))
+Xtr_raw, ytr = X_all[perm[111:]], y_all[perm[111:]]
+Xte_raw, yte = X_all[perm[:111]], y_all[perm[:111]]
+n, d = Xtr_raw.shape
+mu, sd = Xtr_raw.mean(0), Xtr_raw.std(0)
+Ztr, Zte = (Xtr_raw - mu) / sd, (Xte_raw - mu) / sd
+Xtr, Xte = np.c_[np.ones(n), Ztr], np.c_[np.ones(len(yte)), Zte]
+Xtr_rawd = np.c_[np.ones(n), Xtr_raw]
+T_high = np.percentile(ytr, 75)                     # "high risk" = top quarter of training targets
+print(f"n = {n} training and {len(yte)} test patients, d = {d}; high-risk cut-off T = {T_high:.1f}")
+
+# 2. Least squares: solve the normal equation, check the projection, read one prediction term by term
+A, b = Xtr.T @ Xtr / n, Xtr.T @ ytr / n
+theta = np.linalg.solve(A, b)
+res = ytr - Xtr @ theta
+print(f"residual perpendicular to every column: max |X^T r|/n = {np.abs(Xtr.T @ res).max() / n:.1e}")
+print(f"train RMSE {rmse(ytr, Xtr @ theta):.2f}, R^2 {r2(ytr, Xtr @ theta):.3f}")
+k = int(np.argmax(Xte @ theta))
+terms = theta[1:] * Zte[k]
+top = np.argsort(-np.abs(terms))[:3]
+print(f"patient {k}: {theta[0]:.1f} + {terms.sum():.1f} = {Xte[k] @ theta:.1f} (actual {yte[k]:.0f}); largest terms",
+      ", ".join(f"{names[j]} {terms[j]:+.1f}" for j in top))
+
+# 3. Curvature: the Hessian (1/n) X^T X predicts how gradient descent behaves
+lam = np.linalg.eigvalsh(A)
+L, m = lam.max(), lam.min()
+H_raw = Xtr_rawd.T @ Xtr_rawd / n
+lam_raw = np.linalg.eigvalsh(H_raw)
+print(f"standardized: L = {L:.3f}, mu = {m:.4f}, kappa = {L / m:.0f}; raw units: kappa = {lam_raw.max() / lam_raw.min():.2e}")
+
+def gd(X, alpha, target, start=None, steps=3000):
+    th = np.zeros(X.shape[1]) if start is None else start.copy()
+    for s in range(steps):
+        th = th - alpha * X.T @ (X @ th - ytr) / n
+        err = np.linalg.norm(th - target) / np.linalg.norm(target)
+        if not np.isfinite(err) or err > 1e6:
+            return th, "diverged"
+        if err < 1e-6:
+            return th, f"{s + 1} steps"
+    return th, f"not converged, relative error {err:.1e}"
+
+theta_raw = np.linalg.solve(H_raw, Xtr_rawd.T @ ytr / n)
+rate = (L / m - 1) / (L / m + 1)
+print(f"GD step 2/(mu+L): forecast {np.log(1e-6) / np.log(rate):.0f} steps, observed", gd(Xtr, 2 / (L + m), theta)[1])
+print(f"GD step 1/L: forecast {np.log(1e-6) / np.log(1 - m / L):.0f} steps (rate 1 - mu/L), observed", gd(Xtr, 1 / L, theta, steps=8000)[1])
+print("GD step 2.05/L:", gd(Xtr, 2.05 / L, theta)[1], "| raw units, step 1/L_raw:", gd(Xtr_rawd, 1 / lam_raw.max(), theta_raw)[1])
+starts = [rng.normal(scale=200, size=d + 1) for _ in range(5)]
+print(f"convex: 5 random starts end within {max(np.linalg.norm(gd(Xtr, 2 / (L + m), theta, s0)[0] - theta) for s0 in starts):.1e} of theta_hat")
+
+# 4. Multicollinearity: the smallest eigenvalue and the variance inflation factors
+S = Ztr.T @ Ztr / n                                 # correlation matrix of the features
+ev, V = np.linalg.eigh(S)
+v = V[:, 0]
+print(f"smallest eigenvalue {ev[0]:.4f}; its eigenvector loads on",
+      ", ".join(f"{names[j]} {v[j]:+.2f}" for j in np.argsort(-np.abs(v))[:4]))
+print(f"eigen-expansion: noise along that direction is amplified 1/lambda_min = {1 / ev[0]:.0f} times, vs {1 / ev[-1]:.2f} along the top one")
+vif = np.diag(np.linalg.inv(S))
+print("VIF = 1/(1 - R_j^2):", ", ".join(f"{names[j]} {vif[j]:.0f}" for j in np.argsort(-vif)[:4]))
+
+# 5. Ridge: choose lambda by 5-fold CV (one-standard-error rule), then measure the variance by bootstrap
+def fit_ridge(Xraw, y, lam_):
+    m_, s_ = Xraw.mean(0), Xraw.std(0)
+    Z = (Xraw - m_) / s_
+    w = np.linalg.solve(lam_ * np.eye(d) + Z.T @ Z / len(y), Z.T @ (y - y.mean()) / len(y))
+    return (lambda Xn: y.mean() + ((Xn - m_) / s_) @ w), w
+
+lams = np.logspace(-4, 1, 41)
+folds = np.array_split(rng.permutation(n), 5)
+cv, oof = np.zeros((41, 5)), {}
+for i, lam_ in enumerate(lams):
+    p = np.zeros(n)
+    for f, vi in enumerate(folds):
+        ti = np.setdiff1d(np.arange(n), vi)
+        p[vi] = fit_ridge(Xtr_raw[ti], ytr[ti], lam_)[0](Xtr_raw[vi])   # scaler fitted inside the fold
+        cv[i, f] = rmse(ytr[vi], p[vi])
+    oof[i] = p
+cv_mean, cv_se = cv.mean(1), cv.std(1, ddof=1) / np.sqrt(5)
+best = int(np.argmin(cv_mean))
+i_star = max(i for i in range(41) if cv_mean[i] <= cv_mean[best] + cv_se[best])
+lam_star = lams[i_star]
+print(f"lowest CV RMSE {cv_mean[best]:.2f} at lambda {lams[best]:.4f} (flat curve); one-SE rule: lambda* = {lam_star:.3f}")
+print(f"ridge: smallest eigenvalue {ev[0]:.4f} -> {ev[0] + lam_star:.3f}, kappa {ev[-1] / ev[0]:.0f} -> {(ev[-1] + lam_star) / (ev[0] + lam_star):.0f}")
+jt = [names.index("TC"), names.index("LDL")]
+boot = {"OLS": [], "ridge": []}
+for _ in range(500):
+    bi = rng.integers(0, n, n)                       # resample patients with replacement
+    for key, lam_ in (("OLS", 0.0), ("ridge", lam_star)):
+        boot[key].append(fit_ridge(Xtr_raw[bi], ytr[bi], lam_)[1][jt])
+for key in boot:
+    print(f"bootstrap {key}: sd of the TC weight {np.std(np.array(boot[key])[:, 0]):.1f}, LDL weight {np.std(np.array(boot[key])[:, 1]):.1f}")
+wins = []
+for _ in range(200):                                 # with only 30 patients, variance dominates
+    si = rng.permutation(n)
+    e = [rmse(ytr[si[30:]], fit_ridge(Xtr_raw[si[:30]], ytr[si[:30]], l_)[0](Xtr_raw[si[30:]])) for l_ in (0.0, 0.1)]
+    wins.append(e[1] < e[0])
+print(f"30 training patients: ridge (lambda 0.1) beats OLS in {np.mean(wins):.0%} of 200 repeats")
+
+# 6. The test set, used once: RMSE, MAE, R^2, a paired bootstrap interval, and a screening flag
+p_ols = Xte @ theta
+p_ridge = fit_ridge(Xtr_raw, ytr, lam_star)[0](Xte_raw)
+for label, p in (("training mean", np.full(len(yte), ytr.mean())), ("OLS", p_ols), ("ridge", p_ridge)):
+    print(f"  {label:13s} RMSE {rmse(yte, p):6.2f}  MAE {mae(yte, p):6.2f}  R^2 {r2(yte, p):6.3f}")
+diffs = []
+for _ in range(2000):
+    bi = rng.integers(0, len(yte), len(yte))         # the same resampled patients for both models
+    diffs.append(rmse(yte[bi], p_ols[bi]) - rmse(yte[bi], p_ridge[bi]))
+print(f"RMSE(OLS) - RMSE(ridge) = {rmse(yte, p_ols) - rmse(yte, p_ridge):.2f}, 95% interval [{np.percentile(diffs, 2.5):.2f}, {np.percentile(diffs, 97.5):.2f}]: a tie")
+p_oof, high_tr = oof[i_star], ytr > T_high
+t_flag = max(t for t in p_oof if np.mean(p_oof[high_tr] >= t) >= 0.80)   # 80% recall on training data
+high, flag = yte > T_high, p_ridge >= t_flag
+TP, FP, FN = np.sum(flag & high), np.sum(flag & ~high), np.sum(~flag & high)
+rec, prec = TP / (TP + FN), TP / (TP + FP)
+print(f"flag at {t_flag:.1f}: recall P(flag|high) {rec:.2f}, precision P(high|flag) {prec:.2f}, "
+      f"Bayes: recall * P(high) / P(flag) = {rec * high.mean() / flag.mean():.2f}")
+pos, neg = p_ridge[high], p_ridge[~high]
+print(f"AUC {np.mean(pos[:, None] > neg[None, :]) + 0.5 * np.mean(pos[:, None] == neg[None, :]):.3f}")`,
+    expected: "n = 331 training and 111 test patients, d = 10; high-risk cut-off T = 206.0\nresidual perpendicular to every column: max |X^T r|/n = 6.2e-14\ntrain RMSE 52.48, R^2 0.545\npatient 68: 149.9 + 134.2 = 284.0 (actual 230); largest terms LTG +73.0, TC -44.5, BP +29.7\nstandardized: L = 4.070, mu = 0.0088, kappa = 464; raw units: kappa = 5.17e+07\nGD step 2/(mu+L): forecast 3207 steps, observed 2963 steps\nGD step 1/L: forecast 6408 steps (rate 1 - mu/L), observed 5883 steps\nGD step 2.05/L: diverged | raw units, step 1/L_raw: not converged, relative error 1.0e+00\nconvex: 5 random starts end within 8.5e-04 of theta_hat\nsmallest eigenvalue 0.0088; its eigenvector loads on TC -0.71, LDL +0.56, HDL +0.32, LTG +0.26\neigen-expansion: noise along that direction is amplified 1/lambda_min = 114 times, vs 0.25 along the top one\nVIF = 1/(1 - R_j^2): TC 58, LDL 38, HDL 16, LTG 10\nlowest CV RMSE 54.23 at lambda 0.0010 (flat curve); one-SE rule: lambda* = 0.422\nridge: smallest eigenvalue 0.0088 -> 0.430, kappa 464 -> 10\nbootstrap OLS: sd of the TC weight 22.0, LDL weight 17.1\nbootstrap ridge: sd of the TC weight 1.5, LDL weight 1.6\n30 training patients: ridge (lambda 0.1) beats OLS in 98% of 200 repeats\n  training mean RMSE  74.62  MAE  63.42  R^2 -0.015\n  OLS           RMSE  56.83  MAE  47.89  R^2  0.411\n  ridge         RMSE  56.96  MAE  48.84  R^2  0.409\nRMSE(OLS) - RMSE(ridge) = -0.12, 95% interval [-2.54, 2.00]: a tie\nflag at 168.3: recall P(flag|high) 0.69, precision P(high|flag) 0.56, Bayes: recall * P(high) / P(flag) = 0.56\nAUC 0.866",
+  },
 };

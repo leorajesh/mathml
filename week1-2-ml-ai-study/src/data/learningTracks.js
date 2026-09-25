@@ -33,8 +33,8 @@ export const tracks = {
       { title: 'Linear classification', concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence'] },
       { title: 'Losses and convexity', concepts: ['empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm', 'convex-functions', 'surrogate-losses'] },
       { title: 'Optimization', concepts: ['gradient-descent-method', 'momentum', 'subgradients', 'stochastic-subgradient-descent', 'lagrange-multipliers'] },
-      { title: 'Regression', concepts: ['linear-regression', 'polynomial-regression', 'least-squares-normal-equation', 'feature-scaling'] },
-      { title: 'Generalization and regularization', concepts: ['model-complexity-generalization', 'bias-variance', 'ridge-regularization', 'lasso', 'elastic-net', 'train-validation-test', 'cross-validation'] },
+      { title: 'Regression', concepts: ['linear-regression', 'polynomial-regression', 'least-squares-normal-equation', 'feature-scaling', 'multicollinearity'] },
+      { title: 'Generalization and regularization', concepts: ['model-complexity-generalization', 'bias-variance', 'ridge-regularization', 'lasso', 'elastic-net', 'train-validation-test', 'cross-validation', 'bootstrap'] },
       { title: 'Logistic regression', concepts: ['logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc'] },
       { title: 'ML in production', concepts: ['ml-in-production'] },
     ],
@@ -42,6 +42,11 @@ export const tracks = {
 };
 
 export const trackIds = Object.keys(tracks);
+
+// Each section's homework set is keyed "<track>/<section title as a slug>", e.g. "ml/regression".
+export function sectionKey(trackId, section) {
+  return `${trackId}/${section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+}
 
 export function trackOrder(trackId) {
   return tracks[trackId].sections.flatMap((section) => section.concepts);

@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud']);
+const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -74,6 +74,7 @@ const plotAxes = {
   bayesSquare: { x: '', y: '' },
   sampleMeans: { x: 'average of n die rolls (1 to 6)', y: 'how often' },
   likelihoodCurve: { x: 'parameter mu (0 to 1)', y: 'log-likelihood' },
+  bootstrap: { x: 'mean of a resample', y: 'how often' },
   surrogate: { x: 'margin z = y (theta . x)', y: 'loss' },
   generalization: { x: 'model complexity', y: 'loss' },
   diagonalization: { x: '', y: 'size after k steps' },
@@ -145,6 +146,8 @@ function renderGraph(type, values) {
     case 'sampleMeans': return SampleMeansGraph({ values });
     case 'gaussianCloud': return GaussianCloudGraph({ values });
     case 'likelihoodCurve': return LikelihoodCurveGraph({ values });
+    case 'collinearity': return CollinearityGraph({ values });
+    case 'bootstrap': return BootstrapGraph({ values });
     case 'ssgdHinge': return SsgdHingeGraph({ values });
     case 'perceptronMistakes': return PerceptronMistakesGraph({ values });
     case 'gradient': return GradientGraph({ values });
@@ -480,6 +483,77 @@ function LikelihoodCurveGraph({ values }) {
   return {
     content: <g><path className="loss-line" d={linePath(curve)} /><path className="tick" strokeDasharray="4 4" d={linePath([{ x: X(best), y: -4.5 }, { x: X(best), y: 4.5 }])} />{circlePoint({ x: X(mu), y: Y(ell(mu)) }, 'active-dot', 'mu')}</g>,
     readout: [`l(${mu.toFixed(2)}) = ${ell(mu).toFixed(3)}, L = ${Math.exp(ell(mu)).toExponential(2)}, average NLL = ${(-ell(mu) / n).toFixed(3)}`, `maximum at mu_hat = ${k}/10 = ${best.toFixed(1)}, where l = ${bestEll.toFixed(3)}`],
+  };
+}
+
+// Least-squares and ridge estimates of two weights from 150 simulated datasets (fixed seed). The two
+// standardized features have correlation rho, so C = [[1, rho], [rho, 1]] has eigenvalues 1 + rho along
+// [1, 1]/sqrt 2 and 1 - rho along [1, -1]/sqrt 2, and each estimate is theta + noise of variance
+// (sigma^2/n)/lambda_i along v_i. Ridge multiplies each coordinate along v_i by lambda_i/(lambda_i + lambda).
+function CollinearityGraph({ values }) {
+  const { rho, penalty } = values;
+  const noise = 0.1;
+  const truth = { x: 2, y: 1 };
+  const eig = [1 + rho, 1 - rho];
+  const dirs = [{ x: Math.SQRT1_2, y: Math.SQRT1_2 }, { x: Math.SQRT1_2, y: -Math.SQRT1_2 }];
+  const along = dirs.map((v) => v.x * truth.x + v.y * truth.y);
+  const uniform = mulberry32(11);
+  const random = () => (uniform() * 4294967295 + 0.5) / 4294967296;
+  const ols = [];
+  const ridge = [];
+  for (let k = 0; k < 150; k += 1) {
+    const r = Math.sqrt(-2 * Math.log(random()));
+    const angle = 2 * Math.PI * random();
+    const z = [r * Math.cos(angle), r * Math.sin(angle)];
+    const c = along.map((a, i) => a + Math.sqrt(noise / eig[i]) * z[i]);
+    const shrunk = c.map((value, i) => (eig[i] / (eig[i] + penalty)) * value);
+    ols.push({ x: c[0] * dirs[0].x + c[1] * dirs[1].x, y: c[0] * dirs[0].y + c[1] * dirs[1].y });
+    ridge.push({ x: shrunk[0] * dirs[0].x + shrunk[1] * dirs[1].x, y: shrunk[0] * dirs[0].y + shrunk[1] * dirs[1].y });
+  }
+  const inside = (p) => Math.abs(p.x) <= 8.8 && Math.abs(p.y) <= 4.9;
+  const sdOls = Math.sqrt(noise * 0.5 * (1 / eig[0] + 1 / eig[1]));
+  const sdRidge = Math.sqrt(noise * 0.5 * eig.reduce((a, l) => a + l / (l + penalty) ** 2, 0));
+  const meanRidge = along.map((a, i) => (eig[i] / (eig[i] + penalty)) * a);
+  const centre = { x: meanRidge[0] * dirs[0].x + meanRidge[1] * dirs[1].x, y: meanRidge[0] * dirs[0].y + meanRidge[1] * dirs[1].y };
+  return {
+    content: <g>{ols.filter(inside).map((p, index) => <circle key={`o${index}`} className="muted-dot" cx={sx(p.x)} cy={sy(p.y)} r="3.5" />)}{penalty > 0 && ridge.filter(inside).map((p, index) => <circle key={`r${index}`} className="point-a" cx={sx(p.x)} cy={sy(p.y)} r="3.5" />)}<path className="tick" strokeDasharray="4 4" d={linePath([{ x: truth.x - 7 * dirs[1].x, y: truth.y - 7 * dirs[1].y }, { x: truth.x + 7 * dirs[1].x, y: truth.y + 7 * dirs[1].y }])} />{circlePoint(truth, 'active-dot', 'true weights')}</g>,
+    readout: [
+      `eigenvalues of C: ${eig[0].toFixed(2)} and ${eig[1].toFixed(2)}; kappa = ${(eig[0] / eig[1]).toFixed(1)}; VIF = ${(1 / (1 - rho * rho)).toFixed(1)}`,
+      `least squares (grey): sd of theta_1 ${sdOls.toFixed(2)}, centred on the true (2, 1)`,
+      penalty > 0 ? `ridge (blue): sd of theta_1 ${sdRidge.toFixed(2)}, centred on (${centre.x.toFixed(2)}, ${centre.y.toFixed(2)}); kappa ${((eig[0] + penalty) / (eig[1] + penalty)).toFixed(1)}` : 'ridge off: move lambda above 0',
+    ],
+  };
+}
+
+// Bootstrap of the mean of one fixed, skewed sample of size n (exponential, mean 1, fixed seed):
+// B resamples of size n drawn with replacement, their means, and the 95% percentile interval.
+function BootstrapGraph({ values }) {
+  const { n, B } = values;
+  const draw = mulberry32(7);
+  const sample = Array.from({ length: n }, () => -Math.log(1 - draw()));
+  const mean = sample.reduce((a, b) => a + b, 0) / n;
+  const s = Math.sqrt(sample.reduce((a, b) => a + (b - mean) ** 2, 0) / (n - 1));
+  const resample = mulberry32(13);
+  const means = Array.from({ length: B }, () => { let total = 0; for (let k = 0; k < n; k += 1) total += sample[Math.floor(resample() * n)]; return total / n; }).sort((a, b) => a - b);
+  const bootMean = means.reduce((a, b) => a + b, 0) / B;
+  const se = Math.sqrt(means.reduce((a, b) => a + (b - bootMean) ** 2, 0) / (B - 1));
+  const lo = means[Math.floor(0.025 * (B - 1))];
+  const hi = means[Math.ceil(0.975 * (B - 1))];
+  const half = 4 * s / Math.sqrt(n);
+  const X = (v) => -4.5 + (9 * (v - (mean - half))) / (2 * half);
+  const bins = 40;
+  const counts = Array(bins).fill(0);
+  for (const m of means) counts[clamp(Math.floor(((m - (mean - half)) / (2 * half)) * bins), 0, bins - 1)] += 1;
+  const tallest = Math.max(...counts, 1);
+  const Y = (c) => -4.5 + (8.5 * c) / tallest;
+  const vline = (v, className) => <path className={className} d={linePath([{ x: X(v), y: -4.5 }, { x: X(v), y: 4.3 }])} />;
+  return {
+    content: <g>{counts.map((c, index) => { const x0 = -4.5 + (9 * index) / bins; const x1 = -4.5 + (9 * (index + 1)) / bins; return <rect key={index} className="bar-fill" x={sx(x0) + 1} y={sy(Y(c))} width={Math.max(sx(x1) - sx(x0) - 2, 1)} height={sy(-4.5) - sy(Y(c))} />; })}{vline(mean, 'line-a')}{vline(lo, 'line-b')}{vline(hi, 'line-b')}</g>,
+    readout: [
+      `sample of n = ${n}: mean ${mean.toFixed(3)} (blue line), sample sd ${s.toFixed(3)}`,
+      `bootstrap SE ${se.toFixed(3)} from ${B} resamples; formula s/sqrt(n) = ${(s / Math.sqrt(n)).toFixed(3)}`,
+      `95% percentile interval (orange lines): [${lo.toFixed(3)}, ${hi.toFixed(3)}]`,
+    ],
   };
 }
 

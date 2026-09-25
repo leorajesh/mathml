@@ -45,8 +45,8 @@ const domains = [
     id: 'overview-regression',
     title: 'Linear Regression and Ridge Regression',
     group: 'Loss',
-    summary: 'Linear regression models, least-squares criteria, gradient descent training, polynomial features, ridge regression, and regularization.',
-    concepts: ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net', 'feature-scaling'],
+    summary: 'Linear regression models, least-squares criteria, gradient descent training, polynomial features, multicollinearity, ridge regression, and regularization.',
+    concepts: ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'ridge-regularization', 'lasso-elastic-net', 'feature-scaling', 'multicollinearity'],
   },
   {
     id: 'overview-generalization',

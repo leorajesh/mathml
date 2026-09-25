@@ -2,10 +2,11 @@ import React from 'react';
 import { ArrowLeft, ArrowRight, Check, ListOrdered } from 'lucide-react';
 import { conceptMap } from '../data/concepts.js';
 import { conceptLevel } from '../data/studyGuidance.js';
-import { trackIds, trackOrder, tracks, tracksContaining } from '../data/learningTracks.js';
+import { sectionKey, trackIds, trackOrder, tracks, tracksContaining } from '../data/learningTracks.js';
 import { useProgress } from '../progress.js';
 import { QuizBadge } from './Quiz.jsx';
 import { projects } from '../data/projects.js';
+import { HomeworkButton } from './Homework.jsx';
 
 function otherTrack(trackId) {
   return trackIds.find((id) => id !== trackId);
@@ -28,7 +29,7 @@ export function DoneToggle({ conceptId, compact = false }) {
 }
 
 // Landing view: one track as a numbered, sectioned list with progress.
-export function TrackView({ trackId, onOpen, onShowTrack }) {
+export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
   const track = tracks[trackId];
   const order = trackOrder(trackId);
   const { isDone } = useProgress();
@@ -99,6 +100,7 @@ export function TrackView({ trackId, onOpen, onShowTrack }) {
               End-to-end project: {project.title} <span>(on the page {conceptMap[project.anchor].title})</span>
             </button>
           ))}
+          <HomeworkButton setKey={sectionKey(trackId, section)} onOpen={onOpenHomework} />
         </div>
       ))}
     </section>

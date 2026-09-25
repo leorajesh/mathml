@@ -26,6 +26,7 @@ export const learningObjectives = [
       { objective: 'Explain linear regression and least-squares learning.', concepts: ['linear-regression', 'least-squares-normal-equation'], check: 'How does the normal equation arise from squared residuals?' },
       { objective: 'Prepare features: scaling, encoding, and avoiding data leakage.', concepts: ['feature-scaling', 'feature-representation'], check: 'Why are scaling statistics computed on the training set only?' },
       { objective: 'Explain the bias-variance trade-off and how complexity, data, and regularization move it.', concepts: ['bias-variance', 'model-complexity-generalization'], check: 'Which of bias and variance does more data reduce?' },
+      { objective: 'Diagnose multicollinearity with eigenvalues, the condition number, and VIFs, and measure how much a weight or a test score could vary with the bootstrap.', concepts: ['multicollinearity', 'bootstrap', 'ridge-regularization'], check: 'Why can two nearly identical features get large weights of opposite sign while the predictions stay good?' },
       { objective: 'Explain ridge regression, regularization, and why regularization improves generalization.', concepts: ['ridge-regularization', 'lasso', 'elastic-net', 'model-complexity-generalization'], check: 'Why can increasing training loss improve test performance?' },
     ],
   },

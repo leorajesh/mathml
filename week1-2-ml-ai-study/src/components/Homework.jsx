@@ -59,7 +59,7 @@ function Part({ setKey, problemId, index, part }) {
       setFeedback({ kind: 'invalid', message: result.message });
       return;
     }
-    if (!recordAttempt(setKey, problemId, index, result.correct, result.key, part.type === 'choice')) {
+    if (!recordAttempt(setKey, problemId, index, result.correct, result.key)) {
       setFeedback({ kind: 'invalid', message: 'You already tried this answer. Rethink a step, or open a clue.' });
       return;
     }
@@ -204,7 +204,7 @@ export function HomeworkPage({ setKey, problemId, onSelect, onShowTrack, onOpenH
           <li>Work each part on paper or in the Python editor of a page, then type your answer and press <strong>Check</strong>. You can type expressions such as <code>8/5</code>, <code>sqrt(13/3)</code> or <code>ln 3</code>; for several numbers, separate them with commas.</li>
           <li>Stuck? Open the clues one at a time. The last clue of a part is a worked step, and it opens only after you have tried that part once. Repeating an answer you already tried does not count as a new attempt.</li>
           <li>The full solution of a problem unlocks after you have tried at least half of its parts; if some parts are still unsolved, you first write one line about where you are stuck.</li>
-          <li>A part counts as solved <strong>on your own</strong> when you needed no clue (and, for multiple choice, got it on the first try); otherwise it counts as solved <strong>with help</strong> or <strong>after the solution</strong>.</li>
+          <li>A part counts as solved <strong>on your own</strong> when it is right on your first try without a clue; after a clue or a wrong try it counts as solved <strong>with help</strong>, and after opening the solution as <strong>after the solution</strong>. Wrong tries cost nothing else: the feedback is there to learn from.</li>
           <li>Progress is saved in this browser only.</li>
         </ul>
         <div className="hw-summary">
@@ -246,7 +246,7 @@ export function HomeworkForPage({ conceptId, onOpenHomework }) {
   if (!matches.length) return null;
   return (
     <p className="hw-for-page">
-      <strong>Practise it in the homework:</strong>{' '}
+      <strong>Practise it in this site's homework:</strong>{' '}
       {matches.map(({ key, set, problem }, index) => (
         <React.Fragment key={`${key}-${problem.id}`}>
           {index > 0 && ' · '}

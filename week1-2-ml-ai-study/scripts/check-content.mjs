@@ -16,6 +16,7 @@ import { codingGuides } from '../src/data/codingGuides.js';
 import { projects } from '../src/data/projects.js';
 import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
 import { homework } from '../src/data/homework.js';
+import { courseHomework } from '../src/data/courseHomework.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -185,6 +186,8 @@ for (const [key, set] of Object.entries(homework)) {
   }
 }
 
+// Course homework guides link only to existing pages.
+for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);

@@ -3,8 +3,8 @@ import React from 'react';
 // Homework progress, kept in this browser only. For each part: the distinct answers checked, whether it
 // is solved and how (tier), and how many clues were shown. For each problem: whether the full solution
 // has been opened, and the student's note on where they were stuck.
-//   tier 'own'      solved with no clue and before the solution; a multiple-choice part only on the first try
-//   tier 'help'     solved after clues, or a multiple-choice part after a wrong option
+//   tier 'own'      right on the first try, with no clue and before the solution
+//   tier 'help'     solved after clues or after a wrong try (the feedback helped)
 //   tier 'solution' solved after opening the full solution
 const KEY = 'mathml-study:homework:v2';
 const listeners = new Set();
@@ -62,13 +62,13 @@ function updateProblem(setKey, problemId, change) {
 
 // Records a checked answer. Returns false (and records nothing) when this exact answer was tried before,
 // so repeating an answer never counts towards unlocking clues or the solution.
-export function recordAttempt(setKey, problemId, index, correct, key, isChoice) {
+export function recordAttempt(setKey, problemId, index, correct, key) {
   const before = partState(setKey, problemId, index);
   if (!correct && before.answers.includes(key)) return false;
   updateProblem(setKey, problemId, (current) => {
     const part = { ...emptyPart, ...current.parts[index] };
     const tries = part.tries + 1;
-    const tier = current.solution ? 'solution' : part.clues > 0 || (isChoice && tries > 1) ? 'help' : 'own';
+    const tier = current.solution ? 'solution' : part.clues > 0 || tries > 1 ? 'help' : 'own';
     return { ...current, parts: { ...current.parts, [index]: { ...part, tries, answers: [...part.answers, key], solved: part.solved || correct, tier: part.solved ? part.tier : correct ? tier : null } } };
   });
   return true;

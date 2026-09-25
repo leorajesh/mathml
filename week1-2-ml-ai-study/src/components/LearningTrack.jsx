@@ -7,6 +7,7 @@ import { useProgress } from '../progress.js';
 import { QuizBadge } from './Quiz.jsx';
 import { projects } from '../data/projects.js';
 import { HomeworkButton } from './Homework.jsx';
+import { courseHomework } from '../data/courseHomework.js';
 
 function otherTrack(trackId) {
   return trackIds.find((id) => id !== trackId);
@@ -57,6 +58,26 @@ export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
           <button className="track-switch" onClick={() => onShowTrack(other.id)}>Switch to the {other.title}</button>
         </div>
       </div>
+
+      {courseHomework.filter((guide) => guide.track === trackId).map((guide) => (
+        <details className="course-hw-guide" key={guide.id}>
+          <summary>Course homework guide: {guide.course}, {guide.title}. Which pages to read for each problem</summary>
+          <p>{guide.note}</p>
+          <ol className="course-hw-list">
+            {guide.items.map((item) => (
+              <li key={item.problems}>
+                <strong>Problem {item.problems}.</strong> {item.topic}:{' '}
+                {item.pages.map((id, index) => (
+                  <React.Fragment key={id}>
+                    {index > 0 && ', '}
+                    <button className="inline-link" onClick={() => onOpen(id, tracksContaining(id).includes(trackId) ? trackId : null)}>{conceptMap[id].title}</button>
+                  </React.Fragment>
+                ))}
+              </li>
+            ))}
+          </ol>
+        </details>
+      ))}
 
       {track.sections.map((section) => (
         <div className="track-section" key={section.title}>

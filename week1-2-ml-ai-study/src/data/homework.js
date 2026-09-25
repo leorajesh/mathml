@@ -869,6 +869,150 @@ export const homework = {
      }
     ],
     "takeaway": "Subspaces are the sets linear models live in: the column space of X holds every possible prediction vector."
+   },
+   {
+    "id": "spaces",
+    "title": "Spaces of matrices and polynomials",
+    "pages": [
+     "vector-spaces",
+     "dimension"
+    ],
+    "statement": "Vectors do not have to be columns of numbers: matrices and polynomials form vector spaces too.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "What is the dimension of the space of 2 by 3 matrices?",
+      "answer": 6.0,
+      "hints": [
+       "A basis is the matrices E_ij with a single 1.",
+       "Count the positions: 2 rows times 3 columns."
+      ],
+      "why": "Six matrices E11, ..., E23 form the standard basis: dimension 6.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 5.0,
+        "message": "Count every position of a 2 by 3 matrix: each gets its own E_ij."
+       },
+       {
+        "value": 2.0,
+        "message": "Every entry can be chosen freely, not only the rows."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Stretch [[1, −2, 0], [4, 0, 3]] row by row into a vector: give its coordinates in the basis E11, E12, E13, E21, E22, E23.",
+      "answer": [
+       1.0,
+       -2.0,
+       0.0,
+       4.0,
+       0.0,
+       3.0
+      ],
+      "hints": [
+       "The coordinate of E_ij is the (i, j) entry of the matrix.",
+       "Read row 1 left to right, then row 2."
+      ],
+      "why": "The matrix is 1·E11 − 2·E12 + 0·E13 + 4·E21 + 0·E22 + 3·E23.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         4.0,
+         -2.0,
+         0.0,
+         0.0,
+         3.0
+        ],
+        "message": "That stretches column by column; this part uses the row-by-row order E11, E12, E13, E21, ..."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What is the dimension of P₃, the polynomials of degree at most 3?",
+      "answer": 4.0,
+      "hints": [
+       "List a basis of P₃.",
+       "1, x, x², x³."
+      ],
+      "why": "Four coefficients a₀ + a₁x + a₂x² + a₃x³: dimension 4 (in general dim Pₙ = n + 1).",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 3.0,
+        "message": "Do not forget the constant polynomial 1: dim Pₙ = n + 1."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "Which set is a basis of P₁ (polynomials a + bx)?",
+      "answer": "{1 + x, 1 − x}",
+      "wrong": [
+       "{x, 2x}",
+       "{1, x, 1 + x}",
+       "{1 + x}"
+      ],
+      "hints": [
+       "A basis of a 2-dimensional space needs exactly 2 independent vectors."
+      ],
+      "why": "1 + x and 1 − x are independent (neither is a multiple of the other) and there are 2 of them in a space of dimension 2, so they form a basis.",
+      "mistakes": [
+       {
+        "value": "{x, 2x}",
+        "message": "2x is a multiple of x: dependent, and no constant polynomial can be reached."
+       },
+       {
+        "value": "{1, x, 1 + x}",
+        "message": "Three vectors in a 2-dimensional space are dependent: 1 + x = 1·1 + 1·x."
+       },
+       {
+        "value": "{1 + x}",
+        "message": "One vector cannot span a 2-dimensional space."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "Which argument proves that a vector space has only one zero vector?",
+      "answer": "If 0 and 0' are both zeros, then 0' = 0' + 0 = 0 + 0' = 0",
+      "wrong": [
+       "The zero vector is the vector of all zeros, and there is only one such vector",
+       "Because 0 · v = 0 for every v",
+       "Because v − v = 0 for every v"
+      ],
+      "hints": [
+       "A proof may only use the axioms, and the vectors might be polynomials or matrices, not lists of numbers."
+      ],
+      "why": "Each step uses one axiom: 0 is a zero, commutativity, 0' is a zero. The same style proves that each vector has only one additive inverse.",
+      "mistakes": [
+       {
+        "value": "The zero vector is the vector of all zeros, and there is only one such vector",
+        "message": "That only covers R^n. In a general vector space the \"vectors\" need not be lists of numbers."
+       },
+       {
+        "value": "Because 0 · v = 0 for every v",
+        "message": "That is itself something to be proved, and it says nothing about two different zeros."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "The 2 by 3 matrices have basis E11, ..., E23: dimension 6; [[1, −2, 0], [4, 0, 3]] has coordinates [1, −2, 0, 4, 0, 3] row by row."
+     },
+     {
+      "text": "P₃ has basis 1, x, x², x³: dimension 4. {1 + x, 1 − x} is a basis of P₁: two independent vectors in a 2-dimensional space."
+     },
+     {
+      "text": "Uniqueness of the zero: 0' = 0' + 0 = 0 + 0' = 0, using only the axioms."
+     }
+    ],
+    "takeaway": "Matrices and polynomials become ordinary coordinate vectors once you fix an ordered basis; that is how a derivative or a matrix operation turns into matrix multiplication."
    }
   ]
  },
@@ -1231,6 +1375,291 @@ export const homework = {
      }
     ],
     "takeaway": "Choosing the eigenvector basis makes a matrix diagonal. The same trick explains how gradient descent, PageRank and PCA behave."
+   },
+   {
+    "id": "twobases",
+    "title": "Two bases and a map given on combinations",
+    "pages": [
+     "change-of-basis",
+     "transformation-matrix"
+    ],
+    "statement": "Use the bases B = {b1, b2} with b1 = [1, 1], b2 = [1, 2], and B~ = {b~1, b~2} with b~1 = [2, 3], b~2 = [0, 1].",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Find the change-of-basis matrix [I]_{BB~} from B~ to B. Enter it row by row (4 numbers).",
+      "answer": [
+       1.0,
+       -1.0,
+       1.0,
+       1.0
+      ],
+      "hints": [
+       "Its columns are [b~1]_B and [b~2]_B: write each b~ as a combination of b1 and b2.",
+       "a[1, 1] + b[1, 2] = [2, 3] gives a = 1, b = 1; do the same for [0, 1]."
+      ],
+      "why": "[b~1]_B = [1, 1] and [b~2]_B = [−1, 1], so [I]_{BB~} = [[1, −1], [1, 1]].",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         1.0,
+         -1.0,
+         1.0
+        ],
+        "message": "You entered the columns as rows. Column j is [b~j]_B."
+       },
+       {
+        "value": [
+         0.5,
+         0.5,
+         -0.5,
+         0.5
+        ],
+        "message": "That goes the other way, from B to B~. The columns must be the B~ vectors written in B."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "A vector v has B~-coordinates [1, 2]. Find its B-coordinates.",
+      "answer": [
+       -1.0,
+       3.0
+      ],
+      "hints": [
+       "Multiply by the change-of-basis matrix from (a).",
+       "[v]_B = [I]_{BB~}[v]_{B~}."
+      ],
+      "why": "[[1, −1], [1, 1]][1, 2] = [−1, 3]. Check: v = b~1 + 2b~2 = [2, 5] = −b1 + 3b2.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         3.0,
+         1.0
+        ],
+        "message": "Row by column: the first entry is 1·1 + (−1)·2."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "A linear map T satisfies T(b1 + b2) = [3, 5] and T(b1 − b2) = [1, −1]. Find T(b1) and T(b2): enter T(b1) followed by T(b2) (4 numbers).",
+      "answer": [
+       2.0,
+       2.0,
+       1.0,
+       3.0
+      ],
+      "hints": [
+       "Linearity: T(b1 + b2) + T(b1 − b2) = T(2b1).",
+       "Add the two images and halve for T(b1); subtract and halve for T(b2)."
+      ],
+      "why": "T(b1) = ([3, 5] + [1, −1])/2 = [2, 2] and T(b2) = ([3, 5] − [1, −1])/2 = [1, 3].",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         4.0,
+         4.0,
+         2.0,
+         6.0
+        ],
+        "message": "Halve: T(b1 + b2) + T(b1 − b2) is T(2b1)."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Find [T]_{SB~}, the matrix of T from B~-coordinates to standard coordinates. Enter it row by row.",
+      "answer": [
+       3.0,
+       -1.0,
+       5.0,
+       1.0
+      ],
+      "hints": [
+       "First [T]_{SB} has columns T(b1) and T(b2). Then convert the input with [I]_{BB~}.",
+       "[T]_{SB~} = [T]_{SB}[I]_{BB~} = [[2, 1], [2, 3]][[1, −1], [1, 1]]."
+      ],
+      "why": "[[3, −1], [5, 1]]. Check a column directly: b~1 = b1 + b2, so T(b~1) = [2, 2] + [1, 3] = [3, 5].",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         3.0,
+         5.0,
+         -1.0,
+         1.0
+        ],
+        "message": "You entered the columns as rows."
+       },
+       {
+        "value": [
+         0.0,
+         -2.0,
+         4.0,
+         4.0
+        ],
+        "message": "Order: the conversion [I]_{BB~} acts first, so it stands on the right: [T]_{SB}[I]_{BB~}."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "[b~1]_B = [1, 1] and [b~2]_B = [−1, 1], so [I]_{BB~} = [[1, −1], [1, 1]]."
+     },
+     {
+      "text": "[v]_B = [I]_{BB~}[1, 2] = [−1, 3]."
+     },
+     {
+      "text": "T(b1) = [2, 2] and T(b2) = [1, 3], so [T]_{SB} = [[2, 1], [2, 3]]."
+     },
+     {
+      "text": "[T]_{SB~} = [T]_{SB}[I]_{BB~} = [[3, −1], [5, 1]].",
+      "tex": "[T]_{S\\tilde B}=[T]_{SB}\\,[I]_{B\\tilde B}"
+     }
+    ],
+    "takeaway": "Subscripts chain like matrix sizes: the input basis on the right must match the output basis of the next factor. That rule is all you need to move a map between any pair of bases."
+   },
+   {
+    "id": "polymap",
+    "title": "Matrices of maps beyond the plane",
+    "pages": [
+     "transformation-matrix",
+     "vector-spaces"
+    ],
+    "statement": "Linear maps on R³ and on spaces of polynomials also have matrices: track where each basis vector goes.",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Reflection through the yz-plane in R³: enter its matrix row by row (9 numbers).",
+      "answer": [
+       -1.0,
+       0.0,
+       0.0,
+       0.0,
+       1.0,
+       0.0,
+       0.0,
+       0.0,
+       1.0
+      ],
+      "hints": [
+       "Which coordinate changes sign when you reflect through the yz-plane?",
+       "e1 goes to −e1; e2 and e3 stay."
+      ],
+      "why": "diag(−1, 1, 1): only the x-coordinate flips.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         1.0,
+         -1.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         0.0
+        ],
+        "message": "Enter all 9 entries of the 3 by 3 matrix, row by row."
+       },
+       {
+        "value": [
+         0.0,
+         0.0,
+         0.0,
+         0.0,
+         1.0,
+         0.0,
+         0.0,
+         0.0,
+         1.0
+        ],
+        "message": "That is the projection onto the yz-plane (x goes to 0). A reflection sends x to −x."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Differentiation on P₂ with the basis (1, x, x²) for both input and output: enter the 3 by 3 matrix row by row.",
+      "answer": [
+       0.0,
+       1.0,
+       0.0,
+       0.0,
+       0.0,
+       2.0,
+       0.0,
+       0.0,
+       0.0
+      ],
+      "hints": [
+       "Column j holds the coordinates of the derivative of the j-th basis polynomial.",
+       "d/dx 1 = 0, d/dx x = 1, d/dx x² = 2x; write each in the basis (1, x, x²)."
+      ],
+      "why": "Columns [0, 0, 0], [1, 0, 0], [0, 2, 0]: the matrix [[0, 1, 0], [0, 0, 2], [0, 0, 0]].",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         0.0,
+         0.0,
+         0.0,
+         1.0,
+         0.0,
+         0.0,
+         0.0,
+         2.0,
+         0.0
+        ],
+        "message": "You entered the columns as rows."
+       },
+       {
+        "value": [
+         0.0,
+         0.0,
+         0.0,
+         2.0,
+         0.0,
+         0.0,
+         0.0,
+         1.0,
+         0.0
+        ],
+        "message": "Check the basis order: (1, x, x²), and the coefficients of 2x in that order are [0, 2, 0]."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What are the rank and nullity of that differentiation matrix? Enter the nullity.",
+      "answer": 1.0,
+      "hints": [
+       "Which polynomials have derivative 0?",
+       "Only the constants: a 1-dimensional null space."
+      ],
+      "why": "Nullity 1 (the constants), so the rank is 3 − 1 = 2: differentiation loses exactly the constant term.",
+      "tol": 0
+     }
+    ],
+    "solution": [
+     {
+      "text": "Reflection through the yz-plane: e1 → −e1, e2 → e2, e3 → e3, so diag(−1, 1, 1)."
+     },
+     {
+      "text": "D(1) = 0, D(x) = 1, D(x²) = 2x: in the basis (1, x, x²) the columns are [0,0,0], [1,0,0], [0,2,0]."
+     },
+     {
+      "text": "The null space is the constants: nullity 1, rank 2."
+     }
+    ],
+    "takeaway": "Choosing an ordered basis turns any linear map, even differentiation, into a matrix; the order you choose decides where the numbers sit."
    }
   ]
  },
@@ -1533,6 +1962,76 @@ export const homework = {
      }
     ],
     "takeaway": "In practice inverses are computed by elimination; the cofactor formula explains why A⁻¹ exists exactly when det A ≠ 0, and why its entries are \"transposed\"."
+   },
+   {
+    "id": "bigger",
+    "title": "Bigger determinants and inverses by row reduction",
+    "pages": [
+     "determinants-cofactor-row-ops",
+     "invertible-transformations"
+    ],
+    "statement": "For 3 by 3 and larger matrices, row reduction beats cofactor expansion.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Compute the determinant of [[1, 1, 0, 2], [2, 1, 1, 0], [0, 1, 3, 1], [1, 0, 1, 1]] by reducing it to triangular form.",
+      "answer": -12.0,
+      "hints": [
+       "Row replacements R_i ← R_i + cR_j do not change the determinant; each swap flips its sign.",
+       "After clearing column 1 the rows are [0, −1, 1, −4] and [0, −1, 1, −1]; keep clearing, then multiply the diagonal."
+      ],
+      "why": "R2 − 2R1, R4 − R1, R3 + R2, R4 − R2 give the diagonal 1, −1, 4, 3 with no swaps: det = −12.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 12.0,
+        "message": "Check the signs on the diagonal: one pivot is negative."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Use Gauss-Jordan on [A | I] to find the first row of A⁻¹ for A = [[0, 0, 1], [0, 1, 0], [1, 2, 2]].",
+      "answer": [
+       -2.0,
+       -2.0,
+       1.0
+      ],
+      "hints": [
+       "The top-left entry is 0: start by swapping rows.",
+       "Swap R1 and R3, then clear column 2 and column 3 above the pivots."
+      ],
+      "why": "A⁻¹ = [[−2, −2, 1], [0, 1, 0], [1, 0, 0]]. Check: row 1 of A⁻¹ times column 3 of A = −2·1 − 2·0 + 1·2 = 0.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         0.0,
+         0.0
+        ],
+        "message": "That is the last row of A⁻¹."
+       },
+       {
+        "value": [
+         1.0,
+         2.0,
+         2.0
+        ],
+        "message": "That is a row of A after the swap, not of A⁻¹."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Row replacements R2 − 2R1 and R4 − R1, then R3 + R2 and R4 − R2, leave the triangular matrix with diagonal 1, −1, 4, 3: det = −12."
+     },
+     {
+      "text": "[A | I]: swap R1 and R3, then R1 ← R1 − 2R2 and R1 ← R1 − 2R3 (after the swap R3 = [0, 0, 1 | 1, 0, 0]): the right block becomes [[−2, −2, 1], [0, 1, 0], [1, 0, 0]]."
+     }
+    ],
+    "takeaway": "Elimination is the practical tool for both determinants and inverses: it costs about n³ operations, while cofactor expansion grows like n!."
    }
   ]
  },
@@ -2229,6 +2728,54 @@ export const homework = {
      }
     ],
     "takeaway": "Covariance matrices and Hessians are symmetric; their eigenvalues are the variances along principal directions and the curvatures of a loss, and positive definite means a bowl with one minimum."
+   },
+   {
+    "id": "tracerule",
+    "title": "The trace rule for rectangular matrices",
+    "pages": [
+     "trace"
+    ],
+    "statement": "A = [1 2 3] is 1 by 3 and B = [1; 0; 2] is 3 by 1.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Compute tr(AB).",
+      "answer": 7.0,
+      "hints": [
+       "AB is 1 by 1.",
+       "Its only entry is the dot product of the row and the column."
+      ],
+      "why": "AB = [1 + 0 + 6] = [7], so tr(AB) = 7.",
+      "tol": 0
+     },
+     {
+      "type": "number",
+      "prompt": "Compute tr(BA).",
+      "answer": 7.0,
+      "hints": [
+       "BA is 3 by 3; you only need its diagonal.",
+       "The diagonal entries are b_i a_i: 1·1, 0·2, 2·3."
+      ],
+      "why": "The diagonal of BA is 1, 0, 6: trace 7, the same as tr(AB), although AB and BA have different sizes.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 1.0,
+        "message": "You need the whole diagonal of BA, not only its first entry."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "tr(AB) = 1 + 0 + 6 = 7."
+     },
+     {
+      "text": "diag(BA) = (1, 0, 6), so tr(BA) = 7.",
+      "tex": "\\operatorname{tr}(AB)=\\sum_i\\sum_\\ell a_{i\\ell}b_{\\ell i}=\\operatorname{tr}(BA)"
+     }
+    ],
+    "takeaway": "tr(AB) = tr(BA) holds for any sizes where both products exist; it is why the trace does not change under a change of basis."
    }
   ]
  },

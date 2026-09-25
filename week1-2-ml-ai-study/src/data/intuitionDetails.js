@@ -403,6 +403,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Not just arrows", "Lists of features, matrices of one shape, and polynomials of degree at most 2 are all vector spaces."),
       idea("Why it matters", "Once something is a vector space, span, basis, and dimension all apply to it."),
+      idea("Axioms, then proofs", "The rules above are the axioms. Facts such as \"the zero vector is unique\" or \"each vector has one additive inverse\" are proved from them, one axiom per step."),
     ],
   },
   "span-linear-combinations": {
@@ -448,6 +449,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Columns are landing spots", "Write where each basic direction lands as a column; those columns form the matrix."),
       idea("Apply it", "Multiplying the matrix by any vector gives where that vector lands."),
+      idea("Beyond R^n", "Any linear map between spaces with ordered bases has a matrix: for differentiation on polynomials, column j holds the coordinates of the derivative of the j-th basis polynomial."),
     ],
   },
   "composition-of-transformations": {
@@ -461,6 +463,8 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("The converter", "Put the new grid's arrows as the columns of P. P turns new-grid coordinates into ordinary ones; P^-1 turns them back."),
       idea("Why bother", "A clever grid can make a messy transformation look simple, such as pure stretching along each axis. That idea underlies diagonalization and PCA."),
+      idea("Read the subscripts right to left", "[I]_{CB} takes B-coordinates in and gives C-coordinates out; its columns are the B vectors written in C. The site's P is [I]_{SB}, from B to the standard basis S."),
+      idea("Chains cancel in the middle", "[I]_{CA}[I]_{AB} = [I]_{CB}, and [T]_{C'B'} = [I]_{C'C}[T]_{CB}[I]_{BB'}: neighbouring subscripts must match, like matrix sizes."),
     ],
   },
   "affine-maps": {
@@ -487,12 +491,14 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("Cofactor expansion", "Breaks a big determinant into smaller ones."),
       idea("Row operations", "Simplify the matrix first, tracking the effect: a swap flips the sign, scaling a row by c scales the determinant by c, and adding a multiple of one row to another changes nothing."),
+      idea("Row-reduce big determinants", "For 4 by 4 and larger, reduce to a triangular matrix with row replacements (no change), count swaps (each flips the sign), then multiply the diagonal."),
     ],
   },
   "invertible-transformations": {
     keyIdeas: [
       idea("Many tests, one answer", "For a square matrix these all agree: a pivot in every column, a nonzero determinant, independent columns, and only 0 maps to 0."),
       idea("In practice", "Use invertibility to check that the answer is uniquely pinned down, but solve Ax = b by elimination rather than computing the inverse."),
+      idea("Gauss-Jordan by hand", "Row-reduce [A | I] until the left block is I; the right block is then A^-1. A zero pivot means swap rows, and a pivot you cannot fix means A is not invertible."),
     ],
   },
   "inner-products": {

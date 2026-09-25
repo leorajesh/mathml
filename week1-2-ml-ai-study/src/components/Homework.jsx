@@ -246,7 +246,7 @@ export function HomeworkForPage({ conceptId, onOpenHomework }) {
   if (!matches.length) return null;
   return (
     <p className="hw-for-page">
-      <strong>Practise it in the homework:</strong>{' '}
+      <strong>Practise it in this site's homework:</strong>{' '}
       {matches.map(({ key, set, problem }, index) => (
         <React.Fragment key={`${key}-${problem.id}`}>
           {index > 0 && ' · '}

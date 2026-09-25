@@ -43,6 +43,11 @@ export const tracks = {
 
 export const trackIds = Object.keys(tracks);
 
+// Each section's homework set is keyed "<track>/<section title as a slug>", e.g. "ml/regression".
+export function sectionKey(trackId, section) {
+  return `${trackId}/${section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+}
+
 export function trackOrder(trackId) {
   return tracks[trackId].sections.flatMap((section) => section.concepts);
 }

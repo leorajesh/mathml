@@ -1,9 +1,12 @@
 import React from 'react';
 
-// Homework progress, kept in this browser only. For each part: how many answers were checked, whether
-// it is solved, whether it was solved before the full solution was opened, and how many clues were shown.
-// For each problem: whether the full solution has been opened.
-const KEY = 'mathml-study:homework:v1';
+// Homework progress, kept in this browser only. For each part: the distinct answers checked, whether it
+// is solved and how (tier), and how many clues were shown. For each problem: whether the full solution
+// has been opened, and the student's note on where they were stuck.
+//   tier 'own'      solved with no clue and before the solution; a multiple-choice part only on the first try
+//   tier 'help'     solved after clues, or a multiple-choice part after a wrong option
+//   tier 'solution' solved after opening the full solution
+const KEY = 'mathml-study:homework:v2';
 const listeners = new Set();
 
 function read() {
@@ -37,10 +40,14 @@ function save(next) {
 }
 
 const problemKey = (setKey, problemId) => `${setKey}#${problemId}`;
-const emptyPart = { tries: 0, solved: false, own: false, clues: 0 };
+const emptyPart = { tries: 0, answers: [], solved: false, tier: null, clues: 0 };
 
 export function partState(setKey, problemId, index) {
-  return state[problemKey(setKey, problemId)]?.parts?.[index] ?? emptyPart;
+  return { ...emptyPart, ...state[problemKey(setKey, problemId)]?.parts?.[index] };
+}
+
+export function stuckNote(setKey, problemId) {
+  return state[problemKey(setKey, problemId)]?.stuck ?? '';
 }
 
 export function solutionOpened(setKey, problemId) {
@@ -53,23 +60,29 @@ function updateProblem(setKey, problemId, change) {
   save({ ...state, [key]: change(current) });
 }
 
-export function recordAttempt(setKey, problemId, index, correct) {
+// Records a checked answer. Returns false (and records nothing) when this exact answer was tried before,
+// so repeating an answer never counts towards unlocking clues or the solution.
+export function recordAttempt(setKey, problemId, index, correct, key, isChoice) {
+  const before = partState(setKey, problemId, index);
+  if (!correct && before.answers.includes(key)) return false;
   updateProblem(setKey, problemId, (current) => {
-    const part = current.parts[index] ?? emptyPart;
-    const solved = part.solved || correct;
-    return { ...current, parts: { ...current.parts, [index]: { ...part, tries: part.tries + 1, solved, own: part.own || (correct && !current.solution) } } };
+    const part = { ...emptyPart, ...current.parts[index] };
+    const tries = part.tries + 1;
+    const tier = current.solution ? 'solution' : part.clues > 0 || (isChoice && tries > 1) ? 'help' : 'own';
+    return { ...current, parts: { ...current.parts, [index]: { ...part, tries, answers: [...part.answers, key], solved: part.solved || correct, tier: part.solved ? part.tier : correct ? tier : null } } };
   });
+  return true;
 }
 
 export function recordClue(setKey, problemId, index) {
   updateProblem(setKey, problemId, (current) => {
-    const part = current.parts[index] ?? emptyPart;
+    const part = { ...emptyPart, ...current.parts[index] };
     return { ...current, parts: { ...current.parts, [index]: { ...part, clues: part.clues + 1 } } };
   });
 }
 
-export function recordSolutionOpened(setKey, problemId) {
-  updateProblem(setKey, problemId, (current) => ({ ...current, solution: true }));
+export function recordSolutionOpened(setKey, problemId, stuck = '') {
+  updateProblem(setKey, problemId, (current) => ({ ...current, solution: true, stuck }));
 }
 
 export function resetProblem(setKey, problemId) {
@@ -78,20 +91,20 @@ export function resetProblem(setKey, problemId) {
   save(next);
 }
 
-// Totals for a homework set: parts solved, parts solved without the full solution, and all parts.
+// Totals for a homework set: parts solved, split by how they were solved, and all parts.
 export function setSummary(setKey, set) {
-  let solved = 0;
-  let own = 0;
-  let total = 0;
+  const summary = { solved: 0, own: 0, help: 0, solution: 0, total: 0 };
   for (const problem of set.problems) {
     problem.parts.forEach((_, index) => {
       const part = partState(setKey, problem.id, index);
-      total += 1;
-      if (part.solved) solved += 1;
-      if (part.own) own += 1;
+      summary.total += 1;
+      if (part.solved) {
+        summary.solved += 1;
+        summary[part.tier ?? 'own'] += 1;
+      }
     });
   }
-  return { solved, own, total };
+  return summary;
 }
 
 export function useHomeworkProgress() {

@@ -1,4 +1,5 @@
 export const advancedConceptIds = new Set([
+  'multicollinearity',
   'max-margin-svm',
   'roc-auc',
   'jacobian-chain-rule',
@@ -39,8 +40,9 @@ export const recommendedPaths = {
   'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
   'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
-  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'ridge-regularization', 'lasso-elastic-net'],
+  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'multicollinearity', 'ridge-regularization', 'lasso-elastic-net'],
   'overview-generalization': ['model-complexity-generalization', 'bias-variance', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc', 'ml-in-production'],
+  'overview-probability': ['exp-log', 'probability-statistics', 'logistic-regression', 'logistic-loss', 'bias-variance', 'classification-metrics'],
   'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
   'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
   'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
@@ -100,6 +102,21 @@ export const guidedSelfChecks = {
   ],
   trace: [
     { question: 'Can two matrices with the same trace and determinant have different eigenvalues?', answer: 'Not for 2 by 2 matrices: the eigenvalues solve lambda^2 - tr(A) lambda + det(A) = 0, so trace and determinant fix them. For larger matrices they can differ, because more coefficients of the characteristic polynomial are needed.' },
+  ],
+  'exp-log': [
+    { question: 'Why do we maximize the log-likelihood instead of the likelihood itself?', answer: 'ln is strictly increasing, so the parameter that maximizes the likelihood also maximizes its log. The log turns a product of many small probabilities into a sum, which is easier to differentiate and does not underflow.' },
+  ],
+  'probability-basics': [
+    { question: 'Why are precision and recall different numbers even though they use the same true positives?', answer: 'They condition on different events. Recall is P(predicted yes | actually yes), divided by all real positives; precision is P(actually yes | predicted yes), divided by all predicted positives. Bayes\' rule links them through the base rates.' },
+  ],
+  'expectation-variance': [
+    { question: 'Why is the error on a fresh test set a fair estimate of the true error, but the training error is not?', answer: 'For a model fixed before seeing the test examples, the test error is an average of n independent losses, so its mean is the true error and its variance shrinks like 1/n. The training examples were used to choose the model, so its training error is biased low.' },
+  ],
+  'covariance-gaussian': [
+    { question: 'How is the variance of the data along a direction b computed from the covariance matrix, and why does PCA care?', answer: 'Var(b^T x) = b^T Sigma b. PCA looks for the unit direction b that makes this as large as possible, which is the top eigenvector of Sigma.' },
+  ],
+  'likelihood-mle': [
+    { question: 'In what sense is the logistic loss "maximum likelihood"?', answer: 'Treat each label as a Bernoulli draw with probability mu_t = sigma(theta . x_t + theta_0). The negative log of the likelihood of all labels, divided by n, is exactly the average logistic loss, so minimizing the loss maximizes the likelihood.' },
   ],
   pca: [
     { question: 'Why do the maximum-variance and minimum-reconstruction-error views of PCA give the same answer?', answer: 'For each centered point, the squared length splits into the part kept by the projection and the part lost (Pythagoras). The total is fixed, so maximizing the kept variance is the same as minimizing the average lost error.' },
@@ -240,5 +257,11 @@ export const guidedSelfChecks = {
   ],
   'determinants-cofactor-row-ops': [
     { question: 'Which row operations change a determinant?', answer: 'Swapping rows flips the sign; scaling a row by c scales the determinant by c; adding a multiple of one row to another does not change it.' },
+  ],
+  'multicollinearity': [
+    { question: 'Two features are almost copies of each other. Why can least squares give them weights of +50 and -48 when +1 and +1 would predict almost as well?', answer: 'Only the sum of the two weights is well determined by the data; their difference lies along an eigenvector with a tiny eigenvalue, where the noise is amplified by 1/lambda_i. Ridge or dropping one feature pins the split down.' },
+  ],
+  'bootstrap': [
+    { question: 'Why does increasing the number of resamples B not make the bootstrap interval narrower?', answer: 'B only controls how accurately we estimate the spread of the statistic under resampling; the spread itself is set by the sample size n and the data. More B gives a smoother, more precise estimate of the same width.' },
   ],
 };

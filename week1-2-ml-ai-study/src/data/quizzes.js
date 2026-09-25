@@ -3,6 +3,36 @@
 // Topic pages combine the questions of their subtopics. Checked by scripts/check-content.mjs.
 
 export const quizzes = {
+  "exp-log": [
+    {"question": "What is ln(a b) for positive a and b?", "answer": "ln a + ln b", "wrong": ["ln a × ln b", "ln(a + b)", "b ln a"], "why": "Logs turn products into sums; that is why log-likelihoods are sums."},
+    {"question": "sigma(2) ≈ 0.881. What is sigma(-2)?", "answer": "0.119", "wrong": ["-0.881", "0.881", "0.5"], "why": "sigma(-s) = 1 - sigma(s), so 1 - 0.881 = 0.119."},
+    {"question": "Why can we maximize ln L instead of L?", "answer": "ln is strictly increasing, so the same parameter maximizes both", "wrong": ["ln L is always larger than L", "The log removes the need for data", "The log makes every function convex"], "why": "An increasing transform never changes where the maximum is."},
+    {"question": "What is logit(0.5)?", "answer": "0", "wrong": ["0.5", "1", "ln 0.5"], "why": "ln(0.5/0.5) = ln 1 = 0, matching sigma(0) = 0.5."},
+  ],
+  "probability-basics": [
+    {"question": "TP = 8, FP = 2, TN = 90, FN = 10. What is P(y_hat = 1 | y = 1)?", "answer": "8/18 ≈ 0.444 (the recall)", "wrong": ["8/10 = 0.8", "18/110 ≈ 0.164", "10/110 ≈ 0.091"], "why": "Condition on the 18 real positives: 8 of them were predicted positive."},
+    {"question": "A disease has 1% prevalence; a test has 90% sensitivity and 5% false positives. About what is P(disease | positive)?", "answer": "0.15", "wrong": ["0.90", "0.95", "0.01"], "why": "0.009/(0.009 + 0.0495) ≈ 0.154: most positives come from the large healthy group."},
+    {"question": "Why is the probability of an i.i.d. training set a product of per-example probabilities?", "answer": "The examples are independent, so the joint probability factors", "wrong": ["Probabilities always multiply", "The examples are disjoint events", "Bayes' rule requires it"], "why": "Independence means p(x, y) = p(x) p(y), and likewise for n examples."},
+    {"question": "Which rule turns p(x | y) and p(y) into p(y | x)?", "answer": "Bayes' rule", "wrong": ["The sum rule alone", "The complement rule", "Independence"], "why": "p(y | x) = p(x | y) p(y) / p(x)."},
+  ],
+  "expectation-variance": [
+    {"question": "If Var X = 3, what is Var(2X + 5)?", "answer": "12", "wrong": ["6", "11", "17"], "why": "Var(aX + b) = a^2 Var X = 4 × 3; the shift adds nothing."},
+    {"question": "A die roll has variance 2.917. What is the variance of the average of 4 independent rolls?", "answer": "About 0.729", "wrong": ["2.917", "11.67", "About 1.458"], "why": "Var of an average of n independent draws is sigma^2/n = 2.917/4."},
+    {"question": "What is E[X^2] - (E[X])^2?", "answer": "The variance of X", "wrong": ["Always 0", "The standard deviation of X", "The bias"], "why": "Var X = E[X^2] - mu^2, so E[X^2] and (E X)^2 differ unless X is constant."},
+    {"question": "Why does stochastic gradient descent point downhill on average?", "answer": "With t chosen uniformly, the expected one-example gradient equals the full average gradient", "wrong": ["Each single gradient is exact", "The learning rate cancels the noise", "Random examples always have larger gradients"], "why": "E_t[grad loss_t] = (1/n) sum of the gradients = grad R_n."},
+  ],
+  "covariance-gaussian": [
+    {"question": "What range can a correlation take?", "answer": "From -1 to 1", "wrong": ["From 0 to 1", "Any real number", "From 0 to infinity"], "why": "Dividing the covariance by both standard deviations bounds it by the Cauchy-Schwarz inequality."},
+    {"question": "S = [[2, 0.5], [0.5, 3.5]]. What is the variance along b = [1, 1]/sqrt 2?", "answer": "3.25", "wrong": ["2.75", "6", "2.5"], "why": "b^T S b = (2 + 3.5 + 2 × 0.5)/2 = 3.25."},
+    {"question": "If Cov(X, Y) = 0, are X and Y independent?", "answer": "Not necessarily", "wrong": ["Yes, always", "Only if both are positive", "Yes, if they have the same variance"], "why": "Y = X^2 with symmetric X has zero covariance with X but depends on it completely. (For jointly Gaussian variables it does imply independence.)"},
+    {"question": "About what share of a Gaussian lies within one standard deviation of the mean?", "answer": "About 68%", "wrong": ["About 50%", "About 95%", "About 99.7%"], "why": "68% within 1 sigma, 95% within 1.96 sigma, 99.7% within 3 sigma."},
+  ],
+  "likelihood-mle": [
+    {"question": "7 ones in 10 coin flips. What is the maximum likelihood estimate of mu?", "answer": "0.7", "wrong": ["0.5", "0.3", "1"], "why": "mu_hat = k/n = 7/10."},
+    {"question": "Why do we usually maximize the log-likelihood?", "answer": "It has the same maximizer and turns a product into a sum that is easier to handle", "wrong": ["It gives a different, better estimate", "It makes the likelihood a probability", "It removes the need for derivatives"], "why": "ln is increasing, so the maximizer is unchanged."},
+    {"question": "Minimizing the average logistic loss is the same as what?", "answer": "Maximizing the Bernoulli likelihood of the labels", "wrong": ["Minimizing the squared error", "Maximizing the number of correct predictions", "Maximizing the margin"], "why": "The average NLL of Bernoulli labels with mu_t = sigma(theta . x_t + theta_0) is exactly the logistic loss."},
+    {"question": "What is the likelihood L(mu)?", "answer": "The probability of the observed data, viewed as a function of mu", "wrong": ["The probability that mu is correct", "A probability distribution over mu", "The error rate of the model"], "why": "The data are fixed and the parameter varies; it is not a distribution over mu."},
+  ],
   "ml-workflow": [
     {"question": "Why is a model judged on data it did not train on?", "answer": "Because the goal is to predict well on new examples, not to memorize the training set", "wrong": ["Because training data is always mislabeled", "Because the test set is larger", "Because the loss cannot be computed on training data"], "why": "Generalization to unseen examples is the real target; a model can score perfectly on training data by memorizing it."},
     {"question": "In the spam example, theta = [2, 1] and theta_0 = -2. What is the score of x = [1, 1]?", "answer": "1", "wrong": ["3", "-1", "0"], "why": "2*1 + 1*1 - 2 = 1, so the email is predicted as spam (+1)."},
@@ -184,6 +214,7 @@ export const quizzes = {
     {"question": "For J(theta) = (theta - 3)^2, starting at theta = 0 with alpha = 0.2, what is theta after one step?", "answer": "1.2", "wrong": ["0.6", "3", "-1.2"], "why": "The gradient at 0 is 2(0 - 3) = -6, and 0 - 0.2(-6) = 1.2."},
     {"question": "Which direction does gradient descent step in?", "answer": "Opposite to the gradient", "wrong": ["Along the gradient", "Perpendicular to the gradient", "Toward the origin"], "why": "The gradient points uphill, so we step the other way."},
     {"question": "For J(theta) = (theta - 3)^2, what happens with learning rate alpha = 1.1?", "answer": "The iterates diverge", "wrong": ["It converges in one step", "It converges slowly", "It stays at the starting point"], "why": "Each step multiplies the distance to 3 by (1 - 2 alpha) = -1.2, which grows in size."},
+    {"question": "A quadratic loss has Hessian eigenvalues 10 and 0.1. With step 1/L, about how many steps cut the error to 1e-6 of its start?", "answer": "About 100 × ln(10^6) ≈ 1,400", "wrong": ["About 14", "About 100", "About 1,000,000"], "why": "kappa = 10/0.1 = 100, and the error shrinks by 1 - 1/kappa per step, so k ≈ kappa ln(1/epsilon) = 100 × 13.8."},
   ],
   "subgradients": [
     {"question": "What is the set of subgradients of |x| at x = 0?", "answer": "Every slope between -1 and 1", "wrong": ["Only 0", "Only 1", "No subgradient exists"], "why": "Any line through the origin with slope in [-1, 1] stays below |x|."},
@@ -211,6 +242,7 @@ export const quizzes = {
     {"question": "Fitting y = theta x through the origin to (1, 2) and (2, 3), what is theta_hat?", "answer": "1.6", "wrong": ["1.5", "2", "1.25"], "why": "X^T X = 1 + 4 = 5 and X^T y = 2 + 6 = 8, so theta = 8/5."},
     {"question": "What is the normal equation?", "answer": "X^T X theta = X^T y", "wrong": ["X theta = 0", "theta = y / X", "X X^T = I"], "why": "Setting the gradient of the squared error to zero gives X^T X theta = X^T y."},
     {"question": "When does the formula theta = (X^T X)^-1 X^T y work?", "answer": "When X^T X is invertible, which holds when the columns of X are independent", "wrong": ["Always", "Only with one feature", "Only when y is zero"], "why": "Dependent columns make X^T X singular."},
+    {"question": "A model has test R^2 = -0.02. What does that mean?", "answer": "It predicts the test data slightly worse than always predicting the mean", "wrong": ["It explains 2% of the variation", "The features are negatively correlated with y", "It cannot happen for a least-squares model"], "why": "R^2 = 1 - SSE/SST is below 0 exactly when the squared error is larger than that of predicting the mean, which can happen on data the model was not fitted to."},
   ],
   "ridge-regularization": [
     {"question": "What does ridge regularization penalize?", "answer": "Large weights, through (lambda/2) times the sum of squared weights", "wrong": ["The number of training examples", "The size of the residuals only", "The bias term, always"], "why": "The penalty (lambda/2)||theta||^2 in the Week 2 notes pulls weights toward zero."},
@@ -411,5 +443,17 @@ export const quizzes = {
     {"question": "A model learns to predict the time until a tumour recurs from 30 measurements. What kind of problem is this?", "answer": "Supervised regression", "wrong": ["Supervised classification", "Unsupervised learning", "Reinforcement learning"], "why": "Labels are given (supervised) and the target is a number (a time), so it is regression; predicting recurrence yes/no from the same table would be classification."},
     {"question": "Which set lists the three phases of MLOps in the Lesson 1 slides?", "answer": "Data phase, model phase, operations phase", "wrong": ["Train, validate, test", "Collect, clean, label", "Design, code, compile"], "why": "The data phase covers business and data understanding, the model phase data and model engineering, and the operations phase deployment, testing, versioning, delivery, and monitoring."},
     {"question": "Why is DevOps alone not enough for machine learning systems?", "answer": "Because data changes everything: a model can get worse when the data changes even if no code changes", "wrong": ["Because ML code cannot be version-controlled", "Because ML models never need testing", "Because DevOps only works for websites"], "why": "ML behaviour depends on data as well as code, so data and models must be versioned, tested, and monitored too."},
+  ],
+  "multicollinearity": [
+    {"question": "Two standardized features have correlation 0.9. What is the variance inflation factor of each?", "answer": "1/(1 - 0.81) ≈ 5.3", "wrong": ["0.9", "1.9", "10"], "why": "VIF = 1/(1 - R_j^2), and with only two features R_j^2 = rho^2 = 0.81."},
+    {"question": "The feature correlation matrix has eigenvalues 3.1, 1.2, 0.6 and 0.01. What does the 0.01 tell you?", "answer": "Some combination of the features is almost constant, so the weights along its eigenvector are very uncertain", "wrong": ["One feature is useless for prediction", "The model will predict new data badly", "The learning rate is too small"], "why": "The weight variance along an eigenvector is sigma^2/(n lambda_i), here 100 times larger than for an eigenvalue of 1."},
+    {"question": "What does strong multicollinearity mostly harm?", "answer": "The individual weights and any interpretation of them", "wrong": ["Predictions for data like the training data", "The training error", "The number of features you may use"], "why": "The uncertain direction is one the features barely vary along, so predictions hardly depend on it; the split of credit between features does."},
+    {"question": "C has eigenvalues 1.95 and 0.05. What is the condition number after adding a ridge penalty lambda = 0.1?", "answer": "2.05/0.15 ≈ 13.7", "wrong": ["39", "1.95/0.15 = 13", "19.5"], "why": "Ridge adds lambda to every eigenvalue: (1.95 + 0.1)/(0.05 + 0.1)."},
+  ],
+  "bootstrap": [
+    {"question": "How many examples does a bootstrap resample of a dataset with n examples contain?", "answer": "n, drawn with replacement, so some repeat and some are missing", "wrong": ["n/2, drawn without replacement", "n - 1, leaving one example out", "The n original examples in a new order"], "why": "Drawing with replacement is what makes the resamples differ from each other and from the data."},
+    {"question": "For large n, about what fraction of the distinct examples appears in one bootstrap resample?", "answer": "About 63%", "wrong": ["About 37%", "About 50%", "All of them"], "why": "Each is missing with probability (1 - 1/n)^n ≈ e^-1 ≈ 0.368, so about 1 - 0.368 = 0.632 appear."},
+    {"question": "RMSE(OLS) - RMSE(ridge) on a test set is -0.12, with 95% bootstrap interval [-2.54, 2.00]. What do you conclude?", "answer": "The two models are tied: the interval contains 0", "wrong": ["OLS is clearly better", "Ridge is clearly better", "The test set was used too often"], "why": "A difference this small compared with its uncertainty could easily go either way on another test set."},
+    {"question": "To compare two models on one test set, how should you resample?", "answer": "Draw one resample of test examples and score both models on it", "wrong": ["Draw separate resamples for each model", "Resample the features instead of the examples", "Resample only the examples the models disagree on"], "why": "Pairing removes the variation that comes from some examples being hard for both models, so the interval for the difference is much narrower."},
   ],
 };

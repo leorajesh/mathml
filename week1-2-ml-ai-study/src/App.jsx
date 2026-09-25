@@ -10,6 +10,8 @@ import { learningObjectives, selfChecksByConcept } from './data/learningObjectiv
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { intuitionDetails } from './data/intuitionDetails.js';
+import { codingGuides } from './data/codingGuides.js';
+import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
 import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
 import { mathLinks, mlUsesOf } from './data/mathLinks.js';
@@ -18,12 +20,15 @@ import { PythonRunner } from './python/PythonRunner.jsx';
 import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
 import { Quiz, QuizBadge } from './components/Quiz.jsx';
 import { quizzes } from './data/quizzes.js';
+import { homework } from './data/homework.js';
+import { HomeworkForPage, HomeworkPage } from './components/Homework.jsx';
 import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
 
 // Routes live in the URL hash so Back/Forward and shared links work:
 //   #<concept-id>              concept page (as before)
 //   #<concept-id>?track=math   concept page inside the Math or ML track, with previous / next
 //   #track=ml                  the ML track's step-by-step list
+//   #homework=ml/regression    the homework of one track section (optionally ?problem=<id>)
 function routeFromHash() {
   let raw;
   try {
@@ -32,6 +37,11 @@ function routeFromHash() {
     return {}; // Malformed escapes such as "#%E0" fall back to the landing page.
   }
   const [path, query = ''] = raw.split('?');
+  if (path.startsWith('homework=')) {
+    const homeworkKey = path.slice('homework='.length);
+    if (Object.hasOwn(homework, homeworkKey)) return { homeworkKey, problemId: new URLSearchParams(query).get('problem'), trackId: homework[homeworkKey].track };
+    return {};
+  }
   const params = new URLSearchParams(path.startsWith('track=') ? path : query);
   const trackId = isTrackId(params.get('track')) ? params.get('track') : null;
   // Own-property checks so hashes like "#constructor" are not mistaken for concepts or topics.
@@ -64,10 +74,10 @@ export function App() {
 
   React.useEffect(() => {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
-    document.title = selectedConcept || selectedTopic
+    document.title = route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
       : trackTitle ? `${trackTitle} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
-  }, [selectedConcept, selectedTopic, route.trackId]);
+  }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey]);
 
   function go(hash) {
     window.location.hash = hash;
@@ -84,6 +94,10 @@ export function App() {
 
   function showTrack(trackId) {
     go(`track=${trackId}`);
+  }
+
+  function openHomework(key, problemId) {
+    go(problemId ? `homework=${key}?problem=${problemId}` : `homework=${key}`);
   }
 
   function showLanding() {
@@ -105,18 +119,20 @@ export function App() {
         </nav>
       </header>
 
-      {selectedConcept ? (
-        <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} />
+      {route.homeworkKey ? (
+        <HomeworkPage key={route.homeworkKey} setKey={route.homeworkKey} problemId={route.problemId} onSelect={(id) => selectConcept(id, null)} onShowTrack={showTrack} onOpenHomework={openHomework} />
+      ) : selectedConcept ? (
+        <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
       ) : selectedTopic ? (
         <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
-        <Landing trackId={route.trackId} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} />
+        <Landing trackId={route.trackId} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onOpenHomework={openHomework} />
       )}
     </div>
   );
 }
 
-function Landing({ trackId, onSelect, onShowTrack, onShowLanding }) {
+function Landing({ trackId, onSelect, onShowTrack, onShowLanding, onOpenHomework }) {
   const [localTab, setLocalTab] = React.useState('map');
   const activeTab = trackId ? `track-${trackId}` : localTab;
 
@@ -137,7 +153,7 @@ function Landing({ trackId, onSelect, onShowTrack, onShowLanding }) {
       </nav>
 
       {activeTab === 'map' && <MindMap onSelect={(id) => onSelect(id, null)} />}
-      {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} />}
+      {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
       {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
       {activeTab === 'concepts' && <ConceptIndex onSelect={(id) => onSelect(id, null)} />}
     </main>
@@ -167,7 +183,7 @@ function ConceptIndex({ onSelect }) {
   );
 }
 
-function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
+function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack, onOpenHomework }) {
   return (
     <main className="concept-page">
       {trackId ? (
@@ -228,7 +244,9 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
       </OrderedSection>
 
       <OrderedSection number="6" title="Try It in Python">
+        <CodingGuide steps={codingGuides[concept.id]} />
         <PythonRunner conceptId={concept.id} original={codeExamples[concept.id] ?? '# No code example available yet.\nprint("Hello from Python")'} />
+        <EndToEndProjects conceptId={concept.id} onSelect={onSelect} />
       </OrderedSection>
 
       <OrderedSection number="7" title="Common Misconception">
@@ -239,6 +257,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack }) {
         <Quiz quizId={concept.id} questions={quizzes[concept.id] ?? []}>
           <DoneToggle conceptId={concept.id} />
         </Quiz>
+        <HomeworkForPage conceptId={concept.id} onOpenHomework={onOpenHomework} />
         <details className="more-questions">
           <summary>More questions to think about</summary>
           <SelfChecks conceptId={concept.id} />
@@ -331,6 +350,55 @@ function FormulaDefinition({ definition }) {
 }
 
 // ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
+// The end-to-end project anchored on this page: stages with links, a runnable program, and its output.
+function EndToEndProjects({ conceptId, onSelect }) {
+  const anchored = Object.entries(projects).filter(([, project]) => project.anchor === conceptId);
+  return anchored.map(([key, project]) => (
+    <div className="end-to-end" id={`project-${key}`} key={key}>
+      <h3>End-to-end project: {project.title}</h3>
+      <p>{project.intro}</p>
+      <ol>
+        {project.steps.map((item) => (
+          <li key={item.label}>
+            <strong>{item.label}.</strong> {item.text}{' '}
+            <span className="end-to-end-pages">
+              ({item.pages.map((id, index) => (
+                <React.Fragment key={id}>
+                  {index > 0 && ', '}
+                  {id === conceptId ? <span>this page</span> : <button onClick={() => onSelect(id)}>{conceptMap[id]?.title ?? id}</button>}
+                </React.Fragment>
+              ))})
+            </span>
+          </li>
+        ))}
+      </ol>
+      <PythonRunner conceptId={`project-${key}`} original={project.code} />
+      <details className="course-notes">
+        <summary>Output you should see</summary>
+        <pre>{project.expected}</pre>
+      </details>
+    </div>
+  ));
+}
+
+// Practical steps from the formulas to a working program, shown above the runnable example.
+function CodingGuide({ steps }) {
+  if (!steps) return null;
+  return (
+    <div className="coding-guide">
+      <h3>From formula to code</h3>
+      <ol>
+        {steps.map((item) => (
+          <li key={item.label}>
+            <strong>{item.label}.</strong> {item.text}
+            {item.code && <pre><code>{item.code}</code></pre>}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
 // A short hook, then labelled key ideas, then (collapsed) notes tied to the course materials.
 function IntuitionBody({ concept }) {
   const details = intuitionDetails[concept.id];

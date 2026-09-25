@@ -12,7 +12,11 @@ import { mmlReferences } from '../src/data/mmlReferences.js';
 import { courseBooks, courseReferences, caseStudies } from '../src/data/courseReferences.js';
 import { mathLinks } from '../src/data/mathLinks.js';
 import { intuitionDetails } from '../src/data/intuitionDetails.js';
-import { trackOrder } from '../src/data/learningTracks.js';
+import { codingGuides } from '../src/data/codingGuides.js';
+import { projects } from '../src/data/projects.js';
+import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
+import { homework } from '../src/data/homework.js';
+import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
 const problems = [];
@@ -21,7 +25,7 @@ const graphTypes = new Set([...graphSource.matchAll(/case '(\w+)':/g)].map((matc
 const figureSource = fs.readFileSync(new URL('../src/components/Figures.jsx', import.meta.url), 'utf8');
 const drawnFigures = new Set([...figureSource.slice(figureSource.indexOf('const drawings')).matchAll(/'([\w-]+)':/g)].map((match) => match[1]));
 // Pages the reference book does not cover; every other page must cite a section of it.
-const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics', 'roc-auc', 'ml-in-production']);
+const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics', 'roc-auc', 'ml-in-production', 'bootstrap']);
 
 function renders(tex, where) {
   try {
@@ -114,13 +118,66 @@ for (const { id } of concepts) {
   for (const note of details.courseNotes ?? []) if (words(note) > 50) problems.push(`${id}: course note over 50 words`);
 }
 for (const id of Object.keys(intuitionDetails)) if (!conceptMap[id]) problems.push(`intuition details for unknown page "${id}"`);
+// "From formula to code" guides: known pages, labelled steps of at most 70 words, code without tabs.
+for (const [id, steps] of Object.entries(codingGuides)) {
+  if (!conceptMap[id]) problems.push(`coding guide for unknown page "${id}"`);
+  for (const item of steps) {
+    if (!item.label || !item.text) problems.push(`${id}: coding-guide step needs a label and text`);
+    else if (words(item.text) > 70) problems.push(`${id}: coding-guide step "${item.label}" is over 70 words`);
+    if (item.code && item.code.includes('\t')) problems.push(`${id}: coding-guide code "${item.label}" uses tabs`);
+  }
+}
+// End-to-end projects: a known anchor page, 3-6 stages linking known pages, code and expected output.
+for (const [key, project] of Object.entries(projects)) {
+  if (!conceptMap[project.anchor]) problems.push(`project "${key}": unknown anchor page "${project.anchor}"`);
+  if (!project.code || !project.expected) problems.push(`project "${key}" needs code and expected output`);
+  if (project.steps.length < 3 || project.steps.length > 6) problems.push(`project "${key}" needs 3 to 6 stages`);
+  for (const item of project.steps) {
+    if (words(item.text) > 45) problems.push(`project "${key}": stage "${item.label}" is over 45 words`);
+    for (const id of item.pages) if (!conceptMap[id]) problems.push(`project "${key}": stage "${item.label}" links unknown page "${id}"`);
+  }
+}
 for (const [id, figure] of Object.entries(figures)) {
   if (!drawnFigures.has(id)) problems.push(`figure "${id}" has no drawing in Figures.jsx`);
   if (!figure.title || !figure.caption || !figure.alt) problems.push(`figure "${id}" needs a title, caption, and alt text`);
+}
+
+// Homework: one set per track section; every part has a prompt, an answer that passes its own checker,
+// mistakes that do not, and plain clues; every problem has pages, a solution and a takeaway.
+const sectionKeys = new Set(Object.values(tracks).flatMap((track) => track.sections.map((section) => sectionKey(track.id, section))));
+for (const key of sectionKeys) if (!homework[key]) problems.push(`no homework for track section "${key}"`);
+for (const [key, set] of Object.entries(homework)) {
+  if (!sectionKeys.has(key)) problems.push(`homework "${key}" is not a track section`);
+  if (set.problems.length < 2) problems.push(`homework "${key}" needs at least 2 problems`);
+  const ids = new Set();
+  for (const problem of set.problems) {
+    const where = `homework ${key} #${problem.id}`;
+    if (ids.has(problem.id)) problems.push(`${where}: duplicate problem id`);
+    ids.add(problem.id);
+    if (!problem.title || !problem.statement || !problem.takeaway || !problem.solution?.length) problems.push(`${where}: needs a title, statement, solution and takeaway`);
+    if (!problem.parts.length) problems.push(`${where}: no parts`);
+    for (const id of problem.pages) if (!conceptMap[id]) problems.push(`${where}: unknown page "${id}"`);
+    if (problem.tex) renders(problem.tex, where);
+    for (const item of problem.solution) if (item.tex) renders(item.tex, `${where} solution`);
+    problem.parts.forEach((part, index) => {
+      const at = `${where} part ${index + 1}`;
+      if (!part.prompt || !part.why || !Array.isArray(part.hints)) problems.push(`${at}: needs a prompt, an explanation and a clue list`);
+      if (!checkAnswer(part, answerAsInput(part)).correct) problems.push(`${at}: the stored answer fails its own check`);
+      for (const mistake of part.mistakes ?? []) {
+        const typed = Array.isArray(mistake.value) ? mistake.value.join(', ') : String(mistake.value);
+        const result = checkAnswer(part, typed);
+        if (result.correct || result.message !== mistake.message) problems.push(`${at}: mistake ${typed} is accepted as correct or not recognized`);
+      }
+      if (part.type === 'choice') {
+        if (new Set([part.answer, ...part.wrong]).size !== part.wrong.length + 1) problems.push(`${at}: repeated options`);
+        for (const mistake of part.mistakes ?? []) if (!part.wrong.includes(mistake.value)) problems.push(`${at}: feedback for an option that does not exist`);
+      }
+    });
+  }
 }
 
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);
 }
-console.log(`Content OK: ${concepts.length} concepts, ${topics.length} topics, ${graphTypes.size} graph types, ${Object.keys(figures).length} figures, ${Object.values(quizzes).flat().length} quiz questions, ${Object.keys(mmlReferences).length} pages with MML book references.`);
+console.log(`Content OK: ${concepts.length} concepts, ${topics.length} topics, ${graphTypes.size} graph types, ${Object.keys(figures).length} figures, ${Object.values(quizzes).flat().length} quiz questions, ${Object.keys(mmlReferences).length} pages with MML book references, ${Object.keys(homework).length} homework sets with ${Object.values(homework).reduce((n, set) => n + set.problems.length, 0)} problems.`);

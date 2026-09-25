@@ -8,9 +8,9 @@ export const tracks = {
     id: 'math',
     title: 'Math Track',
     short: 'Math',
-    description: 'Linear algebra and analytic geometry from sets and vectors to projections, eigenvectors, matrix decompositions, and PCA, in an order where each page only needs the ones before it. Section by section it follows Chapters 2, 3, 4, 5, and 10 of the course reference book, Mathematics for Machine Learning.',
+    description: 'Linear algebra, calculus, and probability from sets and vectors to projections, eigenvectors, matrix decompositions, gradients, likelihood, and PCA, in an order where each page only needs the ones before it. Section by section it follows Chapters 2, 3, 4, 5, 6 (with §8.3), and 10 of the course reference book, Mathematics for Machine Learning.',
     sections: [
-      { title: 'Foundations', concepts: ['sets', 'functions', 'inverse-composition', 'vectors-dot-product', 'norms'] },
+      { title: 'Foundations', concepts: ['sets', 'functions', 'inverse-composition', 'exp-log', 'vectors-dot-product', 'norms'] },
       { title: 'Matrices and linear systems', concepts: ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure'] },
       { title: 'Vector spaces', concepts: ['vector-spaces', 'span-linear-combinations', 'linear-independence', 'subspaces', 'basis-coordinates', 'dimension'] },
       { title: 'Linear transformations', concepts: ['linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'change-of-basis', 'affine-maps'] },
@@ -19,6 +19,7 @@ export const tracks = {
       { title: 'Eigenvalues and eigenvectors', concepts: ['eigenvalues-eigenvectors', 'trace', 'diagonalization', 'pagerank', 'spectral-theorem'] },
       { title: 'Matrix decompositions', concepts: ['lu-decomposition', 'cholesky-decomposition', 'svd'] },
       { title: 'Vector calculus', concepts: ['derivatives', 'partial-derivatives-gradient', 'jacobian-chain-rule', 'loss-gradients', 'backpropagation', 'taylor-hessian'] },
+      { title: 'Probability and statistics', concepts: ['probability-basics', 'expectation-variance', 'covariance-gaussian', 'likelihood-mle'] },
       { title: 'Dimensionality reduction', concepts: ['dimensionality-reduction', 'pca'] },
     ],
   },
@@ -32,8 +33,8 @@ export const tracks = {
       { title: 'Linear classification', concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence'] },
       { title: 'Losses and convexity', concepts: ['empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm', 'convex-functions', 'surrogate-losses'] },
       { title: 'Optimization', concepts: ['gradient-descent-method', 'momentum', 'subgradients', 'stochastic-subgradient-descent', 'lagrange-multipliers'] },
-      { title: 'Regression', concepts: ['linear-regression', 'polynomial-regression', 'least-squares-normal-equation', 'feature-scaling'] },
-      { title: 'Generalization and regularization', concepts: ['model-complexity-generalization', 'bias-variance', 'ridge-regularization', 'lasso', 'elastic-net', 'train-validation-test', 'cross-validation'] },
+      { title: 'Regression', concepts: ['linear-regression', 'polynomial-regression', 'least-squares-normal-equation', 'feature-scaling', 'multicollinearity'] },
+      { title: 'Generalization and regularization', concepts: ['model-complexity-generalization', 'bias-variance', 'ridge-regularization', 'lasso', 'elastic-net', 'train-validation-test', 'cross-validation', 'bootstrap'] },
       { title: 'Logistic regression', concepts: ['logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc'] },
       { title: 'ML in production', concepts: ['ml-in-production'] },
     ],
@@ -41,6 +42,11 @@ export const tracks = {
 };
 
 export const trackIds = Object.keys(tracks);
+
+// Each section's homework set is keyed "<track>/<section title as a slug>", e.g. "ml/regression".
+export function sectionKey(trackId, section) {
+  return `${trackId}/${section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+}
 
 export function trackOrder(trackId) {
   return tracks[trackId].sections.flatMap((section) => section.concepts);

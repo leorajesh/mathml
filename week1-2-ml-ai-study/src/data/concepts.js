@@ -1,6 +1,7 @@
 import { calculusConcepts } from './calculusConcepts.js';
 import { mlConcepts } from './mlConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
+import { probabilityConcepts } from './probabilityConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
 // Reading order of every concept page (topics are overview pages, not listed here).
@@ -11,6 +12,7 @@ export const conceptOrder = [
   'sets',
   'functions',
   'inverse-composition',
+  'exp-log',
   'vectors-dot-product',
   'norms',
   'matrix-operations',
@@ -57,6 +59,7 @@ export const conceptOrder = [
   'polynomial-regression',
   'least-squares-normal-equation',
   'feature-scaling',
+  'multicollinearity',
   'ridge-regularization',
   'lasso',
   'elastic-net',
@@ -64,6 +67,7 @@ export const conceptOrder = [
   'bias-variance',
   'train-validation-test',
   'cross-validation',
+  'bootstrap',
   'logistic-regression',
   'logistic-loss',
   'classification-metrics',
@@ -84,6 +88,10 @@ export const conceptOrder = [
   'loss-gradients',
   'backpropagation',
   'taylor-hessian',
+  'probability-basics',
+  'expectation-variance',
+  'covariance-gaussian',
+  'likelihood-mle',
   'pca',
 ];
 
@@ -94,13 +102,13 @@ export const sourceNotes = [
   'Mathematics for AI Week 1: Matrices, Linear Systems, Vector Spaces, Bases, Linear Transformations',
   'Mathematics for AI Week 2: Invertible Matrices, Rank/Nullity, Affine Spaces, Determinants, Change of Basis',
   'Mathematics for AI Week 3: Eigenvalues, Eigenvectors, Diagonalization, PageRank, Spectral Theorem, Cholesky, LU, SVD',
-  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
+  'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, Ch. 6 probability (§6.1-6.5), §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
 ];
 
 export const notCovered = [
   'Administrative course logistics and syllabus items were omitted because they do not teach the requested ML or mathematics concepts.',
   'Later Production ML topics such as kernel SVMs (only the linear max-margin idea is covered, as an extension), clustering, decision trees, ensemble methods, HMMs, reinforcement learning, and anomaly detection were listed in the introduction slides but fall outside Week 1-2 coverage.',
-  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-5, 7, and 10, plus least squares as a projection); probability, Bayesian regression, Gaussian mixtures, and the book\'s SVM chapter are not converted (the max-margin page draws on Bishop and ISL instead).',
+  'The Mathematics for Machine Learning book is covered where it matches the course (Chapters 2-5, the probability basics of Chapter 6, §8.3 maximum likelihood, 7, and 10, plus least squares as a projection); Bayesian inference and MAP, Bayesian regression, Gaussian mixtures, and the book\'s SVM chapter are not converted (the max-margin page draws on Bishop and ISL instead).',
   'Long theorem proofs were compressed into intuition, formulas, and numeric examples so the app stays focused on conceptual understanding.',
 ];
 
@@ -546,13 +554,14 @@ const baseConcepts = [
       { tex: tex`\hat{\theta}=(X^TX)^{-1}X^Ty`, definitions: ['X: design matrix', 'y: response vector', 'requires X^TX to be invertible'] },
       { tex: tex`X=\begin{bmatrix}1&x^{(1)T}\\\vdots&\vdots\\1&x^{(n)T}\end{bmatrix},\qquad \hat w=(X^TX)^{-1}X^Ty=\begin{bmatrix}\theta_0\\\theta\end{bmatrix}`, definitions: ['column of ones: lets the same formula also learn the intercept theta_0, as in the Lesson 3 slides'] },
       { tex: tex`\hat{y}=X\hat\theta=X(X^TX)^{-1}X^Ty,\qquad X^T(y-\hat{y})=0`, definitions: [tex`\hat{y}: fitted values, the orthogonal projection of y onto the column space of X`, tex`y-\hat{y}: residual vector, perpendicular to every column of X`] },
+      { tex: tex`\operatorname{RMSE}=\sqrt{\frac1n\sum_{t=1}^{n}\bigl(y^{(t)}-\hat y^{(t)}\bigr)^2},\qquad \operatorname{MAE}=\frac1n\sum_{t=1}^{n}\bigl|y^{(t)}-\hat y^{(t)}\bigr|,\qquad R^2=1-\frac{\sum_t\bigl(y^{(t)}-\hat y^{(t)}\bigr)^2}{\sum_t\bigl(y^{(t)}-\bar y\bigr)^2}`, definitions: [tex`\operatorname{RMSE}: root mean squared error, a typical error size in the units of y; big misses count extra`, tex`\operatorname{MAE}: mean absolute error, also in the units of y and less affected by a few big misses`, tex`R^2: fraction of the variation of y around its mean that the model explains; 1 is perfect, 0 is no better than predicting the mean, and on test data it can be negative`] },
     ],
-    example: ['Fit y = theta x through the origin to points (1,2) and (2,3).', 'X^T X = 1^2 + 2^2 = 5.', 'X^T y = 1*2 + 2*3 = 8.', 'theta_hat = 8 / 5 = 1.6. Predictions are 1.6 and 3.2.', 'Projection view: the residual y - y_hat = [2 - 1.6, 3 - 3.2] = [0.4, -0.2] is perpendicular to the column x = [1, 2]: 0.4 - 0.4 = 0.'],
+    example: ['Fit y = theta x through the origin to points (1,2) and (2,3).', 'X^T X = 1^2 + 2^2 = 5.', 'X^T y = 1*2 + 2*3 = 8.', 'theta_hat = 8 / 5 = 1.6. Predictions are 1.6 and 3.2.', 'Projection view: the residual y - y_hat = [2 - 1.6, 3 - 3.2] = [0.4, -0.2] is perpendicular to the column x = [1, 2]: 0.4 - 0.4 = 0.', 'Reporting the fit: RMSE = sqrt((0.4^2 + 0.2^2)/2) ≈ 0.316, MAE = (0.4 + 0.2)/2 = 0.3, and with mean y_bar = 2.5, R^2 = 1 - 0.2/0.5 = 0.6.'],
     graph: { type: 'fitLine', title: 'Least squares as visible residuals', caption: 'This graph uses a separate three-point dataset with an intercept. The red bars are residuals. Move the slope and intercept to see why the normal equation solution is the global minimum of this quadratic loss.', sliders: [{ key: 'slope', label: 'slope', min: -1, max: 2, step: 0.05, value: 1 }, { key: 'intercept', label: 'intercept', min: -1, max: 3, step: 0.05, value: 0 }] },
     figure: 'projection-plane',
     misconception: 'The normal equation is not always usable. A must be invertible, which needs the training points to span R^d (so n >= d), and inverting a d by d matrix costs about d^3 operations: with d = 10,000 that is slow, which is why the notes prefer stochastic gradient updates for large problems. The Lesson 3 slides add a third limit: most other models, such as logistic regression and neural networks, have no closed-form solution at all, which is why gradient descent is the general-purpose tool.',
     prerequisites: ['matrix-systems', 'rank-nullity', 'linear-regression', 'orthogonal-projections', 'loss-gradients'],
-    followOns: ['ridge-regularization', 'model-complexity-generalization'],
+    followOns: ['ridge-regularization', 'multicollinearity', 'model-complexity-generalization'],
     sources: ['Week2_notes01-LinearRegression.pdf', 'Production ML Slides Lesson 3 - Linear Regression.pdf'],
   },
   {
@@ -631,7 +640,7 @@ const baseConcepts = [
     example: ['For y = 1 and predicted probability h = 0.8, loss = -log(0.8) ≈ 0.223.', 'For y = 1 and h = 0.2, loss = -log(0.2) ≈ 1.609.', 'The confident wrong-ish prediction is penalized much more: 1.609 - 0.223 = 1.386.', 'Optimizing log-likelihood is equivalent to optimizing likelihood because log is increasing, but it converts products into sums that are easier and numerically safer.', 'One gradient step: x = [1, 2] (the leading 1 is the offset), y = 1, theta = [0, 0]. Then h = sigma(0) = 0.5, the gradient is (0.5 - 1)[1, 2] = [-0.5, -1], and with alpha = 0.5, theta becomes [0.25, 0.5].'],
     graph: { type: 'logLoss', title: 'Logistic loss for true label y = 1', sliders: [{ key: 'prob', label: 'predicted probability h', min: 0.02, max: 0.98, step: 0.01, value: 0.8 }] },
     misconception: 'A probability near 0 or 1 is not automatically good; it is good only if it assigns high probability to the observed class.',
-    prerequisites: ['logistic-regression', 'gradient-descent-method', 'loss-gradients'],
+    prerequisites: ['logistic-regression', 'gradient-descent-method', 'loss-gradients', 'feature-scaling'],
     followOns: ['classification-metrics', 'taylor-hessian'],
     sources: ['Week2_notes02-Logistic Regression.pdf', 'Production ML Slides Lesson 4 - Logistic Regression.pdf'],
   },
@@ -646,7 +655,7 @@ const baseConcepts = [
       { tex: tex`\operatorname{Accuracy}=\frac{TP+TN}{TP+TN+FP+FN}`, definitions: [tex`TP: true positives`, tex`TN: true negatives`, tex`FP: false positives`, tex`FN: false negatives`] },
       { tex: tex`\operatorname{Precision}=\frac{TP}{TP+FP},\quad \operatorname{Recall}=\frac{TP}{TP+FN},\quad \operatorname{Specificity}=\frac{TN}{TN+FP}`, definitions: [tex`\operatorname{Precision}: reliability of positive predictions`, tex`\operatorname{Recall}: sensitivity`, tex`\operatorname{Specificity}: true-negative rate`] },
       { tex: tex`\text{Error rate}=1-\operatorname{Accuracy}=\frac{FP+FN}{TP+TN+FP+FN}`, definitions: ['Error rate: fraction of examples classified wrongly'] },
-      { tex: tex`F_1=\frac{2\,\operatorname{Precision}\cdot\operatorname{Recall}}{\operatorname{Precision}+\operatorname{Recall}}`, definitions: [tex`F_1: harmonic mean of precision and recall; for the first example 2(0.8)(0.444)/1.244 ≈ 0.571`] },
+      { tex: tex`F_1=\frac{2\,\operatorname{Precision}\cdot\operatorname{Recall}}{\operatorname{Precision}+\operatorname{Recall}}`, definitions: [tex`F_1: harmonic mean of precision and recall, 2/(1/P + 1/R); for the first example 2/(1.25 + 2.25) ≈ 0.571`] },
     ],
     example: ['Suppose TP = 8, FP = 2, TN = 90, and FN = 10.', 'Accuracy = (8 + 90) / 110 = 0.891.', 'Precision = 8 / (8 + 2) = 0.8.', 'Recall = 8 / (8 + 10) = 0.444, so high accuracy still misses many positives.', 'A cat detector tested on 25 images (the table used in Lesson 4): TP = 11, FN = 3, FP = 2, TN = 9.', 'Accuracy = 20/25 = 0.8, so the error rate is 0.2. Precision = 11/13 ≈ 0.846, recall = 11/14 ≈ 0.786, specificity = 9/11 ≈ 0.818.'],
     graph: { type: 'threshold', title: 'Threshold changes the positive/negative trade-off', caption: 'Twenty examples sorted by predicted probability. Points right of the threshold are predicted positive. Raising the threshold usually raises precision and lowers recall.', sliders: [{ key: 'threshold', label: 'decision threshold', min: 0.05, max: 0.95, step: 0.05, value: 0.5 }] },
@@ -675,7 +684,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 
@@ -744,7 +753,8 @@ export const mindMapEdges = [
   ['feature-vectors', 'linear-regression'], ['linear-regression', 'polynomial-regression'], ['linear-regression', 'least-squares-normal-equation'], ['rank-inverse-determinant', 'least-squares-normal-equation'], ['least-squares-normal-equation', 'ridge-regularization'], ['ridge-regularization', 'lasso-elastic-net'], ['lasso-elastic-net', 'model-complexity-generalization'],
   ['model-complexity-generalization', 'validation-cross-validation'], ['validation-cross-validation', 'logistic-regression'], ['linear-classifier', 'logistic-regression'], ['logistic-regression', 'logistic-loss'], ['gradient-descent', 'logistic-loss'], ['logistic-loss', 'classification-metrics'],
   ['ml-landscape', 'ml-workflow'], ['ml-landscape', 'ml-in-production'],
-  ['hinge-loss', 'max-margin-svm'], ['max-margin-svm', 'stochastic-subgradient-descent'], ['least-squares-normal-equation', 'feature-scaling'], ['feature-scaling', 'ridge-regularization'], ['model-complexity-generalization', 'bias-variance'], ['bias-variance', 'validation-cross-validation'], ['classification-metrics', 'roc-auc'], ['roc-auc', 'ml-in-production'], ['ml-workflow', 'ml-in-production'],
+  ['hinge-loss', 'max-margin-svm'], ['max-margin-svm', 'stochastic-subgradient-descent'], ['least-squares-normal-equation', 'feature-scaling'], ['feature-scaling', 'ridge-regularization'], ['feature-scaling', 'multicollinearity'], ['multicollinearity', 'ridge-regularization'], ['eigenvalues-eigenvectors', 'multicollinearity'], ['model-complexity-generalization', 'bias-variance'], ['bias-variance', 'validation-cross-validation'], ['classification-metrics', 'roc-auc'], ['roc-auc', 'ml-in-production'], ['ml-workflow', 'ml-in-production'],
+  ['probability-statistics', 'logistic-loss'], ['probability-statistics', 'bias-variance'], ['probability-statistics', 'classification-metrics'], ['sets-functions', 'probability-statistics'],
   ['vector-calculus', 'gradient-descent'], ['vector-calculus', 'least-squares-normal-equation'], ['vector-calculus', 'logistic-loss'], ['vector-calculus', 'convexity-surrogate-losses'],
   ['feature-vectors', 'norms-inner-products'], ['norms-inner-products', 'orthogonality-spectral-theorem'], ['norms-inner-products', 'projections-gram-schmidt'], ['orthogonality-spectral-theorem', 'projections-gram-schmidt'], ['rank-inverse-determinant', 'projections-gram-schmidt'], ['projections-gram-schmidt', 'least-squares-normal-equation'], ['projections-gram-schmidt', 'pca'], ['eigenvalues-eigenvectors', 'trace'], ['trace', 'pca'], ['orthogonality-spectral-theorem', 'pca'], ['affine-dimensionality-reduction', 'pca'], ['matrix-decompositions', 'pca'], ['gradient-descent', 'lagrange-multipliers'], ['lagrange-multipliers', 'ridge-regularization'], ['lagrange-multipliers', 'lasso-elastic-net'],
     ['determinants-cofactor-row-ops', 'eigenvalues-eigenvectors'], ['rank-inverse-determinant', 'eigenvalues-eigenvectors'], ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors'], ['logistic-loss', 'taylor-hessian'], ['eigenvalues-eigenvectors', 'diagonalization-pagerank'], ['eigenvalues-eigenvectors', 'orthogonality-spectral-theorem'], ['diagonalization-pagerank', 'matrix-decompositions'], ['orthogonality-spectral-theorem', 'matrix-decompositions'],

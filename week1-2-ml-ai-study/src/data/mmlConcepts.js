@@ -139,7 +139,7 @@ export const mmlConcepts = [
     example: ['Take four points whose mean is already 0: (2, 2), (-2, -2), (1, -1), (-1, 1).', 'Covariance: S = (1/4) sum of x x^T = (1/4)[[10, 6], [6, 10]] = [[2.5, 1.5], [1.5, 2.5]].', 'tr(S) = 5 and det(S) = 6.25 - 2.25 = 4, so the eigenvalues are 4 and 1. The first principal component is b1 = [1, 1]/sqrt(2), with variance 4.', 'Codes z = b1 . x: 2.83, -2.83, 0, 0. Their mean square is (8 + 8 + 0 + 0)/4 = 4 = lambda_1.', 'Reconstructions z b1: (2, 2), (-2, -2), (0, 0), (0, 0). The average squared error is (0 + 0 + 2 + 2)/4 = 1 = lambda_2, and 4 + 1 = 5 = tr(S). One component explains 4/5 = 80% of the variance.'],
     graph: { type: 'pca', title: 'Maximum variance equals minimum error', caption: 'Turn the direction. The spread of the projected points (kept variance) and the red residuals (lost error) always add up to the same total, so the direction that keeps the most variance also loses the least.', sliders: [{ key: 'angle', label: 'projection direction', min: 0, max: 180, step: 1, value: 0 }, { key: 'tilt', label: 'data tilt', min: 0, max: 180, step: 5, value: 35 }] },
     misconception: 'PCA is not feature selection: each principal component mixes all the original features. It is also sensitive to units, so features measured on very different scales should be standardized first, or the largest-scale feature dominates.',
-    prerequisites: ['dimensionality-reduction', 'spectral-theorem', 'orthogonal-projections', 'trace'],
+    prerequisites: ['dimensionality-reduction', 'spectral-theorem', 'orthogonal-projections', 'trace', 'covariance-gaussian'],
     followOns: ['svd', 'model-complexity-generalization'],
     sources: ['Mathematics for Machine Learning, Ch. 10'],
   },

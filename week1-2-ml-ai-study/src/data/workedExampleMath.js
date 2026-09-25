@@ -1,6 +1,38 @@
 const tex = String.raw;
 
 export const workedExampleMath = {
+  'exp-log': [
+    tex`\sigma(2)=\frac{1}{1+e^{-2}}=\frac{1}{1.1353}\approx0.8808,\qquad \sigma(-2)\approx0.1192,\qquad \text{sum}=1`,
+    tex`\operatorname{logit}(0.8)=\ln\frac{0.8}{0.2}=\ln4\approx1.386,\qquad \sigma(1.386)=0.8`,
+    tex`\ln(0.9\cdot0.8\cdot0.6)=\ln0.9+\ln0.8+\ln0.6=-0.1054-0.2231-0.5108=-0.8393=\ln0.432`,
+    tex`-\ln\sigma(2)=\ln\bigl(1+e^{-2}\bigr)\approx0.1269`,
+  ],
+  'probability-basics': [
+    tex`TP=8,\ FP=2,\ TN=90,\ FN=10,\qquad n=110`,
+    tex`P(y=1)=\tfrac{18}{110}\approx0.164,\qquad P(\hat y=1)=\tfrac{10}{110}\approx0.091`,
+    tex`P(\hat y=1\mid y=1)=\tfrac{8}{18}\approx0.444,\qquad P(y=1\mid\hat y=1)=\tfrac{8}{10}=0.8`,
+    tex`\frac{P(\hat y=1\mid y=1)\,P(y=1)}{P(\hat y=1)}=\frac{(8/18)(18/110)}{10/110}=\frac{8}{10}`,
+    tex`P(D\mid+)=\frac{0.9\cdot0.01}{0.9\cdot0.01+0.05\cdot0.99}=\frac{0.009}{0.0585}\approx0.154`,
+  ],
+  'expectation-variance': [
+    tex`E[X]=\tfrac{21}{6}=3.5,\quad E[X^2]=\tfrac{91}{6},\quad \operatorname{Var}X=\tfrac{91}{6}-\tfrac{49}{4}=\tfrac{35}{12}\approx2.917`,
+    tex`\operatorname{Var}\bar X=\tfrac{2.917}{4}\approx0.729`,
+    tex`E[Z]=\tfrac{1.2+2.9+2.0}{3}\approx2.0333,\quad (E[Z]-2)^2\approx0.0011,\quad \operatorname{Var}Z\approx0.4822`,
+    tex`E[(Z-2)^2]=\tfrac{0.64+0.81+0}{3}\approx0.4833=0.0011+0.4822`,
+    tex`s=\sqrt{\tfrac{500^2+0+500^2}{3}}\approx408.2,\qquad z\approx(-1.225,\ 0,\ 1.225)`,
+  ],
+  'covariance-gaussian': [
+    tex`\bar x=(2,2),\quad \text{centred: }(-2,-2),(0,0),(2,-1),(0,3)`,
+    tex`S=\tfrac14\begin{bmatrix}8&2\\2&14\end{bmatrix}=\begin{bmatrix}2&0.5\\0.5&3.5\end{bmatrix},\qquad \rho=\frac{0.5}{\sqrt{2\cdot3.5}}\approx0.189`,
+    tex`b^TSb=\tfrac12(2+3.5+2\cdot0.5)=3.25`,
+    tex`TPR=\Phi(0.7)\approx0.758,\quad FPR=1-\Phi(0.8)\approx0.212,\quad AUC=\Phi\bigl(1.5/\sqrt2\bigr)\approx0.856`,
+  ],
+  'likelihood-mle': [
+    tex`L(\mu)=\mu\cdot\mu\cdot(1-\mu)\cdot\mu=\mu^3(1-\mu)`,
+    tex`L(0.5)=0.0625,\qquad L(0.75)=0.421875\cdot0.25\approx0.1055`,
+    tex`\ell'(\mu)=\frac3\mu-\frac1{1-\mu}:\quad \ell'(0.75)=4-4=0\ \Rightarrow\ \hat\mu=0.75`,
+    tex`-\tfrac14\bigl(3\ln0.75+\ln0.25\bigr)\approx0.562\ <\ \ln2\approx0.693`,
+  ],
   'ml-workflow': [
     null,
     tex`x^{(1)}=[1,2],\quad x^{(2)}=[0,0],\quad x^{(3)}=[1,1]`,
@@ -152,6 +184,7 @@ export const workedExampleMath = {
     tex`X^Ty=1\cdot2+2\cdot3=8`,
     tex`\hat\theta=\frac{8}{5}=1.6,\quad \hat y=[1.6,3.2]`,
     tex`y-\hat y=\begin{bmatrix}0.4\\-0.2\end{bmatrix},\quad X^T(y-\hat y)=1\cdot0.4+2\cdot(-0.2)=0`,
+    tex`\operatorname{RMSE}=\sqrt{\tfrac{0.16+0.04}{2}}\approx0.316,\quad \operatorname{MAE}=\tfrac{0.4+0.2}{2}=0.3,\quad R^2=1-\frac{0.2}{(2-2.5)^2+(3-2.5)^2}=1-\frac{0.2}{0.5}=0.6`,
   ],
   'ridge-regularization': [
     tex`X^TX=5,\quad X^Ty=8`,
@@ -288,6 +321,7 @@ export const workedExampleMath = {
     tex`J'(\theta)=2(\theta-3),\quad J'(0)=-6`,
     tex`\theta^{(1)}=0-0.2(-6)=1.2`,
     tex`J'(1.2)=-3.6,\quad \theta^{(2)}=1.2-0.2(-3.6)=1.92,\quad |\theta-3|:\ 3\to1.8\to1.08`,
+    tex`\kappa=\frac{4.07}{0.0088}\approx464,\qquad k\approx\kappa\ln10^{6}=464\times13.8\approx6400`,
   ],
   'subgradients': [
     tex`f(\theta)=|\theta-2|,\quad \theta^{(0)}=0,\quad \alpha=0.5`,
@@ -492,5 +526,20 @@ export const workedExampleMath = {
     tex`y^{(t)}\in\{R,N\}\ \to\ \{+1,-1\}\quad\text{(classification)}`,
     tex`y^{(t)}\in\mathbb{R}_{\ge0}\ \text{(months)}\quad\text{(regression)}`,
     null,
+  ],
+  'multicollinearity': [
+    tex`C=\begin{bmatrix}1&0.95\\0.95&1\end{bmatrix}`,
+    tex`\lambda_1=1.95,\ v_1=\tfrac{1}{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix};\qquad \lambda_2=0.05,\ v_2=\tfrac{1}{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix};\qquad \kappa=\frac{1.95}{0.05}=39`,
+    tex`\operatorname{Var}(v_1^T\hat\theta)=\frac{\sigma^2}{1.95\,n}\approx0.51\,\frac{\sigma^2}{n},\qquad \operatorname{Var}(v_2^T\hat\theta)=\frac{\sigma^2}{0.05\,n}=20\,\frac{\sigma^2}{n}`,
+    tex`\operatorname{VIF}=\frac{1}{1-0.95^2}=\frac{1}{0.0975}\approx10.3`,
+    tex`\frac{0.05}{0.05+0.1}\approx0.33,\qquad \frac{1.95}{1.95+0.1}\approx0.95,\qquad \kappa_{\text{ridge}}=\frac{2.05}{0.15}\approx13.7`,
+    null,
+  ],
+  'bootstrap': [
+    tex`\bar x=\frac{2+4+9}{3}=5`,
+    tex`(2,9,9)\mapsto6.67,\qquad (4,4,2)\mapsto3.33,\qquad 3^3=27\text{ resamples}`,
+    tex`\operatorname{Var}(\bar x^{*})=\frac{1}{3}\cdot\frac{(2-5)^2+(4-5)^2+(9-5)^2}{3}=\frac{26}{9}\approx2.89,\qquad \widehat{\operatorname{SE}}_{\text{boot}}\approx1.70`,
+    tex`\Bigl(\tfrac23\Bigr)^3\approx0.30,\qquad \Bigl(1-\tfrac1n\Bigr)^n\to e^{-1}\approx0.368`,
+    tex`\operatorname{RMSE}_{\text{OLS}}-\operatorname{RMSE}_{\text{ridge}}=-0.12,\qquad 95\%\text{ interval }[-2.54,\ 2.00]\ni0`,
   ],
 };

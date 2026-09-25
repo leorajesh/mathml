@@ -443,6 +443,7 @@ export const subtopicConcepts = [
     formulas: [
       { tex: tex`\det\begin{bmatrix}a&b\\c&d\end{bmatrix}=ad-bc`, definitions: [tex`a,b,c,d: entries of a 2 by 2 matrix`, tex`\det: signed area of the image of the unit square`] },
       { tex: tex`\det(AB)=\det(A)\det(B),\qquad \det(A^{-1})=\frac{1}{\det(A)},\qquad \det(A^T)=\det(A)`, definitions: [tex`A,B: square matrices of the same size`] },
+      { tex: tex`\det(cA)=c^{n}\det(A)`, definitions: [tex`c: a number; each of the n rows is multiplied by c, and each row contributes one factor c (so det(2A) = 4 det A for 2 by 2)`] },
       { tex: tex`\det(A)=0\iff A\text{ is not invertible}\iff\operatorname{rank}(A)<n`, definitions: [tex`n: size of the square matrix A`] },
     ],
     example: ['For A = [[2, 1], [1, 1]], det(A) = 2*1 - 1*1 = 1, so A keeps area the same and is invertible.', 'For B = [[2, 1], [4, 2]], det(B) = 4 - 4 = 0: the second row is twice the first, and the square collapses onto a line.', 'For the reflection F = [[1, 0], [0, -1]], det(F) = -1: area is kept but orientation flips.', 'det(AF) = det(A) det(F) = 1 * (-1) = -1.'],
@@ -602,6 +603,7 @@ export const subtopicConcepts = [
     formulas: [
       { tex: tex`\operatorname{CV}_k(\lambda)=\frac{1}{k}\sum_{j=1}^{k}E_{\text{val}}^{(j)}(\lambda)`, definitions: [tex`k: number of folds`, tex`E_{\text{val}}^{(j)}: validation error when fold j is held out`] },
       { tex: tex`\lambda^*=\arg\min_\lambda\operatorname{CV}_k(\lambda)`, definitions: [tex`\lambda^*: chosen hyperparameter`] },
+      { tex: tex`\operatorname{SE}=\frac{s}{\sqrt k},\qquad \lambda_{\text{1SE}}=\text{the most regularized }\lambda\text{ with }\operatorname{CV}_k(\lambda)\le\operatorname{CV}_k(\lambda^*)+\operatorname{SE}(\lambda^*)`, definitions: [tex`s: sample standard deviation (dividing by k - 1) of the k fold errors`, tex`\lambda_{\text{1SE}}: the one-standard-error rule, which picks the simplest setting that is statistically as good as the best`] },
     ],
     example: ['With 4-fold cross-validation, split the non-test data into four folds.', 'Run 1 trains on folds 2-4 and validates on fold 1; run 2 validates on fold 2, and so on.', 'Suppose the four validation errors for lambda = 0.1 are 0.22, 0.25, 0.20, 0.24, so CV = 0.2275. Repeat for each candidate lambda and pick the best average.', 'Refit the chosen model on all non-test data, then evaluate once on the test set. Fit preprocessing such as scaling only on the training folds, to avoid leakage.'],
     graph: { type: 'kfold', title: 'Each fold takes one turn as validation', caption: 'Each row is one training run. The orange block is that run\'s validation fold; every fold is orange exactly once.', sliders: [{ key: 'k', label: 'number of folds k', min: 2, max: 10, step: 1, value: 4 }] },
@@ -680,6 +682,7 @@ export const subtopicConcepts = [
     formulas: [
       { tex: tex`A=A^T\ \Rightarrow\ A=Q\Lambda Q^T`, definitions: [tex`A: real symmetric matrix`, tex`Q: orthogonal matrix of eigenvectors`, tex`\Lambda: diagonal matrix of real eigenvalues`] },
       { tex: tex`A=\sum_i\lambda_i\,q_iq_i^T`, definitions: [tex`q_i: unit eigenvectors, mutually orthogonal`, tex`\lambda_i: matching eigenvalues`] },
+      { tex: tex`x^TAx=\sum_i\lambda_i\,(q_i\cdot x)^2>0\ \text{for all }x\ne0\iff\text{all }\lambda_i>0`, definitions: ['positive definite: every eigenvalue is positive, so the quadratic form is a bowl with its unique minimum at 0 (see Taylor and the Hessian)'] },
     ],
     example: ['Let A = [[2, 1], [1, 2]], which is symmetric.', 'det(A - l I) = (2 - l)^2 - 1 = 0 gives l = 3 and l = 1.', 'Eigenvectors: q1 = [1, 1]/sqrt(2) for 3 and q2 = [1, -1]/sqrt(2) for 1; they are orthogonal.', 'So A = Q diag(3, 1) Q^T, and A = 3 q1 q1^T + 1 q2 q2^T.'],
     graph: { type: 'spectral', title: 'Orthogonal eigen-directions for a symmetric matrix', sliders: [{ key: 'rotation', label: 'basis rotation', min: 0, max: 180, step: 5, value: 35 }, { key: 'lambda1', label: 'lambda_1', min: 0.2, max: 3, step: 0.1, value: 2.2 }, { key: 'lambda2', label: 'lambda_2', min: 0.2, max: 3, step: 0.1, value: 0.8 }] },
@@ -737,6 +740,7 @@ export const subtopicConcepts = [
       { tex: tex`A=W\Sigma V^T`, definitions: [tex`W,V: orthogonal matrices (W is usually called U; renamed to avoid clashing with LU)`, tex`\Sigma: m by n diagonal matrix with sigma_1 >= sigma_2 >= ... >= 0`] },
       { tex: tex`\sigma_i=\sqrt{\lambda_i(A^TA)},\qquad Av_i=\sigma_i w_i`, definitions: [tex`v_i: eigenvectors of A^T A (right singular vectors)`, tex`w_i: left singular vectors`] },
       { tex: tex`A_k=\sum_{i=1}^{k}\sigma_i\,w_iv_i^T`, definitions: [tex`A_k: best rank-k approximation of A (Eckart-Young theorem)`] },
+      { tex: tex`\lVert A\rVert_F^2=\sum_i\sigma_i^2,\qquad \lVert A-A_k\rVert_F^2=\sum_{i>k}\sigma_i^2`, definitions: [tex`\lVert A\rVert_F: Frobenius norm, the square root of the sum of all squared entries; the error of A_k is made of the dropped singular values`] },
     ],
     example: ['Let A = [[3, 0], [4, 5]]. Then A^T A = [[25, 20], [20, 25]], with eigenvalues 45 and 5.', 'So sigma_1 = sqrt(45) = 3sqrt(5) = 6.708 and sigma_2 = sqrt(5) = 2.236; their product 15 equals |det A|.', 'Right singular vectors: v1 = [1, 1]/sqrt(2), v2 = [1, -1]/sqrt(2). Left: w1 = A v1 / sigma_1 = [1, 3]/sqrt(10), w2 = A v2 / sigma_2 = [3, -1]/sqrt(10).', 'The best rank-1 approximation is sigma_1 w1 v1^T = [[1.5, 1.5], [4.5, 4.5]].'],
     graph: { type: 'svdCompression', title: 'Rebuilding an image from its largest singular values', caption: 'A 48 by 48 grayscale image (a matrix of numbers between 0 and 1) and its best rank-k approximation A_k. A handful of singular values already capture the main shapes; the fine edges need more.', sliders: [{ key: 'k', label: 'rank k (singular values kept)', min: 1, max: 30, step: 1, value: 5 }] },

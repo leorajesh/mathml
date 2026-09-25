@@ -125,6 +125,7 @@ export const probabilityConcepts = [
       { tex: tex`\hat\mu=\arg\max_\mu\ell(\mu)=\arg\min_\mu\bigl(-\ell(\mu)\bigr)=\frac kn`, definitions: ['k: the number of ones among the n labels', 'mu hat: the maximum likelihood estimate, from setting k/mu - (n - k)/(1 - mu) = 0; if k = 0 or k = n the log-likelihood is monotone and the maximum is at the boundary, still k/n', 'boundary warning: mu hat = 0 or 1 gives infinite log-loss on a future opposite label, which is why smoothing or a prior is used in practice'] },
       { tex: tex`\mu_t=\sigma(\theta\cdot x_t+\theta_0):\qquad -\frac1n\,\ell(\theta)=\frac1n\sum_{t=1}^{n}\bigl[-y_t\ln\mu_t-(1-y_t)\ln(1-\mu_t)\bigr]=J(\theta)`, definitions: ['J: the logistic (cross-entropy) loss; minimizing it is maximum likelihood'] },
       { tex: tex`y=\theta\cdot x+\varepsilon,\ \ \varepsilon\sim\mathcal N(0,\sigma^2):\qquad -\ell(\theta)=\frac{1}{2\sigma^2}\sum_{t=1}^{n}(y_t-\theta\cdot x_t)^2+\text{const}`, definitions: ['epsilon: Gaussian noise', 'const: a term that does not depend on theta, so least squares is maximum likelihood'] },
+      { tex: tex`\hat\mu_{\text{ML}}=\bar x=\frac1n\sum_{t=1}^{n}x_t,\qquad \hat\sigma^2_{\text{ML}}=\frac1n\sum_{t=1}^{n}(x_t-\bar x)^2`, definitions: ['Gaussian data: maximum likelihood gives the sample mean and the variance that divides by n; the unbiased estimate divides by n - 1 instead'] },
     ],
     example: [
       'Labels 1, 1, 0, 1 (k = 3 ones, n = 4). The likelihood is L(mu) = mu^3 (1 - mu).',

@@ -500,3 +500,6 @@ fieldset:disabled .quiz-option { cursor: default; }
   .hw-problem-head { flex-direction: column; }
 }
 .hw-footer .track-next { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.hw-tier { color: var(--muted); font-size: 0.9rem; }
+.hw-stuck { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.hw-stuck label { flex: 1 1 100%; font-weight: 700; }

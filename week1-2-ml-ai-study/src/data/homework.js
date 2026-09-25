@@ -61,8 +61,8 @@ export const homework = {
       "prompt": "Does g(x) = x² have an inverse on all real numbers?",
       "answer": "No",
       "wrong": [
-       "Yes",
-       "Only if we use sqrt"
+       "Yes: sqrt(x) is its inverse",
+       "Yes: every function has an inverse"
       ],
       "hints": [
        "A function has an inverse only if different inputs always give different outputs. Try two inputs with the same square."
@@ -70,11 +70,11 @@ export const homework = {
       "why": "g(2) = g(−2) = 4, so an output does not tell you the input. sqrt(x) is an inverse only on x ≥ 0.",
       "mistakes": [
        {
-        "value": "Yes",
+        "value": "Yes: every function has an inverse",
         "message": "Which x gives g(x) = 4: 2 or −2? An inverse would have to return both."
        },
        {
-        "value": "Only if we use sqrt",
+        "value": "Yes: sqrt(x) is its inverse",
         "message": "sqrt(4) = 2, but g(−2) = 4 as well: sqrt cannot recover −2. It is an inverse only after restricting to x ≥ 0."
        }
       ]
@@ -266,6 +266,27 @@ export const homework = {
         "message": "Divide by both lengths, ||u|| and ||v||. A cosine is never above 1."
        }
       ]
+     },
+     {
+      "type": "number",
+      "prompt": "Find the number t for which w = [1, t, 0] is perpendicular to u.",
+      "answer": -0.5,
+      "hints": [
+       "Perpendicular means a zero dot product.",
+       "u · w = 1 + 2t; set it to 0."
+      ],
+      "why": "u · w = 1 + 2t = 0 gives t = −0.5. A cosine of 0 is the same statement: a right angle.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": 0.5,
+        "message": "Check the sign: 1 + 2t = 0."
+       },
+       {
+        "value": -2.0,
+        "message": "Solve 1 + 2t = 0 for t: divide by 2, do not multiply."
+       }
+      ]
      }
     ],
     "solution": [
@@ -278,6 +299,9 @@ export const homework = {
      {
       "text": "||v||₂ = sqrt 5, so cos = 4/(3 sqrt 5) ≈ 0.596.",
       "tex": "\\cos\\angle(u,v)=\\frac{u\\cdot v}{\\lVert u\\rVert\\,\\lVert v\\rVert}=\\frac{4}{3\\sqrt5}"
+     },
+     {
+      "text": "u · [1, t, 0] = 1 + 2t = 0 gives t = −0.5."
      }
     ],
     "takeaway": "A linear model's score θ · x is a dot product: large and positive when x points along θ. The norms return as penalties in ridge (L2) and lasso (L1)."
@@ -362,7 +386,7 @@ export const homework = {
        "Write out u vᵀ: row i is uᵢ times vᵀ.",
        "Row 2 is 2 times row 1. How many independent rows is that?"
       ],
-      "why": "Every row is a multiple of vᵀ, so the rank is 1.",
+      "why": "Every row is a multiple of vᵀ, so the rank is 1. (Counting independent columns always gives the same number: row rank = column rank.)",
       "tol": 0,
       "mistakes": [
        {
@@ -416,7 +440,7 @@ export const homework = {
     "parts": [
      {
       "type": "number",
-      "prompt": "Eliminate x from row 2 using row 1. What is the right-hand side of the new row 2?",
+      "prompt": "Eliminate x from row 2 by subtracting a multiple of row 1 from row 2. What is the right-hand side of the new row 2?",
       "answer": -11.0,
       "hints": [
        "Choose the multiple of row 1 that cancels the x in row 2.",
@@ -460,7 +484,7 @@ export const homework = {
       "answer": "Substitute it into all three original equations",
       "wrong": [
        "Substitute it into the last row of the eliminated system",
-       "Check that the numbers are integers",
+       "Redo the back-substitution in a different order",
        "Check that the determinant is not zero"
       ],
       "hints": [
@@ -475,6 +499,10 @@ export const homework = {
        {
         "value": "Check that the determinant is not zero",
         "message": "That shows a unique solution exists, not that yours is it."
+       },
+       {
+        "value": "Redo the back-substitution in a different order",
+        "message": "That reuses the eliminated rows, so a slip made during elimination would survive."
        }
       ]
      }
@@ -785,27 +813,27 @@ export const homework = {
      {
       "type": "choice",
       "prompt": "Which set is a subspace of R³?",
-      "answer": "All x with x1 + x2 + x3 = 0",
+      "answer": "All x with x1 − 2x2 + x3 = 0",
       "wrong": [
-       "All x with x1 + x2 + x3 = 1",
-       "All x with x1 ≥ 0",
-       "All x with x1·x2 = 0"
+       "All x with x1 − 2x2 + x3 = 3",
+       "All x with x1 ≥ x2",
+       "All x with x1·x3 = 0"
       ],
       "hints": [
        "A subspace must contain 0 and be closed under adding vectors and scaling them. Test each set with the zero vector, with scaling by −1, and with adding two members."
       ],
-      "why": "x1 + x2 + x3 = 0 contains 0 and is closed under addition and scaling.",
+      "why": "x1 − 2x2 + x3 = 0 contains 0 and is closed under addition and scaling: it is the null space of [1 −2 1].",
       "mistakes": [
        {
-        "value": "All x with x1 ≥ 0",
+        "value": "All x with x1 ≥ x2",
         "message": "Scale [1, 0, 0] by −1: you leave the set."
        },
        {
-        "value": "All x with x1·x2 = 0",
-        "message": "[1, 0, 0] and [0, 1, 0] are both in it, but their sum [1, 1, 0] is not."
+        "value": "All x with x1·x3 = 0",
+        "message": "[1, 0, 0] and [0, 0, 1] are both in it, but their sum [1, 0, 1] is not."
        },
        {
-        "value": "All x with x1 + x2 + x3 = 1",
+        "value": "All x with x1 − 2x2 + x3 = 3",
         "message": "Does it contain the zero vector?"
        }
       ]
@@ -834,7 +862,7 @@ export const homework = {
     ],
     "solution": [
      {
-      "text": "Check 0, addition and scaling: only x1 + x2 + x3 = 0 passes all three."
+      "text": "Check 0, addition and scaling: only x1 − 2x2 + x3 = 0 passes all three."
      },
      {
       "text": "In R⁴, x2 and x4 are free, and x1, x3 are determined: basis [2, 1, 0, 0], [0, 0, −1, 1], dimension 2 (rank-nullity: 4 − 2)."
@@ -953,6 +981,36 @@ export const homework = {
         "message": "SR = RS is a statement about matrices, true for every vector or for none; try [1, 0] too."
        }
       ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Now build the rotation by 60° counterclockwise yourself and apply it to [2, 0] (3 decimals).",
+      "answer": [
+       1.0,
+       1.7320508075688772
+      ],
+      "hints": [
+       "Where does e1 = [1, 0] go under a rotation by an angle φ? Use cos and sin.",
+       "e1 goes to [cos 60°, sin 60°] = [0.5, 0.866]; [2, 0] is twice e1."
+      ],
+      "why": "[2, 0] = 2·e1 goes to 2·[cos 60°, sin 60°] = [1, sqrt 3] ≈ [1, 1.732].",
+      "tol": 0.002,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         -1.7320508075688772
+        ],
+        "message": "That rotates clockwise. Counterclockwise moves [2, 0] up, into positive y."
+       },
+       {
+        "value": [
+         1.7320508075688772,
+         1.0
+        ],
+        "message": "Swapped: the x-coordinate is 2 cos 60°, the y-coordinate 2 sin 60°."
+       }
+      ]
      }
     ],
     "solution": [
@@ -964,6 +1022,9 @@ export const homework = {
      },
      {
       "text": "(R ∘ S)[1, 1] = R[2, 1] = [1, −2], while (S ∘ R)[1, 1] = S[1, −1] = [2, −1]: RS ≠ SR."
+     },
+     {
+      "text": "Rotation by φ counterclockwise has columns [cos φ, sin φ] and [−sin φ, cos φ]; for 60° it sends [2, 0] to [1, sqrt 3]."
      }
     ],
     "takeaway": "A neural network layer is a linear map followed by a nonlinearity; stacking layers composes maps, and the order matters."
@@ -1215,30 +1276,35 @@ export const homework = {
       "tol": 0
      },
      {
-      "type": "choice",
-      "prompt": "Which vector spans the null space?",
-      "answer": "[−1, −1, 1]",
-      "wrong": [
-       "[1, 2, 3]",
-       "[1, 1, 1]",
-       "[1, 0, −1]"
+      "type": "vector",
+      "prompt": "Find a vector that spans the null space, scaled so that its last entry is 1.",
+      "answer": [
+       -1.0,
+       -1.0,
+       1.0
       ],
       "hints": [
-       "Solve A x = 0: rows 1 and 3 give x1 + 2x2 + 3x3 = 0 and x1 + x3 = 0. Set x3 = 1."
+       "Solve A x = 0 using the independent rows 1 and 3.",
+       "x1 + x3 = 0 and x1 + 2x2 + 3x3 = 0; set x3 = 1."
       ],
       "why": "A[−1, −1, 1] = [−1 − 2 + 3, −2 − 2 + 6, −1 + 1] = [0, 0, 0].",
+      "tol": 1e-06,
       "mistakes": [
        {
-        "value": "[1, 0, −1]",
-        "message": "Row 1 gives 1 + 0 − 3 = −2 ≠ 0."
-       },
-       {
-        "value": "[1, 1, 1]",
-        "message": "Row 1 gives 6 ≠ 0."
-       },
-       {
-        "value": "[1, 2, 3]",
+        "value": [
+         1.0,
+         2.0,
+         3.0
+        ],
         "message": "That is row 1 itself; the null space is perpendicular to the rows."
+       },
+       {
+        "value": [
+         1.0,
+         1.0,
+         1.0
+        ],
+        "message": "Check: A[1, 1, 1] is not 0."
        }
       ]
      }
@@ -1301,18 +1367,18 @@ export const homework = {
      },
      {
       "type": "number",
-      "prompt": "Compute det(2A).",
-      "answer": 20.0,
+      "prompt": "Compute det(3A).",
+      "answer": 45.0,
       "hints": [
-       "Doubling the matrix doubles each of its two rows.",
-       "Each doubled row doubles the determinant."
+       "Tripling the matrix triples each of its two rows.",
+       "Each tripled row multiplies the determinant by 3."
       ],
-      "why": "det(2A) = 2²·det A = 20 for a 2 by 2 matrix (in n dimensions, 2ⁿ).",
+      "why": "det(3A) = 3²·det A = 45 for a 2 by 2 matrix (in n dimensions, 3ⁿ).",
       "tol": 0,
       "mistakes": [
        {
-        "value": 10.0,
-        "message": "Both rows are doubled, so the determinant is multiplied by 2 twice."
+        "value": 15.0,
+        "message": "Both rows are tripled, so the determinant is multiplied by 3 twice."
        }
       ]
      },
@@ -1338,7 +1404,7 @@ export const homework = {
       "text": "det A = 6 − 1 = 5, so areas are multiplied by 5: 2 becomes 10."
      },
      {
-      "text": "det(2A) = 4·5 = 20 because each of the two rows is doubled."
+      "text": "det(3A) = 9·5 = 45 because each of the two rows is tripled."
      },
      {
       "text": "det(A⁻¹) = 1/5. If det A were 0, A would flatten the plane onto a line and could not be undone."
@@ -1353,21 +1419,21 @@ export const homework = {
      "determinants-cofactor-row-ops",
      "invertible-transformations"
     ],
-    "statement": "A = [[2, 1, 0], [1, 3, 1], [0, 1, 2]].",
+    "statement": "A = [[2, 1, 0], [0, 3, 1], [1, 1, 2]].",
     "parts": [
      {
       "type": "number",
       "prompt": "Compute det A by cofactor expansion along the first row.",
-      "answer": 8.0,
+      "answer": 11.0,
       "hints": [
        "Each entry of row 1 times its 2 by 2 minor, with signs +, −, +.",
-       "det A = 2·det[[3, 1], [1, 2]] − 1·det[[1, 1], [0, 2]] + 0."
+       "det A = 2·det[[3, 1], [1, 2]] − 1·det[[0, 1], [1, 2]] + 0."
       ],
-      "why": "det A = 2·5 − 1·2 + 0 = 8.",
+      "why": "det A = 2·5 − 1·(−1) + 0 = 11.",
       "tol": 0,
       "mistakes": [
        {
-        "value": 12.0,
+        "value": 9.0,
         "message": "Remember the alternating signs: +, −, + along the first row."
        }
       ]
@@ -1375,16 +1441,16 @@ export const homework = {
      {
       "type": "number",
       "prompt": "What is the determinant after swapping rows 1 and 2?",
-      "answer": -8.0,
+      "answer": -11.0,
       "hints": [
        "What does a row swap do to the determinant?",
        "A row swap flips the sign."
       ],
-      "why": "Swapping two rows multiplies the determinant by −1: −8.",
+      "why": "Swapping two rows multiplies the determinant by −1: −11.",
       "tol": 0,
       "mistakes": [
        {
-        "value": 8.0,
+        "value": 11.0,
         "message": "A row swap changes the sign of the determinant."
        }
       ]
@@ -1392,16 +1458,16 @@ export const homework = {
      {
       "type": "number",
       "prompt": "Compute det(−A).",
-      "answer": -8.0,
+      "answer": -11.0,
       "hints": [
        "−A multiplies each row of A by −1. How many rows are there?",
        "Each of the 3 rows contributes a factor −1."
       ],
-      "why": "(−1)³·8 = −8. For an n by n matrix, det(cA) = cⁿ det A.",
+      "why": "(−1)³·11 = −11. For an n by n matrix, det(cA) = cⁿ det A.",
       "tol": 0,
       "mistakes": [
        {
-        "value": 8.0,
+        "value": 11.0,
         "message": "Three rows each flip sign: (−1)³ = −1."
        }
       ]
@@ -1409,19 +1475,19 @@ export const homework = {
      {
       "type": "number",
       "prompt": "Compute the (1, 1) entry of A⁻¹ (3 decimals).",
-      "answer": 0.625,
+      "answer": 0.45454545454545453,
       "hints": [
-       "Gauss-Jordan on [A | I] works, but there is a shortcut: A⁻¹ = adj(A)/det A, where adj(A) is the transposed matrix of cofactors. For the (1, 1) entry this is C₁₁/det A.",
-       "C₁₁ = +det[[3, 1], [1, 2]] (sign + at position (1, 1))."
+       "Gauss-Jordan on [A | I] works, but there is a shortcut: A⁻¹ = adj(A)/det A, where adj(A) is the transposed matrix of cofactors.",
+       "For the (1, 1) entry this is C₁₁/det A, with C₁₁ = +det[[3, 1], [1, 2]]."
       ],
-      "why": "(A⁻¹)₁₁ = 5/8 = 0.625.",
+      "why": "(A⁻¹)₁₁ = 5/11 ≈ 0.455.",
       "mistakes": [
        {
         "value": 5.0,
         "message": "That is the cofactor C₁₁ itself. Divide by det A."
        },
        {
-        "value": 1.6,
+        "value": 2.2,
         "message": "Upside down: the entry is C₁₁/det A, not det A/C₁₁."
        },
        {
@@ -1429,21 +1495,44 @@ export const homework = {
         "message": "The inverse is not taken entry by entry: (A⁻¹)₁₁ ≠ 1/a₁₁."
        }
       ]
+     },
+     {
+      "type": "number",
+      "prompt": "Compute the (1, 2) entry of A⁻¹ (3 decimals).",
+      "answer": -0.1818181818181818,
+      "hints": [
+       "The adjugate is the transposed cofactor matrix: which cofactor sits in position (1, 2) of adj(A)?",
+       "(A⁻¹)₁₂ = C₂₁/det A, with C₂₁ = −det[[1, 0], [1, 2]] (delete row 2 and column 1; sign −)."
+      ],
+      "why": "C₂₁ = −2, so (A⁻¹)₁₂ = −2/11 ≈ -0.182. Check: row 1 of A⁻¹ times column 2 of A must be 0.",
+      "mistakes": [
+       {
+        "value": 0.09090909090909091,
+        "message": "You used C₁₂. The adjugate is transposed: entry (1, 2) of A⁻¹ uses C₂₁."
+       },
+       {
+        "value": 0.18181818181818182,
+        "message": "Check the sign of the cofactor: position (2, 1) has sign (−1)^(2+1) = −1."
+       }
+      ]
      }
     ],
     "solution": [
      {
-      "text": "Expansion along row 1: 2(3·2 − 1·1) − 1(1·2 − 1·0) + 0 = 10 − 2 = 8."
+      "text": "Expansion along row 1: 2(3·2 − 1·1) − 1(0·2 − 1·1) + 0 = 10 + 1 = 11."
      },
      {
-      "text": "A row swap gives −8; det(−A) = (−1)³·8 = −8."
+      "text": "A row swap gives −11; det(−A) = (−1)³·11 = −11."
      },
      {
-      "text": "A · adj(A) = det(A) · I, so A⁻¹ = adj(A)/det A with (A⁻¹)ᵢⱼ = Cⱼᵢ/det A (note the transpose). For (1, 1): 5/8 = 0.625.",
-      "tex": "A^{-1}=\\frac{1}{\\det A}\\operatorname{adj}(A),\\qquad (A^{-1})_{11}=\\frac{C_{11}}{\\det A}=\\frac58"
+      "text": "A · adj(A) = det(A) · I, so A⁻¹ = adj(A)/det A with (A⁻¹)ᵢⱼ = Cⱼᵢ/det A (note the transpose).",
+      "tex": "A^{-1}=\\frac{1}{\\det A}\\operatorname{adj}(A),\\qquad (A^{-1})_{ij}=\\frac{C_{ji}}{\\det A}"
+     },
+     {
+      "text": "(A⁻¹)₁₁ = C₁₁/11 = 5/11; (A⁻¹)₁₂ = C₂₁/11 = −2/11, where C₂₁ = −(1·2 − 0·1) = −2."
      }
     ],
-    "takeaway": "In practice determinants are computed by elimination, tracking row swaps; the cofactor formula explains why A⁻¹ exists exactly when det A ≠ 0."
+    "takeaway": "In practice inverses are computed by elimination; the cofactor formula explains why A⁻¹ exists exactly when det A ≠ 0, and why its entries are \"transposed\"."
    }
   ]
  },
@@ -1526,8 +1615,8 @@ export const homework = {
       "prompt": "Why is b − p perpendicular to a?",
       "answer": "p is the closest point to b on the line, and the shortest path to a line meets it at a right angle",
       "wrong": [
-       "Because a has length 3",
-       "Because b has a zero entry",
+       "Because p and b have the same length",
+       "Because a · b is positive",
        "It is a coincidence of these numbers"
       ],
       "hints": [
@@ -1538,6 +1627,14 @@ export const homework = {
        {
         "value": "It is a coincidence of these numbers",
         "message": "Try other vectors: the construction t = (a·b)/(a·a) always makes (b − t a)·a = 0."
+       },
+       {
+        "value": "Because p and b have the same length",
+        "message": "They do not: ||p|| = 5 and ||b|| = sqrt 45."
+       },
+       {
+        "value": "Because a · b is positive",
+        "message": "It would be perpendicular for negative a · b too; the sign only decides which way p points."
        }
       ]
      }
@@ -1732,30 +1829,35 @@ export const homework = {
       ]
      },
      {
-      "type": "choice",
-      "prompt": "Which vector spans the orthogonal complement of span{b1, b2} in R³?",
-      "answer": "[1, −1, −1]",
-      "wrong": [
-       "[1, 1, 1]",
-       "[0.5, −0.5, 1]",
-       "[1, −1, 0]"
+      "type": "vector",
+      "prompt": "Find a vector spanning the orthogonal complement of span{b1, b2} in R³, scaled so that its first entry is 1.",
+      "answer": [
+       1.0,
+       -1.0,
+       -1.0
       ],
       "hints": [
-       "You need a vector perpendicular to both b1 and b2: test each option with two dot products."
+       "You need x with x · b1 = 0 and x · b2 = 0: two equations in three unknowns.",
+       "x1 + x2 = 0 and x1 + x3 = 0; set x1 = 1."
       ],
       "why": "[1, −1, −1]·[1, 1, 0] = 0 and [1, −1, −1]·[1, 0, 1] = 0. The complement of a plane in R³ is a line.",
+      "tol": 1e-06,
       "mistakes": [
        {
-        "value": "[0.5, −0.5, 1]",
-        "message": "That is u2, which lies inside the plane, not perpendicular to it."
+        "value": [
+         1.0,
+         -1.0,
+         2.0
+        ],
+        "message": "That is u2 scaled: it lies inside the plane, not perpendicular to it."
        },
        {
-        "value": "[1, −1, 0]",
+        "value": [
+         1.0,
+         -1.0,
+         0.0
+        ],
         "message": "It is perpendicular to b1 but not to b2."
-       },
-       {
-        "value": "[1, 1, 1]",
-        "message": "Its dot product with b1 is 2, not 0."
        }
       ]
      }
@@ -1848,6 +1950,36 @@ export const homework = {
      },
      {
       "type": "vector",
+      "prompt": "Without nice numbers: for B = [[2, 1], [1, 3]], give the larger eigenvalue and the second entry of its eigenvector scaled so the first entry is 1 (3 decimals each).",
+      "answer": [
+       3.618033988749895,
+       1.618033988749895
+      ],
+      "hints": [
+       "The characteristic equation is λ² − 5λ + 5 = 0; use the quadratic formula.",
+       "For the eigenvector, the first row of (B − λI)v = 0 gives (2 − λ)·1 + v₂ = 0."
+      ],
+      "why": "λ = (5 + sqrt 5)/2 ≈ 3.618 and v = [1, λ − 2] ≈ [1, 1.618]. Check: B v = λ v.",
+      "tol": 0.002,
+      "mistakes": [
+       {
+        "value": [
+         1.381966011250105,
+         -0.6180339887498949
+        ],
+        "message": "That is the smaller eigenvalue and its eigenvector."
+       },
+       {
+        "value": [
+         3.618033988749895,
+         0.6180339887498949
+        ],
+        "message": "Check the sign: (2 − λ) + v₂ = 0 gives v₂ = λ − 2."
+       }
+      ]
+     },
+     {
+      "type": "vector",
       "prompt": "Compute A³ [2, 1] without multiplying matrices.",
       "answer": [
        432.0,
@@ -1879,6 +2011,9 @@ export const homework = {
      },
      {
       "text": "A³[2, 1] = 216[2, 1] = [432, 216]."
+     },
+     {
+      "text": "For B: λ² − 5λ + 5 = 0 gives λ = (5 ± sqrt 5)/2; for the larger one v = [1, λ − 2] ≈ [1, 1.618]."
      }
     ],
     "takeaway": "Along an eigenvector, repeated multiplication is just repeated scaling. That is the key to Markov chains, gradient descent on quadratics and PCA."
@@ -2286,7 +2421,7 @@ export const homework = {
      },
      {
       "type": "number",
-      "prompt": "Compute ||A||²_F, the sum of the squared entries, and compare it with σ₁² + σ₂².",
+      "prompt": "Compute ||A||²_F, the sum of the squared entries. (Then check that it equals σ₁² + σ₂².)",
       "answer": 50.0,
       "hints": [
        "Square each entry and add.",
@@ -2334,7 +2469,7 @@ export const homework = {
     ],
     "solution": [
      {
-      "text": "AᵀA has eigenvalues 40 and 10, so σ₁ = sqrt 40 ≈ 6.325 and σ₂ = sqrt 10 ≈ 3.162."
+      "text": "AᵀA = [[16 + 9, 0 + 15], [15, 0 + 25]] = [[25, 15], [15, 25]] has eigenvalues 40 and 10 with eigenvectors v₁ = [1, 1]/sqrt 2 and v₂ = [1, −1]/sqrt 2, so σ₁ = sqrt 40 ≈ 6.325 and σ₂ = sqrt 10 ≈ 3.162. The left vectors are wᵢ = A vᵢ/σᵢ."
      },
      {
       "text": "||A||²_F = 16 + 9 + 25 = 50 = 40 + 10."
@@ -2439,85 +2574,86 @@ export const homework = {
      "backpropagation",
      "loss-gradients"
     ],
-    "statement": "z = w x + b, a = σ(z), L = (a − y)². Take x = 2, w = 0.5, b = −1, y = 1.",
+    "statement": "z = w x + b, a = σ(z), L = (a − y)². Take x = 2, w = 0.5, b = −0.5, y = 1.",
     "parts": [
      {
       "type": "number",
-      "prompt": "Forward pass: compute L.",
-      "answer": 0.25,
+      "prompt": "Forward pass: compute L (4 decimals).",
+      "answer": 0.1425369565965509,
       "hints": [
        "Compute z, then a = σ(z), then L.",
-       "z = 0.5·2 − 1 = 0, and σ(0) = 0.5."
+       "z = 0.5·2 − 0.5 = 0.5, and σ(0.5) ≈ 0.6225."
       ],
-      "why": "z = 0, a = 0.5, L = (0.5 − 1)² = 0.25."
+      "why": "z = 0.5, a ≈ 0.6225, L = (a − 1)² ≈ 0.1425.",
+      "tol": 0.0003
      },
      {
       "type": "number",
-      "prompt": "Compute ∂L/∂w.",
-      "answer": -0.5,
+      "prompt": "Compute ∂L/∂w (3 decimals).",
+      "answer": -0.35489383469854746,
       "hints": [
        "Chain rule: ∂L/∂w = ∂L/∂a · ∂a/∂z · ∂z/∂w. The Derivatives page gives σ'(z) = σ(z)(1 − σ(z)).",
-       "∂L/∂a = 2(a − y) = −1, ∂a/∂z = σ(0)(1 − σ(0)) = 0.25, ∂z/∂w = x. Multiply."
+       "∂L/∂a = 2(a − y) ≈ -0.7551, ∂a/∂z = a(1 − a) ≈ 0.235, ∂z/∂w = x. Multiply."
       ],
-      "why": "−1 · 0.25 · 2 = −0.5.",
+      "why": "-0.7551 · 0.235 · 2 ≈ -0.355.",
       "mistakes": [
        {
-        "value": -0.25,
+        "value": -0.17744691734927373,
         "message": "That is ∂L/∂b (∂z/∂b = 1). For w, multiply by ∂z/∂w = x."
        },
        {
-        "value": -2.0,
-        "message": "Include ∂a/∂z = σ(0)(1 − σ(0))."
+        "value": -1.5101626751925816,
+        "message": "Include ∂a/∂z = σ(z)(1 − σ(z))."
        },
        {
-        "value": -1.0,
-        "message": "Include ∂a/∂z and ∂z/∂w, not only ∂L/∂a."
+        "value": -0.3775406687981454,
+        "message": "σ'(z) is 0.25 only at z = 0; here z = 0.5, so use a(1 − a)."
        }
       ]
      },
      {
       "type": "number",
-      "prompt": "Compute ∂L/∂b.",
-      "answer": -0.25,
+      "prompt": "Compute ∂L/∂b (3 decimals).",
+      "answer": -0.17744691734927373,
       "hints": [
        "Same chain as for w, except for the last factor.",
        "∂z/∂b = 1."
       ],
-      "why": "−1 · 0.25 · 1 = −0.25.",
+      "why": "≈ -0.177.",
       "mistakes": [
        {
-        "value": -0.5,
+        "value": -0.35489383469854746,
         "message": "That is ∂L/∂w. For b the last factor is ∂z/∂b = 1."
        }
       ]
      },
      {
       "type": "number",
-      "prompt": "Take one gradient step with learning rate 0.4. What is the new w?",
-      "answer": 0.7,
+      "prompt": "Take one gradient step with learning rate 0.4. What is the new w (3 decimals)?",
+      "answer": 0.641957533879419,
       "hints": [
        "Gradient descent moves against the gradient.",
        "w ← w − 0.4·∂L/∂w."
       ],
-      "why": "0.5 − 0.4·(−0.5) = 0.7: w grows, pushing a toward y = 1.",
+      "why": "0.5 − 0.4·(-0.3549) ≈ 0.642: w grows, pushing a toward y = 1.",
       "mistakes": [
        {
-        "value": 0.3,
-        "message": "Gradient descent subtracts the gradient: w − 0.4·(−0.5)."
+        "value": 0.358042466120581,
+        "message": "Gradient descent subtracts the gradient."
        }
       ]
      }
     ],
     "solution": [
      {
-      "text": "Forward: z = 0, a = σ(0) = 0.5, L = 0.25."
+      "text": "Forward: z = 0.5, a = σ(0.5) ≈ 0.6225, L ≈ 0.1425."
      },
      {
-      "text": "Backward: ∂L/∂a = 2(a − y) = −1 and ∂a/∂z = σ(0)(1 − σ(0)) = 0.5·0.5 = 0.25, so ∂L/∂z = −0.25; ∂L/∂w = −0.25·x = −0.5 and ∂L/∂b = −0.25.",
-      "tex": "\\frac{\\partial L}{\\partial w}=\\frac{\\partial L}{\\partial a}\\,\\frac{\\partial a}{\\partial z}\\,\\frac{\\partial z}{\\partial w}=(-1)(0.25)(2)"
+      "text": "Backward: ∂L/∂a = 2(a − y) ≈ -0.7551 and ∂a/∂z = a(1 − a) ≈ 0.235, so ∂L/∂z ≈ -0.1774; ∂L/∂w = ∂L/∂z · x ≈ -0.3549 and ∂L/∂b = ∂L/∂z ≈ -0.1774.",
+      "tex": "\\frac{\\partial L}{\\partial w}=\\frac{\\partial L}{\\partial a}\\,\\frac{\\partial a}{\\partial z}\\,\\frac{\\partial z}{\\partial w}=2(a-y)\\,a(1-a)\\,x"
      },
      {
-      "text": "Update: w = 0.5 − 0.4(−0.5) = 0.7."
+      "text": "Update: w = 0.5 − 0.4·(-0.3549) ≈ 0.642."
      }
     ],
     "takeaway": "Backpropagation is this chain rule applied layer by layer, reusing ∂L/∂z from the layer above."
@@ -2690,7 +2826,7 @@ export const homework = {
      },
      {
       "type": "number",
-      "prompt": "A second, independent test is also positive. Compute P(sick | two positives) (3 decimals).",
+      "prompt": "A second test, whose errors are independent of the first given the person's true status, is also positive. Compute P(sick | two positives) (3 decimals).",
       "answer": 0.9200734019777754,
       "hints": [
        "After the first test, your previous answer is the new prior.",
@@ -3215,7 +3351,8 @@ export const homework = {
     "id": "features",
     "title": "Turning raw data into features",
     "pages": [
-     "feature-representation"
+     "feature-representation",
+     "linear-independence"
     ],
     "statement": "A table has two numeric columns (area, age) and one categorical column, colour, with values red, green, blue and white.",
     "parts": [
@@ -3253,6 +3390,10 @@ export const homework = {
        {
         "value": 5.0,
         "message": "Dropping one colour is an option (see the last part), but this part keeps all four."
+       },
+       {
+        "value": 4.0,
+        "message": "Do not forget the two numeric columns, area and age."
        }
       ]
      },
@@ -3261,7 +3402,7 @@ export const homework = {
       "prompt": "Why not encode the colours as 1, 2, 3, 4?",
       "answer": "A linear model would treat the codes as amounts, with an order and spacing the colours do not have",
       "wrong": [
-       "Four columns use less memory than one",
+       "The codes would make training much slower",
        "A model cannot read numbers that stand for categories",
        "It makes no difference for a linear model"
       ],
@@ -3333,7 +3474,7 @@ export const homework = {
      {
       "type": "choice",
       "prompt": "You want to standardize the features. Where should the means and standard deviations come from?",
-      "answer": "The training set only",
+      "answer": "The training set only, applying the same numbers unchanged to the other sets",
       "wrong": [
        "All 1,000 examples, so the means and standard deviations are as accurate as possible",
        "Each set separately, so every set is centred at exactly 0",
@@ -3435,22 +3576,6 @@ export const homework = {
       "tol": 0
      },
      {
-      "type": "number",
-      "prompt": "Compute the distance from x = [1, 0] to the decision boundary (3 decimals).",
-      "answer": 0.4472135954999579,
-      "hints": [
-       "The score is not yet a distance: it changes if you rescale θ and θ₀, while the boundary does not move.",
-       "Distance = |θ · x + θ₀| / ||θ||."
-      ],
-      "why": "1/sqrt 5 ≈ 0.447.",
-      "mistakes": [
-       {
-        "value": 1.0,
-        "message": "That is the score θ · x + θ₀, not a distance: doubling θ and θ₀ would double it. What can you divide by so that the result does not change?"
-       }
-      ]
-     },
-     {
       "type": "choice",
       "prompt": "If you double θ and θ₀, what changes?",
       "answer": "Only the scores, which double; the boundary and all distances stay the same",
@@ -3477,6 +3602,22 @@ export const homework = {
         "message": "Doubling does not change any sign."
        }
       ]
+     },
+     {
+      "type": "number",
+      "prompt": "Compute the distance from x = [1, 0] to the decision boundary (3 decimals).",
+      "answer": 0.4472135954999579,
+      "hints": [
+       "The score is not yet a distance: it changes if you rescale θ and θ₀, while the boundary does not move.",
+       "Distance = |θ · x + θ₀| / ||θ||."
+      ],
+      "why": "1/sqrt 5 ≈ 0.447.",
+      "mistakes": [
+       {
+        "value": 1.0,
+        "message": "That is the score θ · x + θ₀, not a distance: as in the previous part, it changes when θ and θ₀ are rescaled while the boundary stays put. What can you divide by so that the result does not change?"
+       }
+      ]
      }
     ],
     "solution": [
@@ -3484,10 +3625,10 @@ export const homework = {
       "text": "Scores: [1, 0] → 1 (class +1); [0, 1] → −2 (class −1)."
      },
      {
-      "text": "Distance of [1, 0]: |1|/sqrt 5 ≈ 0.447."
+      "text": "Scaling (θ, θ₀) by 2 doubles the scores but keeps the boundary and distances, so the score itself cannot be a distance."
      },
      {
-      "text": "Scaling (θ, θ₀) by 2 doubles the scores but keeps the boundary and distances."
+      "text": "Distance of [1, 0]: |1|/sqrt 5 ≈ 0.447."
      }
     ],
     "takeaway": "Because scaling θ changes nothing, the SVM fixes the scale by asking for scores of at least 1 and then makes ||θ|| small."
@@ -4099,6 +4240,10 @@ export const homework = {
        {
         "value": 4.0,
         "message": "That uses the fast direction. The slow direction has the smallest curvature μ."
+       },
+       {
+        "value": 553.0,
+        "message": "That is the estimate κ ln(1/ε). This part asks for the exact count: the smallest k with (1 − 1/κ)ᵏ < 10⁻⁶."
        }
       ]
      },
@@ -4619,7 +4764,7 @@ export const homework = {
      },
      {
       "type": "number",
-      "prompt": "Compute each feature's VIF (3 decimals).",
+      "prompt": "Compute the VIF, which is the same for both features (3 decimals).",
       "answer": 2.7777777777777777,
       "hints": [
        "VIF_j = 1/(1 − R_j²), where R_j² is how well the other features predict feature j.",
@@ -5442,7 +5587,7 @@ export const homework = {
      "classification-metrics",
      "ml-in-production"
     ],
-    "statement": "Missing a churner (FN) costs 5; a wasted retention offer (FP) costs 1. Assume an offer always keeps a customer who would have churned, and that the model's probabilities are calibrated.",
+    "statement": "Missing a churner (FN) costs 5; a wasted retention offer, made to a customer who would have stayed anyway (FP), costs 1. An offer to a real churner always keeps them and costs nothing extra here. The model's probabilities are calibrated.",
     "parts": [
      {
       "type": "vector",

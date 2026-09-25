@@ -36,6 +36,7 @@ export const intuitionDetails = {
       idea("Scoring", "Give each feature a weight, multiply, and add up: the dot product theta . x. Big and positive means strong yes; negative means lean no."),
       idea("Good features do the heavy lifting", "They make the label easy to reach. The notes describe face images by simple detectors (edges, colour patches, textures) rather than raw pixels."),
       idea("Same recipe, representative data", "Encode new examples exactly like training ones, and train on data that resembles future data: a tumour classifier trained on one tumour type may fail on another."),
+      idea("One-hot plus an intercept", "The k indicator columns of a category always add up to 1, the same as the intercept column: they are linearly dependent. Keep k − 1 of them; the dropped one becomes the baseline."),
     ],
   },
   "linear-classifier": {

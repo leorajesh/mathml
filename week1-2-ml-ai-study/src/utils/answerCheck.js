@@ -92,8 +92,9 @@ function parse(tokens) {
   return value;
 }
 
-// A number from what the student typed, or null. A trailing % gives both readings (87% as 87 or 0.87).
-export function parseNumber(text) {
+// A number from what the student typed, or null. A trailing % means "divide by 100", except in parts
+// whose answer is itself in percent (unit '%'), where "87%" and "87" both mean 87.
+export function parseNumber(text, unit) {
   let source = normalize(text);
   const percent = source.endsWith('%');
   if (percent) source = source.slice(0, -1);
@@ -103,7 +104,8 @@ export function parseNumber(text) {
   try {
     const value = parse(tokens);
     if (!Number.isFinite(value)) return null;
-    return percent ? { value, alternatives: [value, value / 100] } : { value, alternatives: [value] };
+    const decimals = /^-?\d*\.?(\d*)$/.test(source.replace(/\s/g, '')) ? (source.split('.')[1] ?? '').length : null;
+    return { value: percent && unit !== '%' ? value / 100 : value, decimals };
   } catch {
     return null;
   }
@@ -113,12 +115,13 @@ export function parseVector(text) {
   const inner = normalize(text).replace(/^[[(]/, '').replace(/[\])]$/, '');
   const pieces = inner.split(/[,;]/).map((piece) => piece.trim()).filter((piece) => piece !== '');
   if (pieces.length === 0) return null;
-  const values = pieces.map(parseNumber);
+  const values = pieces.map((piece) => parseNumber(piece));
   return values.every(Boolean) ? values.map((item) => item.value) : null;
 }
 
+// Default: 0.5% of the answer, but never tighter than what rounding to 3 decimals needs.
 function tolerance(part, value) {
-  return part.tol !== undefined ? Math.max(part.tol, 1e-9) : Math.max(0.005, 0.005 * Math.abs(value));
+  return part.tol !== undefined ? Math.max(part.tol, 1e-9) : Math.max(0.0006, 0.005 * Math.abs(value));
 }
 
 function closeTo(part, got, want) {
@@ -132,27 +135,38 @@ function vectorsMatch(part, got, want) {
   return a.every((value, index) => closeTo(part, value, b[index]));
 }
 
-// Returns { valid, correct, message }: valid is false when the input could not be read.
+const keyOf = (values) => values.map((value) => Number(value.toPrecision(8))).join(',');
+
+// Returns { valid, correct, message, key }: valid is false when the input could not be read (or was
+// rounded too coarsely), and such inputs do not count as attempts. key identifies the answer, so a
+// repeated answer can be recognized.
 export function checkAnswer(part, input) {
   if (part.type === 'choice') {
     if (!input) return { valid: false, message: 'Choose one option.' };
-    if (input === part.answer) return { valid: true, correct: true };
     const mistake = part.mistakes?.find((item) => item.value === input);
-    return { valid: true, correct: false, message: mistake?.message };
+    return { valid: true, correct: input === part.answer, message: input === part.answer ? undefined : mistake?.message, key: input };
   }
   if (part.type === 'vector') {
     const got = parseVector(input);
     if (!got) return { valid: false, message: 'Enter numbers separated by commas, for example 1, -2.5, 3/4.' };
     if (got.length !== part.answer.length) return { valid: false, message: `Enter exactly ${part.answer.length} numbers.` };
-    if (vectorsMatch(part, got, part.answer)) return { valid: true, correct: true };
+    const key = keyOf(part.unordered ? [...got].sort((x, y) => x - y) : got);
+    if (vectorsMatch(part, got, part.answer)) return { valid: true, correct: true, key };
     const mistake = part.mistakes?.find((item) => vectorsMatch(part, got, item.value));
-    return { valid: true, correct: false, message: mistake?.message };
+    return { valid: true, correct: false, message: mistake?.message, key };
   }
-  const got = parseNumber(input);
+  const got = parseNumber(input, part.unit);
   if (!got) return { valid: false, message: 'Enter a number or a short expression, for example 0.25, 8/5 or sqrt(2).' };
-  if (got.alternatives.some((value) => closeTo(part, value, part.answer))) return { valid: true, correct: true };
-  const mistake = part.mistakes?.find((item) => got.alternatives.some((value) => closeTo(part, value, item.value)));
-  return { valid: true, correct: false, message: mistake?.message };
+  const key = keyOf([got.value]);
+  if (closeTo(part, got.value, part.answer)) return { valid: true, correct: true, key };
+  const mistake = part.mistakes?.find((item) => closeTo(part, got.value, item.value));
+  if (mistake) return { valid: true, correct: false, message: mistake.message, key };
+  // A plain decimal with fewer than 3 decimals that only misses by rounding: ask for more digits
+  // instead of marking it wrong (it does not count as an attempt).
+  if (got.decimals !== null && got.decimals >= 1 && got.decimals < 3 && Math.abs(got.value - Number(part.answer.toFixed(got.decimals))) < 1e-9) {
+    return { valid: false, message: 'Close, but give more decimals (at least 3), or type the exact expression.' };
+  }
+  return { valid: true, correct: false, key };
 }
 
 // The typed form of an answer, used by the content check to confirm every answer passes its own checker.

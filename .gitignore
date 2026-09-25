@@ -1,3 +1,4 @@
 node_modules/
 week1-2-ml-ai-study/dist/
 .vite/
+__pycache__/

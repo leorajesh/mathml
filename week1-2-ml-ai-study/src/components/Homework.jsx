@@ -5,7 +5,7 @@ import { conceptMap } from '../data/concepts.js';
 import { homework } from '../data/homework.js';
 import { sectionKey, tracks } from '../data/learningTracks.js';
 import { checkAnswer } from '../utils/answerCheck.js';
-import { partState, recordAttempt, recordClue, recordSolutionOpened, resetProblem, setSummary, solutionOpened, useHomeworkProgress } from '../homeworkProgress.js';
+import { partState, recordAttempt, recordClue, recordSolutionOpened, resetProblem, setSummary, solutionOpened, stuckNote, useHomeworkProgress } from '../homeworkProgress.js';
 
 // The full solution of a problem unlocks once at least half of its parts have been tried.
 export const unlockCount = (problem) => Math.ceil(problem.parts.length / 2);
@@ -47,8 +47,8 @@ function Part({ setKey, problemId, index, part }) {
   const options = React.useMemo(() => (part.type === 'choice' ? shuffled([part.answer, ...part.wrong], `${setKey}|${problemId}|${index}`) : []), [part, setKey, problemId, index]);
   const clueCount = part.hints.length;
   const shown = Math.min(saved.clues, clueCount);
-  // The last clue is the most detailed step: it opens only after one honest attempt at this part.
-  const nextIsLast = clueCount >= 2 && shown === clueCount - 1;
+  // The last clue is the most detailed step: it opens only after one attempt at this part.
+  const nextIsLast = clueCount >= 1 && shown === clueCount - 1;
   const lastLocked = nextIsLast && saved.tries === 0 && !saved.solved;
   const name = `${setKey}-${problemId}-${index}`;
 
@@ -59,7 +59,10 @@ function Part({ setKey, problemId, index, part }) {
       setFeedback({ kind: 'invalid', message: result.message });
       return;
     }
-    recordAttempt(setKey, problemId, index, result.correct);
+    if (!recordAttempt(setKey, problemId, index, result.correct, result.key)) {
+      setFeedback({ kind: 'invalid', message: 'You already tried this answer. Rethink a step, or open a clue.' });
+      return;
+    }
     if (result.correct) setFeedback({ kind: 'right' });
     else setFeedback({ kind: 'wrong', message: result.message ?? (shown < clueCount ? 'Not yet. Check your working, or open the next clue.' : 'Not yet. Compare your working with the clues step by step.') });
   }
@@ -70,6 +73,7 @@ function Part({ setKey, problemId, index, part }) {
       {saved.solved ? (
         <div className="hw-feedback right" role="status">
           <strong><Check size={16} /> Correct.</strong> {part.why}
+          {saved.tier && saved.tier !== 'own' && <span className="hw-tier"> ({saved.tier === 'help' ? 'solved with help' : 'solved after the solution'})</span>}
         </div>
       ) : (
         <form className="hw-answer" onSubmit={check}>
@@ -103,7 +107,7 @@ function Part({ setKey, problemId, index, part }) {
           ))}
           {shown < clueCount && !saved.solved && (
             <button type="button" className="hw-clue-button" disabled={lastLocked} onClick={() => recordClue(setKey, problemId, index)}>
-              {lastLocked ? <><Lock size={14} /> Try an answer first to unlock the last clue</> : `Show clue ${shown + 1} of ${clueCount}`}
+              {lastLocked ? <><Lock size={14} /> Try an answer first to unlock {clueCount === 1 ? 'the clue' : 'the last clue'}</> : `Show clue ${shown + 1} of ${clueCount}`}
             </button>
           )}
         </div>
@@ -113,6 +117,7 @@ function Part({ setKey, problemId, index, part }) {
 }
 
 function Problem({ setKey, problem, number, onSelect }) {
+  const [stuck, setStuck] = React.useState('');
   const states = problem.parts.map((_, index) => partState(setKey, problem.id, index));
   const tried = states.filter((item) => item.tries > 0).length;
   const solved = states.filter((item) => item.solved).length;
@@ -136,6 +141,7 @@ function Problem({ setKey, problem, number, onSelect }) {
       <div className="hw-solution">
         {open ? (
           <>
+            {stuckNote(setKey, problem.id) && <p className="hw-note"><strong>Where you said you were stuck:</strong> {stuckNote(setKey, problem.id)}. Find that step in the solution below.</p>}
             <h4>Full solution</h4>
             <ol>
               {problem.solution.map((item, index) => (
@@ -146,13 +152,19 @@ function Problem({ setKey, problem, number, onSelect }) {
             {!allSolved && <p className="hw-note">Now try the remaining parts without looking back at the solution: they still count once you check them.</p>}
           </>
         ) : unlocked ? (
-          <>
-            {allSolved && <p className="hw-takeaway"><strong>Well done.</strong> {problem.takeaway}</p>}
-            <button type="button" className="hw-solution-button" onClick={() => recordSolutionOpened(setKey, problem.id)}>
-              {allSolved ? 'Compare with the model solution' : 'Show the full solution'}
-            </button>
-            {!allSolved && <span className="hw-note"> Before opening it, have another go at the parts you missed with the clues.</span>}
-          </>
+          allSolved ? (
+            <>
+              <p className="hw-takeaway"><strong>Well done. Why this matters:</strong> {problem.takeaway}</p>
+              <button type="button" className="hw-solution-button" onClick={() => recordSolutionOpened(setKey, problem.id)}>Compare with the model solution</button>
+            </>
+          ) : (
+            <form className="hw-stuck" onSubmit={(event) => { event.preventDefault(); if (stuck.trim().length >= 10) recordSolutionOpened(setKey, problem.id, stuck.trim()); }}>
+              <label htmlFor={`stuck-${problem.id}`}>Before the solution opens: in one line, where exactly are you stuck?</label>
+              <input id={`stuck-${problem.id}`} className="hw-input" type="text" value={stuck} maxLength={200} placeholder="e.g. I do not know which formula gives the distance" onChange={(event) => setStuck(event.target.value)} />
+              <button type="submit" className="hw-solution-button" disabled={stuck.trim().length < 10}>Show the full solution</button>
+              <span className="hw-note"> Parts you solve after opening it count as "after the solution".</span>
+            </form>
+          )
         ) : (
           <p className="hw-locked"><Lock size={16} aria-hidden="true" /> The full solution unlocks after you have tried at least {need} of the {problem.parts.length} parts ({tried} so far). Use the clues to get unstuck.</p>
         )}
@@ -190,15 +202,16 @@ export function HomeworkPage({ setKey, problemId, onSelect, onShowTrack, onOpenH
         <h2>How this homework works</h2>
         <ul>
           <li>Work each part on paper or in the Python editor of a page, then type your answer and press <strong>Check</strong>. You can type expressions such as <code>8/5</code>, <code>sqrt(13/3)</code> or <code>ln 3</code>; for several numbers, separate them with commas.</li>
-          <li>Stuck? Open the clues one at a time. The last clue of a part is a worked step, and it opens only after you have tried that part once.</li>
-          <li>The full solution of a problem unlocks after you have tried at least half of its parts. Solving a part before opening the solution counts as solved on your own.</li>
+          <li>Stuck? Open the clues one at a time. The last clue of a part is a worked step, and it opens only after you have tried that part once. Repeating an answer you already tried does not count as a new attempt.</li>
+          <li>The full solution of a problem unlocks after you have tried at least half of its parts; if some parts are still unsolved, you first write one line about where you are stuck.</li>
+          <li>A part counts as solved <strong>on your own</strong> when it is right on your first try without a clue; after a clue or a wrong try it counts as solved <strong>with help</strong>, and after opening the solution as <strong>after the solution</strong>. Wrong tries cost nothing else: the feedback is there to learn from.</li>
           <li>Progress is saved in this browser only.</li>
         </ul>
         <div className="hw-summary">
           <div className="track-progress" role="progressbar" aria-valuemin={0} aria-valuemax={summary.total} aria-valuenow={summary.solved} aria-label={`${summary.solved} of ${summary.total} parts solved`}>
             <span style={{ width: `${(100 * summary.solved) / summary.total}%` }} />
           </div>
-          <p>{summary.solved} of {summary.total} parts solved, {summary.own} of them on your own.</p>
+          <p>{summary.solved} of {summary.total} parts solved: {summary.own} on your own, {summary.help} with help, {summary.solution} after the solution.</p>
         </div>
       </div>
 
@@ -222,7 +235,7 @@ export function HomeworkButton({ setKey, onOpen }) {
   const summary = setSummary(setKey, set);
   return (
     <button className="track-project homework-link" onClick={() => onOpen(setKey)}>
-      Homework: {set.problems.length} problems, {summary.total} parts <span>({summary.solved === 0 ? 'not started' : `${summary.solved} of ${summary.total} solved`})</span>
+      Homework: {set.problems.length} problems, {summary.total} parts <span>({summary.solved === 0 ? 'not started' : `${summary.solved} of ${summary.total} solved, ${summary.own} on your own`})</span>
     </button>
   );
 }
@@ -233,7 +246,7 @@ export function HomeworkForPage({ conceptId, onOpenHomework }) {
   if (!matches.length) return null;
   return (
     <p className="hw-for-page">
-      <strong>Practise it in the homework:</strong>{' '}
+      <strong>Practise it in this site's homework:</strong>{' '}
       {matches.map(({ key, set, problem }, index) => (
         <React.Fragment key={`${key}-${problem.id}`}>
           {index > 0 && ' · '}

@@ -16,6 +16,7 @@ import { codingGuides } from '../src/data/codingGuides.js';
 import { projects } from '../src/data/projects.js';
 import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
 import { homework } from '../src/data/homework.js';
+import { courseHomework } from '../src/data/courseHomework.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -168,6 +169,15 @@ for (const [key, set] of Object.entries(homework)) {
         const result = checkAnswer(part, typed);
         if (result.correct || result.message !== mistake.message) problems.push(`${at}: mistake ${typed} is accepted as correct or not recognized`);
       }
+      // Clue ladder: numeric parts need an idea clue before the (locked) worked step; choice parts at least one clue.
+      if (part.hints.length < (part.type === 'choice' ? 1 : 2)) problems.push(`${at}: needs ${part.type === 'choice' ? 'a clue' : 'at least two clues'}`);
+      // Feedback and the unlocked clues must diagnose, not hand over the answer.
+      if (part.type === 'number' && !(Number.isInteger(part.answer) && Math.abs(part.answer) <= 12)) {
+        const shown = new Set([1, 2, 3, 4].map((digits) => part.answer.toFixed(digits).replace(/\.?0+$/, '')).filter((text) => text.replace(/[-.0]/g, '').length >= 2));
+        const leaks = (text) => [...shown].some((number) => new RegExp(`(^|[^\\d.])${number.replace('.', '\\.').replace('-', '[-−]')}(?![\\d])`).test(text));
+        for (const mistake of part.mistakes ?? []) if (leaks(mistake.message)) problems.push(`${at}: a mistake message gives away the answer ${part.answer}`);
+        part.hints.slice(0, -1).forEach((hint, hintIndex) => { if (leaks(hint)) problems.push(`${at}: clue ${hintIndex + 1} gives away the answer ${part.answer}`); });
+      }
       if (part.type === 'choice') {
         if (new Set([part.answer, ...part.wrong]).size !== part.wrong.length + 1) problems.push(`${at}: repeated options`);
         for (const mistake of part.mistakes ?? []) if (!part.wrong.includes(mistake.value)) problems.push(`${at}: feedback for an option that does not exist`);
@@ -176,6 +186,8 @@ for (const [key, set] of Object.entries(homework)) {
   }
 }
 
+// Course homework guides link only to existing pages.
+for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);

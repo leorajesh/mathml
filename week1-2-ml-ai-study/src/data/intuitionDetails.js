@@ -129,6 +129,7 @@ export const intuitionDetails = {
       idea("Learning rate = step size", "Too small is slow; too large overshoots, or even climbs out of the valley."),
       idea("Local or global?", "It only uses slopes (a first-order method), so it heads to a point where the gradient is zero, usually a local minimum, which is the global one when the loss is convex."),
       idea("The stochastic version", "Estimate the gradient from one random example: each step is much cheaper and often gets close faster, but the path is erratic."),
+      idea("How many steps?", "On a quadratic with step 1/L the error shrinks by at least 1 - mu/L per step, so reaching a fraction epsilon takes about kappa ln(1/epsilon) steps, where kappa = L/mu."),
     ],
   },
   "momentum": {
@@ -197,6 +198,7 @@ export const intuitionDetails = {
     keyIdeas: [
       idea("The geometric picture", "The model can only produce prediction vectors in the column space of X. Least squares picks the one closest to y: its orthogonal projection."),
       idea("A perpendicular leftover", "The residual y - y_hat is perpendicular to every feature column, which is exactly the normal equation X^T (y - X theta) = 0."),
+      idea("Reporting the fit", "RMSE and MAE give a typical error in the units of y. R^2 compares the squared error with that of always predicting the mean: 1 is perfect, 0 is no better, and on test data it can go negative."),
     ],
   },
   "feature-scaling": {
@@ -691,6 +693,27 @@ export const intuitionDetails = {
       idea("Coin flips", "For k ones in n Bernoulli trials, setting the derivative of k ln mu + (n - k) ln(1 - mu) to zero gives mu_hat = k/n, the observed fraction."),
       idea("Logistic loss is an NLL", "Give each example its own mu_t = sigma(theta . x_t + theta_0). The average NLL of the labels is exactly the logistic (cross-entropy) loss."),
       idea("Squared error is an NLL too", "If y = theta . x plus Gaussian noise, the NLL is (1/(2 sigma^2)) sum (y - theta . x)^2 plus a constant, so least squares is maximum likelihood."),
+    ],
+  },
+  "multicollinearity": {
+    keyIdeas: [
+      idea("One direction is barely seen", "A small eigenvalue of C = Z^T Z / n means the features hardly vary along its eigenvector, so the data say almost nothing about the weights in that direction."),
+      idea("Noise divided by lambda_i", "theta_hat = sum over i of (v_i . b / lambda_i) v_i, so noise along direction i is amplified by 1/lambda_i, and the variance there is sigma^2/(n lambda_i)."),
+      idea("How to detect it", "Check the correlation matrix, its smallest eigenvalues and their eigenvectors, the condition number kappa, and the variance inflation factors VIF_j = 1/(1 - R_j^2); above about 10 is a warning."),
+      idea("It also slows gradient descent", "The same C is the Hessian of the squared loss on standardized data, so a large kappa means a long, narrow valley and many steps."),
+      idea("Fixes", "Ridge adds lambda to every eigenvalue, so the weak direction stops dominating. You can also combine or drop redundant features, or collect data where they vary independently."),
+    ],
+    courseNotes: [
+      "The Week 2 notes call the case where X^T X is not invertible ill-posed. Multicollinearity is the near miss: X^T X is invertible but almost singular, so a solution exists but is unstable.",
+    ],
+  },
+  "bootstrap": {
+    keyIdeas: [
+      idea("The sample stands in for the world", "We cannot draw new datasets from the world, so we draw them from the data we have: n examples, with replacement."),
+      idea("Recompute, then look at the spread", "Recompute the statistic on each of B resamples. Their standard deviation estimates its standard error; their 2.5th and 97.5th percentiles give an approximate 95% interval."),
+      idea("Works for anything you can compute", "A mean, a regression weight, a test RMSE, an AUC, or the difference between two models' scores, even when no formula for its variance exists."),
+      idea("Resample what is independent", "Resample whole patients or users, keep paired scores together, and use blocks for time series. To compare two models, score both on the same resample."),
+      idea("Versus cross-validation", "Cross-validation estimates how well a model predicts; the bootstrap estimates how much a number would vary. The diabetes project uses both."),
     ],
   },
 };

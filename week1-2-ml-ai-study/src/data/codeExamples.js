@@ -1841,4 +1841,60 @@ for _ in range(20):                                           # perceptron for t
 print("classifier training errors:", int(np.sum(recurred * (Xb @ theta) <= 0)))
 
 # Try: shift the new tumours' features by +2 (X + 2). Do the classifier's predictions still make sense?`,
+
+  'multicollinearity': py`import numpy as np
+
+rho = 0.95
+C = np.array([[1, rho], [rho, 1]])
+lam, V = np.linalg.eigh(C)                      # ascending: 0.05 then 1.95
+print("eigenvalues:", lam.round(3), " kappa =", round(lam[-1] / lam[0], 1))
+print("weak direction v =", V[:, 0].round(3), " VIF =", round(np.linalg.inv(C)[0, 0], 2))
+for pen in [0.1]:
+    print(f"ridge lambda {pen}: shrink factors", (lam / (lam + pen)).round(3), " kappa", round((lam[-1] + pen) / (lam[0] + pen), 1))
+
+# Refit on 500 simulated datasets: correlated features, true weights (2, 1), noise sd 1
+rng = np.random.default_rng(0)
+n, true = 50, np.array([2.0, 1.0])
+L = np.linalg.cholesky(C)
+w_ols, w_ridge = [], []
+for _ in range(500):
+    Z = rng.normal(size=(n, 2)) @ L.T               # rows with correlation about rho
+    y = Z @ true + rng.normal(0, 1, n)
+    A, b = Z.T @ Z / n, Z.T @ y / n
+    w_ols.append(np.linalg.solve(A, b))
+    w_ridge.append(np.linalg.solve(A + 0.1 * np.eye(2), b))
+w_ols, w_ridge = np.array(w_ols), np.array(w_ridge)
+print("OLS weights:   mean", w_ols.mean(0).round(2), " sd", w_ols.std(0).round(2), " theory sd", round(np.sqrt(np.linalg.inv(C)[0, 0] / n), 2))
+print("ridge weights: mean", w_ridge.mean(0).round(2), " sd", w_ridge.std(0).round(2))
+print("share of OLS fits with a negative second weight:", np.mean(w_ols[:, 1] < 0))
+
+# Try: set rho = 0.99. How much wider does the OLS spread get, and does ridge still hold it steady?`,
+
+  'bootstrap': py`import numpy as np
+from itertools import product
+
+x = np.array([2.0, 4.0, 9.0])
+means = [np.mean(r) for r in product(x, repeat=3)]       # all 27 equally likely resamples
+print("27 resamples: mean of means", round(np.mean(means), 3), " bootstrap SE", round(np.std(means), 3))
+print("formula s/sqrt(n) =", round(x.std(ddof=1) / np.sqrt(3), 3), "(divides by n - 1)")
+print("P(a value is missing) = (2/3)^3 =", round((2 / 3) ** 3, 3), "; large n:", round((1 - 1 / 1000) ** 1000, 3))
+
+# A bigger, skewed sample: bootstrap the median, which has no simple variance formula
+rng = np.random.default_rng(1)
+data = rng.exponential(1.0, 40)
+B = 2000
+meds = np.array([np.median(data[rng.integers(0, 40, 40)]) for _ in range(B)])
+lo, hi = np.percentile(meds, [2.5, 97.5])
+print(f"median {np.median(data):.3f}, bootstrap SE {meds.std(ddof=1):.3f}, 95% interval [{lo:.3f}, {hi:.3f}]")
+
+# Paired comparison: two models' errors on the same 100 test examples
+err_a = rng.normal(0, 1.00, 100)
+err_b = err_a * 0.98 + rng.normal(0, 0.2, 100)
+diffs = []
+for _ in range(B):
+    i = rng.integers(0, 100, 100)                          # the same examples for both models
+    diffs.append(np.sqrt(np.mean(err_a[i] ** 2)) - np.sqrt(np.mean(err_b[i] ** 2)))
+print(f"RMSE(A) - RMSE(B) = {np.sqrt(np.mean(err_a ** 2)) - np.sqrt(np.mean(err_b ** 2)):.3f}, 95% interval [{np.percentile(diffs, 2.5):.3f}, {np.percentile(diffs, 97.5):.3f}]")
+
+# Try: resample err_a and err_b with different indices. How much wider does the interval get?`,
 };

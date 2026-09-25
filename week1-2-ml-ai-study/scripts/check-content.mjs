@@ -23,7 +23,7 @@ const graphTypes = new Set([...graphSource.matchAll(/case '(\w+)':/g)].map((matc
 const figureSource = fs.readFileSync(new URL('../src/components/Figures.jsx', import.meta.url), 'utf8');
 const drawnFigures = new Set([...figureSource.slice(figureSource.indexOf('const drawings')).matchAll(/'([\w-]+)':/g)].map((match) => match[1]));
 // Pages the reference book does not cover; every other page must cite a section of it.
-const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics', 'roc-auc', 'ml-in-production']);
+const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'classification-metrics', 'roc-auc', 'ml-in-production', 'bootstrap']);
 
 function renders(tex, where) {
   try {

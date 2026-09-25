@@ -230,6 +230,15 @@ export const courseReferences = {
     ref('mlops', '', 'The model life cycle: development, deployment, monitoring, and governance'),
     ref('dsaws', '', 'End-to-end pipelines: ingesting data, training, deploying, and monitoring models'),
   ],
+  multicollinearity: [
+    ref('isl', '3.3.3', 'Potential Problems (collinearity and the variance inflation factor)'),
+    ref('isl', '6.2.1', 'Ridge Regression'),
+  ],
+  bootstrap: [
+    ref('isl', '5.2', 'The Bootstrap'),
+    ref('bishop', '1.2.3', 'Bayesian Probabilities (the bootstrap for frequentist error bars)', 23),
+    ref('dhs', '9.4.2', 'Bootstrap'),
+  ],
 };
 
 // Real-world case studies from the Designing Machine Learning Systems resource list.

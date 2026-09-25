@@ -99,6 +99,7 @@ export const mmlReferences = {
   'feature-scaling': [ref('10.6', 'Key Steps of PCA in Practice (standardizing the data)', 336)],
   'bias-variance': [ref('9.2.2', 'Overfitting in Linear Regression (related reading)', 298), ref('8.2.3', 'Regularization to Reduce Overfitting (related reading)', 262)],
   'logistic-loss': [ref('8.3.1', 'Maximum Likelihood Estimation', 265), ref('5.5', 'Useful Identities for Computing Gradients', 158)],
+  multicollinearity: [ref('4.4', 'Eigendecomposition and Diagonalization', 115), ref('9.2.1', 'Maximum Likelihood Estimation (related reading: when X^T X can be inverted)', 293)],
 };
 
 // A topic page lists the sections of its subtopics, without repeats.

@@ -146,6 +146,17 @@ export const mathLinks = {
   'ml-in-production': [
     use('probability-basics', 'Drift is a change in the joint distribution P(x, y) = P(x) P(y | x): covariate shift changes P(x), concept drift P(y | x).'),
   ],
+  'multicollinearity': [
+    use('eigenvalues-eigenvectors', 'The eigenvalues of the feature correlation matrix show which combinations of features the data barely vary along.'),
+    use('spectral-theorem', 'C is symmetric, so its eigenvectors are orthogonal and the least-squares solution splits into independent pieces, one per eigen-direction.'),
+    use('covariance-gaussian', 'The weight estimates have covariance (sigma^2/n) C^-1, so a small eigenvalue of C is a large variance of the weights.'),
+    use('taylor-hessian', 'C is the Hessian of the squared loss on standardized data, so its condition number also sets how fast gradient descent converges.'),
+  ],
+  'bootstrap': [
+    use('expectation-variance', 'The bootstrap estimates the standard deviation of a statistic, the square root of its variance, by simulation.'),
+    use('probability-basics', 'Each resample makes n independent, uniform draws from the data, with replacement.'),
+    use('exp-log', '(1 - 1/n)^n approaches e^-1, so about 36.8% of the examples are left out of each resample.'),
+  ],
 };
 
 // Reverse lookup for a math page: every ML page that uses it, with the same explanation.

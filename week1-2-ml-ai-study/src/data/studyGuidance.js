@@ -1,4 +1,5 @@
 export const advancedConceptIds = new Set([
+  'multicollinearity',
   'max-margin-svm',
   'roc-auc',
   'jacobian-chain-rule',
@@ -39,7 +40,7 @@ export const recommendedPaths = {
   'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
   'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
   'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
-  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'ridge-regularization', 'lasso-elastic-net'],
+  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'multicollinearity', 'ridge-regularization', 'lasso-elastic-net'],
   'overview-generalization': ['model-complexity-generalization', 'bias-variance', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc', 'ml-in-production'],
   'overview-probability': ['exp-log', 'probability-statistics', 'logistic-regression', 'logistic-loss', 'bias-variance', 'classification-metrics'],
   'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
@@ -256,5 +257,11 @@ export const guidedSelfChecks = {
   ],
   'determinants-cofactor-row-ops': [
     { question: 'Which row operations change a determinant?', answer: 'Swapping rows flips the sign; scaling a row by c scales the determinant by c; adding a multiple of one row to another does not change it.' },
+  ],
+  'multicollinearity': [
+    { question: 'Two features are almost copies of each other. Why can least squares give them weights of +50 and -48 when +1 and +1 would predict almost as well?', answer: 'Only the sum of the two weights is well determined by the data; their difference lies along an eigenvector with a tiny eigenvalue, where the noise is amplified by 1/lambda_i. Ridge or dropping one feature pins the split down.' },
+  ],
+  'bootstrap': [
+    { question: 'Why does increasing the number of resamples B not make the bootstrap interval narrower?', answer: 'B only controls how accurately we estimate the spread of the statistic under resampling; the spread itself is set by the sample size n and the data. More B gives a smoother, more precise estimate of the same width.' },
   ],
 };

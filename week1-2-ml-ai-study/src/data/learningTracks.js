@@ -16,7 +16,7 @@ export const tracks = {
       { title: 'Linear transformations', concepts: ['linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'change-of-basis', 'affine-maps'] },
       { title: 'Rank, determinants and inverses', concepts: ['rank-nullity', 'determinant-geometry', 'determinants-cofactor-row-ops', 'invertible-transformations'] },
       { title: 'Analytic geometry: angles and projections', concepts: ['inner-products', 'orthogonality', 'orthogonal-complement', 'orthogonal-projections', 'gram-schmidt'] },
-      { title: 'Eigenvalues and eigenvectors', concepts: ['eigenvalues-eigenvectors', 'trace', 'diagonalization', 'pagerank', 'spectral-theorem'] },
+      { title: 'Eigenvalues and eigenvectors', concepts: ['eigenvalues-eigenvectors', 'eigenspaces-multiplicity', 'trace', 'diagonalization', 'markov-chains', 'pagerank', 'spectral-theorem', 'positive-definite'] },
       { title: 'Matrix decompositions', concepts: ['lu-decomposition', 'cholesky-decomposition', 'svd'] },
       { title: 'Vector calculus', concepts: ['derivatives', 'partial-derivatives-gradient', 'jacobian-chain-rule', 'loss-gradients', 'backpropagation', 'taylor-hessian'] },
       { title: 'Probability and statistics', concepts: ['probability-basics', 'expectation-variance', 'covariance-gaussian', 'likelihood-mle'] },

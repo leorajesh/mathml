@@ -298,16 +298,33 @@ export const quizzes = {
     {"question": "A v = 3 v for a nonzero vector v. What is v?", "answer": "An eigenvector with eigenvalue 3", "wrong": ["A basis of the null space", "The zero vector", "A row of A"], "why": "That is the definition of an eigenvector and its eigenvalue."},
     {"question": "What are the eigenvalues of [[2, 1], [1, 2]]?", "answer": "3 and 1", "wrong": ["2 and 2", "2 and 1", "4 and 0"], "why": "(2 - l)^2 - 1 = 0 gives l = 3 or l = 1."},
     {"question": "What does a negative eigenvalue do to its eigenvector?", "answer": "Flips it to point the opposite way along the same line", "wrong": ["Rotates it by 90 degrees", "Makes it zero", "Nothing; negative eigenvalues are impossible"], "why": "Av = lambda v with lambda < 0 reverses direction but stays on the same line."},
+    {"question": "Do A and A^T always have the same eigenvalues?", "answer": "Yes, they have the same characteristic polynomial", "wrong": ["No, only when A is symmetric", "Yes, and also the same eigenvectors", "Only when A is invertible"], "why": "det(A^T - lambda I) = det((A - lambda I)^T) = det(A - lambda I). The eigenvectors can differ."},
   ],
   "diagonalization": [
     {"question": "If A = P D P^-1 with D diagonal, what is A^5?", "answer": "P D^5 P^-1", "wrong": ["P^5 D P^-5", "5 P D P^-1", "D^5"], "why": "The inner P^-1 P pairs cancel, leaving P D^5 P^-1."},
     {"question": "When is an n by n matrix diagonalizable?", "answer": "When it has n linearly independent eigenvectors", "wrong": ["When all its entries are positive", "Always", "When it is upper triangular"], "why": "Those eigenvectors form the invertible matrix P."},
     {"question": "Is [[1, 1], [0, 1]] diagonalizable?", "answer": "No, it has only one independent eigenvector", "wrong": ["Yes, it is already triangular", "Yes, its eigenvalues are 1 and 1", "No, because its determinant is 0"], "why": "The only eigenvalue is 1, with eigenvectors only along [1, 0]."},
   ],
+  "eigenspaces-multiplicity": [
+    {"question": "B = [[3, 1], [0, 3]] has eigenvalue 3 with algebraic multiplicity 2. What is its geometric multiplicity?", "answer": "1", "wrong": ["2", "0", "3"], "why": "B - 3I = [[0, 1], [0, 0]] has rank 1, so the eigenspace has dimension 2 - 1 = 1."},
+    {"question": "Which condition makes an n by n matrix diagonalizable?", "answer": "Every eigenvalue's geometric multiplicity equals its algebraic multiplicity", "wrong": ["It has no repeated eigenvalues", "Its determinant is not zero", "All its entries are nonzero"], "why": "No repeated eigenvalues is enough but not needed (the identity has a repeated eigenvalue), and invertibility is a different question."},
+    {"question": "For lambda = 2, A - 2I (3 by 3) has rank 1. How many independent eigenvectors does lambda = 2 have?", "answer": "2", "wrong": ["1", "3", "It depends on the determinant"], "why": "The eigenspace is the null space of A - 2I, of dimension n - rank = 3 - 1 = 2."},
+  ],
+  "markov-chains": [
+    {"question": "A = [[0.9, 0.2], [0.1, 0.8]] is column-stochastic. What is its steady state?", "answer": "[2/3, 1/3]", "wrong": ["[1/2, 1/2]", "[0.9, 0.1]", "[1/3, 2/3]"], "why": "Solve A pi = pi: 0.1 pi_1 = 0.2 pi_2, so pi_1 = 2 pi_2; with pi_1 + pi_2 = 1 that gives [2/3, 1/3]."},
+    {"question": "Why is 1 always an eigenvalue of a column-stochastic matrix A?", "answer": "The all-ones vector satisfies A^T 1 = 1, and A has the same eigenvalues as A^T", "wrong": ["Its diagonal entries are all 1", "Its determinant is always 1", "Every column is an eigenvector"], "why": "Each column sums to 1, so 1^T A = 1^T. Transposing gives A^T 1 = 1."},
+    {"question": "A 2-state chain has eigenvalues 1 and 0.5. After 3 steps, how much of the starting gap to the steady state remains?", "answer": "0.125, since the gap shrinks by 0.5 each step", "wrong": ["None: it reaches the steady state after 1 step", "1.5 times the gap", "0.5 of it, whatever the number of steps"], "why": "The non-steady part is multiplied by the second eigenvalue each step: 0.5^3 = 0.125."},
+  ],
   "pagerank": [
     {"question": "In the link matrix M, what must each column add up to?", "answer": "1", "wrong": ["0", "The number of pages", "The number of links on the page"], "why": "Each column holds the probabilities of moving from one page to each page."},
     {"question": "Which vector is the PageRank ranking?", "answer": "The eigenvector of the link matrix with eigenvalue 1, scaled to sum to 1", "wrong": ["The eigenvector with the smallest eigenvalue", "The number of links pointing to each page", "The first column of M"], "why": "The steady state satisfies r = Mr."},
     {"question": "Why does PageRank add damping (random jumps)?", "answer": "It guarantees a single steady state that the iteration always reaches", "wrong": ["It makes every page rank equally", "It removes pages with no links", "It makes the matrix symmetric"], "why": "Without damping, some link graphs oscillate or have several steady states."},
+    {"question": "Page 3 has no outgoing links. What does the usual fix put in its column of the link matrix?", "answer": "1/n in every entry: a jump to any page", "wrong": ["All zeros", "A 1 on its own diagonal entry", "The column of the page that links to it"], "why": "A zero column would leak rank and break column-stochasticity; spreading it evenly keeps each column summing to 1."},
+  ],
+  "positive-definite": [
+    {"question": "Is A = [[1, 2], [2, 1]] positive definite?", "answer": "No: x = [1, -1] gives x^T A x = -2", "wrong": ["Yes, all its entries are positive", "Yes, it is symmetric", "Only if its determinant is positive, which it is"], "why": "Its eigenvalues are 3 and -1; one negative eigenvalue is enough to fail. (Its determinant is -3.)"},
+    {"question": "A symmetric matrix has eigenvalues 4, 1 and 0. What is it?", "answer": "Positive semidefinite but not positive definite", "wrong": ["Positive definite", "Indefinite", "Negative definite"], "why": "No eigenvalue is negative, but the zero eigenvalue gives a nonzero x with x^T A x = 0."},
+    {"question": "Why is X^T X always positive semidefinite?", "answer": "x^T X^T X x = ||Xx||^2, which is never negative", "wrong": ["Because X has positive entries", "Because X^T X is diagonal", "Because det(X^T X) is always positive"], "why": "It is a squared length. It is positive definite when Xx = 0 only for x = 0, that is, when the columns of X are independent."},
   ],
   "orthogonality": [
     {"question": "Are u = [1, 1] and v = [1, -1] orthogonal?", "answer": "Yes, their dot product is 0", "wrong": ["No, they have the same length", "No, v has a negative entry", "Only after normalizing"], "why": "1*1 + 1*(-1) = 0."},
@@ -333,6 +350,7 @@ export const quizzes = {
     {"question": "Which matrices have a Cholesky factorization A = L L^T?", "answer": "Symmetric positive definite matrices", "wrong": ["All square matrices", "All symmetric matrices", "Only diagonal matrices"], "why": "Positive definiteness keeps every square root in the algorithm positive."},
     {"question": "For A = [[4, 2], [2, 3]], what is the Cholesky factor L?", "answer": "[[2, 0], [1, sqrt(2)]]", "wrong": ["[[4, 0], [2, 3]]", "[[2, 1], [0, sqrt(2)]]", "[[2, 0], [2, 1]]"], "why": "L L^T = [[4, 2], [2, 1 + 2]] = A."},
     {"question": "What happens if you run Cholesky on [[1, 2], [2, 1]]?", "answer": "It fails: the matrix is symmetric but not positive definite", "wrong": ["It succeeds with L = [[1, 0], [2, 1]]", "It returns the identity", "It succeeds because the matrix is symmetric"], "why": "Its eigenvalues are 3 and -1, so a square root of a negative number appears."},
+    {"question": "A = L L^T with L = [[2, 0, 0], [1, 2, 0], [1, 1, 2]]. What is det A?", "answer": "64", "wrong": ["8", "16", "6"], "why": "det A = det(L)^2 = (2 x 2 x 2)^2 = 64."},
   ],
   "svd": [
     {"question": "Which matrices have a singular value decomposition?", "answer": "Every real matrix, of any shape", "wrong": ["Only square matrices", "Only symmetric matrices", "Only invertible matrices"], "why": "Unlike eigendecomposition, the SVD always exists."},

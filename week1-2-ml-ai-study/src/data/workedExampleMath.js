@@ -359,6 +359,26 @@ export const workedExampleMath = {
     tex`B=\begin{bmatrix}1&1\\1&-2\end{bmatrix}\begin{bmatrix}5&0\\0&2\end{bmatrix}\begin{bmatrix}1&1\\1&-2\end{bmatrix}^{-1}`,
     tex`B^3=P\begin{bmatrix}125&0\\0&8\end{bmatrix}P^{-1}=\begin{bmatrix}86&39\\78&47\end{bmatrix}`,
   ],
+  'eigenspaces-multiplicity': [
+    tex`\det(A-\lambda I)=-(\lambda-1)^2(\lambda-2):\quad \operatorname{AM}(1)=2,\ \operatorname{AM}(2)=1`,
+    tex`A-I=\begin{bmatrix}1&1&-1\\2&2&-2\\2&2&-2\end{bmatrix}\sim\begin{bmatrix}1&1&-1\\0&0&0\\0&0&0\end{bmatrix},\quad \operatorname{GM}(1)=3-1=2`,
+    tex`E_1=\operatorname{span}\left\{\begin{bmatrix}-1\\1\\0\end{bmatrix},\begin{bmatrix}1\\0\\1\end{bmatrix}\right\},\quad E_2=\operatorname{span}\left\{\begin{bmatrix}1\\2\\2\end{bmatrix}\right\}`,
+    tex`P=\begin{bmatrix}-1&1&1\\1&0&2\\0&1&2\end{bmatrix},\quad D=\begin{bmatrix}1&0&0\\0&1&0\\0&0&2\end{bmatrix}`,
+    tex`B-4I=\begin{bmatrix}1&-1\\1&-1\end{bmatrix}:\ \operatorname{AM}(4)=2,\ \operatorname{GM}(4)=1`,
+  ],
+  'markov-chains': [
+    tex`A=\begin{bmatrix}0.7&0.5\\0.3&0.5\end{bmatrix}`,
+    tex`A^2=\begin{bmatrix}0.64&0.6\\0.36&0.4\end{bmatrix}`,
+    tex`P=\begin{bmatrix}5&1\\3&-1\end{bmatrix},\quad D=\begin{bmatrix}1&0\\0&0.2\end{bmatrix},\quad P^{-1}=\tfrac18\begin{bmatrix}1&1\\3&-5\end{bmatrix}`,
+    tex`A^k=\tfrac18\begin{bmatrix}5+3(0.2)^k&5-5(0.2)^k\\3-3(0.2)^k&3+5(0.2)^k\end{bmatrix}`,
+    tex`A^k\to\begin{bmatrix}5/8&5/8\\3/8&3/8\end{bmatrix}`,
+  ],
+  'positive-definite': [
+    tex`x^TAx=2x_1^2-2x_1x_2+2x_2^2=x_1^2+x_2^2+(x_1-x_2)^2`,
+    tex`\lambda^2-4\lambda+3=0\Rightarrow\lambda=3,\ 1>0`,
+    tex`\begin{bmatrix}1&-1\end{bmatrix}\begin{bmatrix}1&3\\3&1\end{bmatrix}\begin{bmatrix}1\\-1\end{bmatrix}=-4`,
+    tex`X^TX=\begin{bmatrix}2&2\\2&5\end{bmatrix},\quad \lambda^2-7\lambda+6=0\Rightarrow\lambda=6,\ 1`,
+  ],
   'pagerank': [
     null,
     tex`M=\begin{bmatrix}0&\tfrac12&\tfrac13\\ \tfrac12&0&\tfrac13\\ \tfrac12&\tfrac12&\tfrac13\end{bmatrix}`,

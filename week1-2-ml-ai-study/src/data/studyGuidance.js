@@ -17,6 +17,9 @@ export const advancedConceptIds = new Set([
   'dimensionality-reduction',
   'diagonalization',
   'pagerank',
+  'eigenspaces-multiplicity',
+  'markov-chains',
+  'positive-definite',
   'orthogonality',
   'spectral-theorem',
   'lu-decomposition',
@@ -189,6 +192,15 @@ export const guidedSelfChecks = {
   ],
   orthogonality: [
     { question: 'Why is solving Qx = b easy when Q is orthogonal?', answer: 'Q inverse equals Q transpose, so x = Q^T b: just dot products with the columns, no elimination needed.' },
+  ],
+  'eigenspaces-multiplicity': [
+    { question: 'Can a matrix with a repeated eigenvalue be diagonalizable?', answer: 'Yes, if that eigenvalue has as many independent eigenvectors as its multiplicity as a root. The identity matrix is the simplest case: eigenvalue 1 repeated n times, and every vector is an eigenvector.' },
+  ],
+  'markov-chains': [
+    { question: 'Why is 1 always an eigenvalue of a column-stochastic matrix?', answer: 'Each column sums to 1, so the all-ones row vector times A gives the all-ones row vector again: A^T 1 = 1. A and A^T have the same eigenvalues, so 1 is an eigenvalue of A.' },
+  ],
+  'positive-definite': [
+    { question: 'Why is X^T X never negative definite, whatever the data X?', answer: 'x^T X^T X x = ||Xx||^2, a squared length, which can never be negative. So X^T X is always positive semidefinite, and positive definite when the columns of X are independent.' },
   ],
   'spectral-theorem': [
     { question: 'Are the eigenvalues of a real symmetric matrix always real?', answer: 'Yes. The spectral theorem guarantees real eigenvalues and an orthonormal set of eigenvectors for every real symmetric matrix.' },

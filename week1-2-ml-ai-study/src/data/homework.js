@@ -2776,6 +2776,403 @@ export const homework = {
      }
     ],
     "takeaway": "tr(AB) = tr(BA) holds for any sizes where both products exist; it is why the trace does not change under a change of basis."
+   },
+   {
+    "id": "multiplicity",
+    "title": "Repeated eigenvalues: enough eigenvectors?",
+    "pages": [
+     "eigenspaces-multiplicity",
+     "diagonalization"
+    ],
+    "statement": "A = [[3, 1, −1], [0, 4, 0], [−1, 1, 3]] and N = [[6, −1], [4, 2]].",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "The characteristic polynomial of A is −(λ − 4)²(λ − 2). List all three eigenvalues of A, repeats included (any order).",
+      "answer": [
+       4.0,
+       4.0,
+       2.0
+      ],
+      "hints": [
+       "A repeated root is listed as many times as it repeats.",
+       "The squared factor gives one eigenvalue twice."
+      ],
+      "why": "λ = 4 twice (algebraic multiplicity 2) and λ = 2 once.",
+      "tol": 0,
+      "unordered": true,
+      "mistakes": [
+       {
+        "value": [
+         4.0,
+         2.0,
+         2.0
+        ],
+        "message": "Which factor is squared? (λ − 4)² makes 4 the double root."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What is the rank of A − 4I?",
+      "answer": 1.0,
+      "hints": [
+       "A − 4I = [[−1, 1, −1], [0, 0, 0], [−1, 1, −1]].",
+       "How many of its rows are independent?"
+      ],
+      "why": "Rows 1 and 3 are equal and row 2 is zero, so the rank is 1.",
+      "tol": 0
+     },
+     {
+      "type": "number",
+      "prompt": "What is the geometric multiplicity of λ = 4?",
+      "answer": 2.0,
+      "hints": [
+       "The eigenspace is the null space of A − 4I.",
+       "Rank-nullity: dimension of the null space = n − rank."
+      ],
+      "why": "GM(4) = 3 − 1 = 2, equal to AM(4).",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 1.0,
+        "message": "That is the rank of A − 4I. The eigenspace dimension is n minus the rank."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "Is A diagonalizable?",
+      "answer": "Yes: GM = AM for both eigenvalues",
+      "wrong": [
+       "No: it has a repeated eigenvalue",
+       "No: its determinant is not zero",
+       "Only if the eigenvalues were distinct"
+      ],
+      "hints": [
+       "Compare GM and AM for λ = 4 and for λ = 2."
+      ],
+      "why": "GM(4) = AM(4) = 2 and GM(2) = AM(2) = 1: three independent eigenvectors, a basis of R³.",
+      "mistakes": [
+       {
+        "value": "No: it has a repeated eigenvalue",
+        "message": "A repeated eigenvalue is only a problem when its eigenspace is too small."
+       },
+       {
+        "value": "Only if the eigenvalues were distinct",
+        "message": "Distinct eigenvalues are enough, but not necessary."
+       },
+       {
+        "value": "No: its determinant is not zero",
+        "message": "The determinant is about invertibility, not diagonalizability."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "N has the single eigenvalue 4 with AM 2 (trace 8, det 16). What is GM(4) for N?",
+      "answer": 1.0,
+      "hints": [
+       "Compute N − 4I and its rank.",
+       "N − 4I = [[2, −1], [4, −2]]; is the second row a multiple of the first?"
+      ],
+      "why": "N − 4I has rank 1, so GM(4) = 2 − 1 = 1 < 2 = AM(4): N is not diagonalizable.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 2.0,
+        "message": "That is the algebraic multiplicity. Count independent solutions of (N − 4I)v = 0."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "A: −(λ − 4)²(λ − 2) gives λ = 4 (AM 2) and λ = 2 (AM 1)."
+     },
+     {
+      "text": "A − 4I has two equal rows and a zero row: rank 1, so GM(4) = 3 − 1 = 2 and A is diagonalizable."
+     },
+     {
+      "text": "N − 4I = [[2, −1], [4, −2]] has rank 1: GM(4) = 1 < AM(4) = 2, so N is not diagonalizable."
+     }
+    ],
+    "takeaway": "Diagonalizability is decided eigenvalue by eigenvalue: each one must bring as many independent eigenvectors as its multiplicity."
+   },
+   {
+    "id": "markovpower",
+    "title": "Powers of a transition matrix",
+    "pages": [
+     "markov-chains"
+    ],
+    "statement": "A phone is either on Wi-Fi (state 1) or on mobile data (state 2) each hour. T = [[0.6, 0.3], [0.4, 0.7]]; column j lists where state j goes next.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Starting on Wi-Fi, what is the probability of being on mobile data two hours later?",
+      "answer": 0.52,
+      "hints": [
+       "That is entry (2, 1) of T², or add the two paths Wi-Fi → ? → data.",
+       "The two paths are Wi-Fi → Wi-Fi → data and Wi-Fi → data → data."
+      ],
+      "why": "0.6·0.4 + 0.4·0.7 = 0.24 + 0.28 = 0.52.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": 0.16,
+        "message": "That squares one entry. A² is a matrix product: add over the state in between."
+       },
+       {
+        "value": 0.28,
+        "message": "That is only one of the two paths."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "Besides 1, what is the other eigenvalue of T?",
+      "answer": 0.3,
+      "hints": [
+       "1 is always an eigenvalue of a stochastic matrix.",
+       "The eigenvalues add up to the trace."
+      ],
+      "why": "trace 1.3 − 1 = 0.3 (check: det 0.42 − 0.12 = 0.3 = 1·0.3).",
+      "tol": 1e-06
+     },
+     {
+      "type": "vector",
+      "prompt": "Find the steady state [P(Wi-Fi), P(data)] (3 decimals or fractions).",
+      "answer": [
+       0.42857142857142855,
+       0.5714285714285714
+      ],
+      "hints": [
+       "Solve (T − I)π = 0 and scale so the entries sum to 1.",
+       "The first row gives −0.4 π₁ + 0.3 π₂ = 0."
+      ],
+      "why": "π₂ = (4/3)π₁, and π₁ + π₂ = 1 gives π = [3/7, 4/7] ≈ [0.429, 0.571].",
+      "tol": 0.002,
+      "mistakes": [
+       {
+        "value": [
+         0.5714285714285714,
+         0.42857142857142855
+        ],
+        "message": "Order: the first entry is Wi-Fi. Which state is stickier?"
+       },
+       {
+        "value": [
+         0.5,
+         0.5
+        ],
+        "message": "Solve T π = π; the states are not equally likely."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "Using Tᵏ = P Dᵏ P⁻¹, entry (1, 1) of Tᵏ is 3/7 + (4/7)(0.3)ᵏ. What is it for k = 3 (3 decimals)?",
+      "answer": 0.444,
+      "hints": [
+       "Compute 0.3³ first.",
+       "0.3³ = 0.027."
+      ],
+      "why": "3/7 + (4/7)(0.027) = (3 + 0.108)/7 ≈ 0.444: after three hours the start barely matters.",
+      "tol": 0.001,
+      "mistakes": [
+       {
+        "value": 0.216,
+        "message": "That is 0.6³, an entrywise power, which is not T³."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "T² entry (2, 1): 0.6·0.4 + 0.4·0.7 = 0.52."
+     },
+     {
+      "text": "Eigenvalues 1 and 0.3 (trace 1.3)."
+     },
+     {
+      "text": "(T − I)π = 0 gives 0.4π₁ = 0.3π₂, so π = [3/7, 4/7]."
+     },
+     {
+      "text": "(T³)₁₁ = 3/7 + (4/7)·0.027 ≈ 0.444, close to 3/7 ≈ 0.429."
+     }
+    ],
+    "takeaway": "A Markov chain forgets its start at the rate set by its second eigenvalue; the eigenvector for 1 is where it ends up."
+   },
+   {
+    "id": "dangling",
+    "title": "PageRank with a dangling page",
+    "pages": [
+     "pagerank",
+     "markov-chains"
+    ],
+    "statement": "Three pages: page 1 links only to page 2; page 2 links to pages 1 and 3; page 3 has no links.",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Write column 2 of the link matrix M (where page 2 sends its rank).",
+      "answer": [
+       0.5,
+       0.0,
+       0.5
+      ],
+      "hints": [
+       "Page 2 has two links and splits its rank equally.",
+       "Column j lists the share page j sends to pages 1, 2 and 3."
+      ],
+      "why": "Page 2 sends 1/2 to page 1 and 1/2 to page 3: [1/2, 0, 1/2].",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         0.0,
+         0.5,
+         0.5
+        ],
+        "message": "That would be a link from page 2 to itself."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Page 3 is dangling. With the usual fix, what is its column?",
+      "answer": [
+       0.3333333333333333,
+       0.3333333333333333,
+       0.3333333333333333
+      ],
+      "hints": [
+       "A zero column would lose rank. Where does the fix send it?",
+       "Spread it evenly over all n pages."
+      ],
+      "why": "Each entry becomes 1/n = 1/3, so the column sums to 1 again.",
+      "tol": 0.001,
+      "mistakes": [
+       {
+        "value": [
+         0.0,
+         0.0,
+         0.0
+        ],
+        "message": "A zero column makes M no longer column-stochastic; rank would leak away."
+       },
+       {
+        "value": [
+         0.0,
+         0.0,
+         1.0
+        ],
+        "message": "That would be a self-link, which makes page 3 a trap."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Find the PageRank vector with the fixed matrix (no damping), entries summing to 1.",
+      "answer": [
+       0.3,
+       0.4,
+       0.3
+      ],
+      "hints": [
+       "Solve M r = r: row 1 says r₁ = r₂/2 + r₃/3.",
+       "Row 3 says r₃ = r₂/2 + r₃/3; combine with r₁ + r₂ + r₃ = 1."
+      ],
+      "why": "Rows 1 and 3 give r₁ = r₃ and r₃ = (3/4)r₂, so r = [0.3, 0.4, 0.3]. Page 2 ranks highest: both other pages feed it.",
+      "tol": 0.002
+     }
+    ],
+    "solution": [
+     {
+      "text": "M = [[0, 1/2, 1/3], [1, 0, 1/3], [0, 1/2, 1/3]] after the fix."
+     },
+     {
+      "text": "r₃ = r₂/2 + r₃/3 gives r₃ = (3/4)r₂; row 1 gives r₁ = r₃."
+     },
+     {
+      "text": "r₁ + r₂ + r₃ = 1 gives r = [0.3, 0.4, 0.3]."
+     }
+    ],
+    "takeaway": "A dangling page is fixed by letting the surfer jump anywhere from it; damping does the same from every page, which also breaks rank sinks."
+   },
+   {
+    "id": "spectral3",
+    "title": "An orthonormal eigenbasis with a repeated eigenvalue",
+    "pages": [
+     "spectral-theorem",
+     "gram-schmidt"
+    ],
+    "statement": "S = [[1, −2, −2], [−2, 4, −1], [−2, −1, 4]] is symmetric. Its eigenspace for λ = 5 is the plane 2x + y + z = 0, and [2, 1, 1] is an eigenvector for the third eigenvalue.",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "List all three eigenvalues (any order).",
+      "answer": [
+       5.0,
+       5.0,
+       -1.0
+      ],
+      "hints": [
+       "A plane of eigenvectors means λ = 5 appears twice.",
+       "The trace gives the third: 1 + 4 + 4."
+      ],
+      "why": "Trace 9 = 5 + 5 + λ₃, so λ₃ = −1. Check: S[2, 1, 1] = [−2, −1, −1].",
+      "tol": 0,
+      "unordered": true
+     },
+     {
+      "type": "vector",
+      "prompt": "u = [1, −2, 0] and w = [1, 0, −2] are both in the λ = 5 plane but not orthogonal. Enter w − (w·u / u·u) u.",
+      "answer": [
+       0.8,
+       0.4,
+       -2.0
+      ],
+      "hints": [
+       "w·u = 1 and u·u = 5.",
+       "Subtract (1/5)u from w."
+      ],
+      "why": "w − (1/5)[1, −2, 0] = [4/5, 2/5, −2], or [2, 1, −5] after scaling; it is orthogonal to u and still in the plane.",
+      "tol": 0.001,
+      "mistakes": [
+       {
+        "value": [
+         0.5527864045000421,
+         0.8944271909999159,
+         -2.0
+        ],
+        "message": "Divide by u·u = 5, not by the length sqrt 5."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What is the dot product of the eigenvector [2, 1, 1] (for −1) with u = [1, −2, 0]?",
+      "answer": 0.0,
+      "hints": [
+       "Just compute it.",
+       "Eigenvectors of a symmetric matrix for different eigenvalues…"
+      ],
+      "why": "2 − 2 + 0 = 0: eigenvectors for different eigenvalues are automatically orthogonal. Only inside one eigenspace is Gram-Schmidt needed.",
+      "tol": 0
+     }
+    ],
+    "solution": [
+     {
+      "text": "λ = 5 twice (a plane of eigenvectors) and trace 9 gives λ = −1."
+     },
+     {
+      "text": "Gram-Schmidt inside the plane: [1, 0, −2] − (1/5)[1, −2, 0] = [4/5, 2/5, −2] ∝ [2, 1, −5]."
+     },
+     {
+      "text": "[2, 1, 1] is orthogonal to the whole plane, so normalizing [1, −2, 0], [2, 1, −5] and [2, 1, 1] gives an orthonormal Q with S = Q diag(5, 5, −1) Qᵀ."
+     }
+    ],
+    "takeaway": "The spectral theorem promises an orthonormal eigenbasis; with a repeated eigenvalue you build it with Gram-Schmidt inside that eigenspace."
    }
   ]
  },
@@ -3026,6 +3423,290 @@ export const homework = {
      }
     ],
     "takeaway": "Image compression and PCA both keep the largest singular values; the dropped ones measure exactly what is lost."
+   },
+   {
+    "id": "lu3",
+    "title": "A 3 by 3 LU factorization",
+    "pages": [
+     "lu-decomposition"
+    ],
+    "statement": "A = [[1, 2, 1], [3, 8, 1], [0, 4, 1]] and b = [1, −1, −3].",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Enter the multipliers l₂₁, l₃₁, l₃₂ that elimination uses.",
+      "answer": [
+       3.0,
+       0.0,
+       2.0
+      ],
+      "hints": [
+       "l₂₁ and l₃₁ clear column 1 using the first pivot 1.",
+       "After that, row 2 is [0, 2, −2]; l₃₂ clears the 4 below the pivot 2."
+      ],
+      "why": "l₂₁ = 3/1, l₃₁ = 0/1 and l₃₂ = 4/2: L = [[1, 0, 0], [3, 1, 0], [0, 2, 1]].",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         3.0,
+         0.0,
+         4.0
+        ],
+        "message": "l₃₂ divides by the second pivot, which is 2."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Enter the pivots U₁₁, U₂₂, U₃₃.",
+      "answer": [
+       1.0,
+       2.0,
+       5.0
+      ],
+      "hints": [
+       "Row 2 − 3·row 1 = [0, 2, −2].",
+       "Row 3 − 2·(new row 2) = [0, 4 − 4, 1 + 4]."
+      ],
+      "why": "U = [[1, 2, 1], [0, 2, −2], [0, 0, 5]], so det A = 1·2·5 = 10.",
+      "tol": 0
+     },
+     {
+      "type": "vector",
+      "prompt": "Solve L y = b by forward substitution. Enter y.",
+      "answer": [
+       1.0,
+       -4.0,
+       5.0
+      ],
+      "hints": [
+       "y₁ = b₁, then y₂ = b₂ − l₂₁y₁.",
+       "Then y₃ = b₃ − l₃₁y₁ − l₃₂y₂."
+      ],
+      "why": "y = [1, −1 − 3, −3 − 0 − 2(−4)] = [1, −4, 5].",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": [
+         1.0,
+         -4.0,
+         -11.0
+        ],
+        "message": "Check the sign in y₃: subtract l₃₂·y₂ = 2·(−4)."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Solve U x = y by back substitution. Enter x.",
+      "answer": [
+       2.0,
+       -1.0,
+       1.0
+      ],
+      "hints": [
+       "Start from the last row: 5x₃ = 5.",
+       "Then 2x₂ − 2x₃ = −4, then x₁ + 2x₂ + x₃ = 1."
+      ],
+      "why": "x₃ = 1, x₂ = −1, x₁ = 2. Check: A[2, −1, 1] = [1, −1, −3].",
+      "tol": 1e-06
+     }
+    ],
+    "solution": [
+     {
+      "text": "Multipliers 3, 0, then 2: L = [[1, 0, 0], [3, 1, 0], [0, 2, 1]], U = [[1, 2, 1], [0, 2, −2], [0, 0, 5]]."
+     },
+     {
+      "text": "Forward: y = [1, −4, 5]."
+     },
+     {
+      "text": "Back: x₃ = 1, x₂ = (−4 + 2)/2 = −1, x₁ = 1 − 2(−1) − 1 = 2."
+     }
+    ],
+    "takeaway": "L stores the elimination; each new right-hand side costs only two triangular solves."
+   },
+   {
+    "id": "chol3",
+    "title": "A 3 by 3 Cholesky factor",
+    "pages": [
+     "cholesky-decomposition",
+     "positive-definite"
+    ],
+    "statement": "S = [[9, 3, 6], [3, 5, 4], [6, 4, 9]] is symmetric positive definite; find L with S = L Lᵀ.",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Enter the first column of L: l₁₁, l₂₁, l₃₁.",
+      "answer": [
+       3.0,
+       1.0,
+       2.0
+      ],
+      "hints": [
+       "l₁₁² = S₁₁.",
+       "Then l₂₁ = S₂₁/l₁₁ and l₃₁ = S₃₁/l₁₁."
+      ],
+      "why": "l₁₁ = 3, l₂₁ = 3/3 = 1, l₃₁ = 6/3 = 2.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         9.0,
+         3.0,
+         6.0
+        ],
+        "message": "That is the first column of S. Take the square root of S₁₁ and divide the rest by it."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Enter l₂₂ and l₃₂.",
+      "answer": [
+       2.0,
+       1.0
+      ],
+      "hints": [
+       "l₂₂ = sqrt(S₂₂ − l₂₁²).",
+       "l₃₂ = (S₃₂ − l₃₁l₂₁)/l₂₂."
+      ],
+      "why": "l₂₂ = sqrt(5 − 1) = 2 and l₃₂ = (4 − 2·1)/2 = 1.",
+      "tol": 1e-06
+     },
+     {
+      "type": "number",
+      "prompt": "Enter l₃₃.",
+      "answer": 2.0,
+      "hints": [
+       "l₃₃ = sqrt(S₃₃ − l₃₁² − l₃₂²).",
+       "S₃₃ − 4 − 1."
+      ],
+      "why": "l₃₃ = sqrt(9 − 4 − 1) = 2.",
+      "tol": 1e-06
+     },
+     {
+      "type": "number",
+      "prompt": "Use L to find det S.",
+      "answer": 144.0,
+      "hints": [
+       "det S = det(L)², and det L is the product of its diagonal.",
+       "det L = 3·2·2."
+      ],
+      "why": "det S = 12² = 144.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 12.0,
+        "message": "That is det L. det S = det(L)·det(Lᵀ)."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Column 1: l₁₁ = 3, l₂₁ = 1, l₃₁ = 2."
+     },
+     {
+      "text": "Column 2: l₂₂ = sqrt(5 − 1) = 2, l₃₂ = (4 − 2)/2 = 1."
+     },
+     {
+      "text": "Column 3: l₃₃ = sqrt(9 − 4 − 1) = 2, so L = [[3, 0, 0], [1, 2, 0], [2, 1, 2]] and det S = (3·2·2)² = 144."
+     }
+    ],
+    "takeaway": "Each Cholesky entry uses only entries already found; a negative number under a square root would prove S was not positive definite."
+   },
+   {
+    "id": "lowrank",
+    "title": "How much does a low-rank approximation keep?",
+    "pages": [
+     "svd"
+    ],
+    "statement": "A 1200 by 900 grayscale image is stored as a matrix. Separately, a small matrix has singular values 10, 6, 2 and 1.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "How many numbers does a rank-30 SVD approximation of the image need?",
+      "answer": 63030.0,
+      "hints": [
+       "Each kept term stores one left vector, one right vector and one singular value.",
+       "k(m + n + 1) with k = 30."
+      ],
+      "why": "30·(1200 + 900 + 1) = 63,030 numbers.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 63000.0,
+        "message": "Remember the 30 singular values themselves."
+       },
+       {
+        "value": 1080000.0,
+        "message": "That is the full image, m·n."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What fraction of the full image size is that (3 decimals)?",
+      "answer": 0.058361111111111114,
+      "hints": [
+       "The full image has m·n numbers.",
+       "Divide 63,030 by 1,080,000."
+      ],
+      "why": "63,030/1,080,000 ≈ 0.058, under 6%.",
+      "tol": 0.001
+     },
+     {
+      "type": "number",
+      "prompt": "For the small matrix, what fraction of the sum of squared singular values does rank 2 keep (3 decimals)?",
+      "answer": 0.9645390070921985,
+      "hints": [
+       "Square each singular value.",
+       "(10² + 6²) / (10² + 6² + 2² + 1²)."
+      ],
+      "why": "136/141 ≈ 0.965: the dropped squares 4 + 1 are small.",
+      "tol": 0.001,
+      "mistakes": [
+       {
+        "value": 0.8421052631578947,
+        "message": "That adds the singular values themselves; the Frobenius norm adds their squares."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "What is the error ||A − A₂||_F for that matrix (3 decimals)?",
+      "answer": 2.23606797749979,
+      "hints": [
+       "The error is made of the dropped singular values only.",
+       "sqrt(2² + 1²)."
+      ],
+      "why": "sqrt(4 + 1) = sqrt 5 ≈ 2.236.",
+      "tol": 0.002,
+      "mistakes": [
+       {
+        "value": 5.0,
+        "message": "That is the squared error; take the square root."
+       },
+       {
+        "value": 3.0,
+        "message": "Square before adding: sqrt(2² + 1²)."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Storage: 30(1200 + 900 + 1) = 63,030, about 5.8% of 1,080,000."
+     },
+     {
+      "text": "Kept share: (100 + 36)/(100 + 36 + 4 + 1) = 136/141 ≈ 0.965."
+     },
+     {
+      "text": "Error: sqrt(2² + 1²) = sqrt 5 ≈ 2.236."
+     }
+    ],
+    "takeaway": "The singular values tell you in advance how much a low-rank approximation keeps and loses, before you compute it."
    }
   ]
  },

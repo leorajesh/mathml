@@ -1160,6 +1160,89 @@ print("eigenvalues of [[1,1],[0,1]]:", values, " rank of eigenvector matrix:", n
 
 # Try: set k = 10. Which eigenvalue dominates B^k?`,
 
+  'eigenspaces-multiplicity': py`import numpy as np
+
+def multiplicities(A, lam, tol=1e-8):
+    n = len(A)
+    values = np.linalg.eigvals(A)
+    am = int(np.sum(np.abs(values - lam) < 1e-6))             # how often lam is a root
+    gm = n - int(np.linalg.matrix_rank(A - lam * np.eye(n), tol))   # dimension of the eigenspace
+    return am, gm
+
+A = np.array([[2.0, 1, -1], [2, 3, -2], [2, 2, -1]])
+print("eigenvalues of A:", np.round(np.linalg.eigvals(A).real, 4))
+for lam in (1, 2):
+    print(f"  lambda = {lam}: (AM, GM) =", multiplicities(A, lam))
+
+B = np.array([[5.0, -1], [1, 3]])
+print("eigenvalues of B:", np.round(np.linalg.eigvals(B).real, 4))
+print("  lambda = 4: (AM, GM) =", multiplicities(B, 4), "-> not diagonalizable")
+
+# A basis of the eigenspace E_1 of A: the null space of A - I, from the SVD
+_, s, Vt = np.linalg.svd(A - np.eye(3))
+basis = Vt[s < 1e-8] if np.any(s < 1e-8) else Vt[-1:]
+print("E_1 basis (rows), each satisfies A v = v:", np.allclose(basis @ A.T, basis))
+
+# Try: B = [[4, 0], [0, 4]]. What are AM and GM now?`,
+
+  'markov-chains': py`import numpy as np
+
+# Column j = where state j goes next (study, rest)
+A = np.array([[0.7, 0.5],
+              [0.3, 0.5]])
+print("column sums:", A.sum(axis=0))
+
+print("A^2 =\n", np.linalg.matrix_power(A, 2))
+print("entrywise square (wrong!) =\n", A ** 2)
+
+values, P = np.linalg.eig(A)
+print("eigenvalues:", np.round(values, 4))
+
+k = 10
+Ak = P @ np.diag(values ** k) @ np.linalg.inv(P)
+print(f"A^{k} via P D^k P^-1 =\n", np.round(Ak, 4))
+
+pi = P[:, np.argmax(values)]
+pi = pi / pi.sum()
+print("steady state:", np.round(pi, 4), "(5/8, 3/8 =", [5 / 8, 3 / 8], ")")
+
+x = np.array([1.0, 0.0])          # start: studied
+for step in range(1, 6):
+    x = A @ x
+    print(f"after {step} evenings: P(study) = {x[0]:.4f}")
+
+# Try: make resting stickier (0.5 -> 0.8 in the bottom-right). How does the steady state move?`,
+
+  'positive-definite': py`import numpy as np
+
+def classify(A):
+    values = np.linalg.eigvalsh(A)        # symmetric: real eigenvalues, sorted
+    if np.all(values > 1e-12):
+        kind = "positive definite"
+    elif np.all(values > -1e-12):
+        kind = "positive semidefinite"
+    else:
+        kind = "indefinite (or negative)"
+    return np.round(values, 4), kind
+
+for name, A in {"A": [[2, -1], [-1, 2]], "B": [[1, 3], [3, 1]]}.items():
+    print(name, classify(np.array(A, dtype=float)))
+
+x = np.array([1.0, -1.0])
+B = np.array([[1.0, 3], [3, 1]])
+print("x^T B x for x = [1, -1]:", x @ B @ x)
+
+X = np.array([[1.0, 2], [0, 1], [1, 0]])
+G = X.T @ X
+print("X^T X =\n", G, "\n", classify(G))
+
+# Random check: x^T G x = ||X x||^2 is never negative
+rng = np.random.default_rng(0)
+xs = rng.normal(size=(1000, 2))
+print("smallest x^T G x over 1000 random x:", np.min(np.einsum("ij,jk,ik->i", xs, G, xs)).round(4))
+
+# Try: X with two equal columns, [[1, 1], [2, 2], [0, 0]]. Is X^T X still positive definite?`,
+
   'pagerank': py`import numpy as np
 
 # Column j lists where page j links; each column sums to 1
@@ -1183,6 +1266,17 @@ r = np.ones(3) / 3
 for _ in range(50):
     r = G @ r
 print("with damping 0.85:", np.round(r, 4))
+
+# Dangling page: 1 -> 2, 3; 2 -> 3; 3 -> nowhere (a zero column)
+D = np.array([[0.0, 0.0, 0.0],
+              [0.5, 0.0, 0.0],
+              [0.5, 1.0, 0.0]])
+dangling = D.sum(axis=0) == 0
+D[:, dangling] = 1 / 3                      # spread its rank evenly
+r = np.ones(3) / 3
+for _ in range(100):
+    r = D @ r
+print("dangling fixed:", np.round(r, 4), " (2/11, 3/11, 6/11 =", np.round([2/11, 3/11, 6/11], 4), ")")
 
 # Try: make page 1 link only to page 3 (column 0 = [0, 0, 1]). How do the ranks change?`,
 

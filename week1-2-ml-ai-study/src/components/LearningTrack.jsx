@@ -61,12 +61,12 @@ export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
 
       {courseHomework.filter((guide) => guide.track === trackId).map((guide) => (
         <details className="course-hw-guide" key={guide.id}>
-          <summary>Course homework guide: {guide.course}, {guide.title}. Which pages to read for each problem</summary>
+          <summary>{guide.kind === 'activities' ? 'Class activities guide' : 'Course homework guide'}: {guide.course}, {guide.title}. Which pages to read for each {guide.kind === 'activities' ? 'activity' : 'problem'}</summary>
           <p>{guide.note}</p>
           <ol className="course-hw-list">
             {guide.items.map((item) => (
               <li key={item.problems}>
-                <strong>Problem {item.problems}.</strong> {item.topic}:{' '}
+                <strong>{guide.kind === 'activities' ? item.problems : `Problem ${item.problems}`}.</strong> {item.topic}:{' '}
                 {item.pages.map((id, index) => (
                   <React.Fragment key={id}>
                     {index > 0 && ', '}

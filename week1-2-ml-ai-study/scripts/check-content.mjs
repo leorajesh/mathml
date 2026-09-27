@@ -17,6 +17,7 @@ import { projects } from '../src/data/projects.js';
 import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
 import { homework } from '../src/data/homework.js';
 import { courseHomework } from '../src/data/courseHomework.js';
+import { stories } from '../src/data/stories.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -41,7 +42,10 @@ for (const concept of concepts) {
   for (const field of ['prerequisites', 'followOns']) {
     for (const id of concept[field]) if (!entryFor(id)) problems.push(`${where}: ${field} "${id}" does not exist`);
   }
-  if (!graphTypes.has(concept.graph.type)) problems.push(`${where}: unknown graph type "${concept.graph.type}"`);
+  for (const graph of [concept.graph, concept.graph2].filter(Boolean)) {
+    if (!graphTypes.has(graph.type)) problems.push(`${where}: unknown graph type "${graph.type}"`);
+    if (graph.animation && !graph.sliders.some((slider) => slider.key === graph.animation.key)) problems.push(`${where}: animation key "${graph.animation.key}" is not a slider`);
+  }
   if (!codeExamples[concept.id]) problems.push(`${where}: no Python starter code`);
   if (concept.figure && !figures[concept.figure]) problems.push(`${where}: unknown figure "${concept.figure}"`);
   const references = mmlReferences[concept.id] ?? [];
@@ -187,6 +191,11 @@ for (const [key, set] of Object.entries(homework)) {
 }
 
 // Course homework guides link only to existing pages.
+for (const [id, story] of Object.entries(stories)) {
+  if (!conceptMap[id]) problems.push(`story for unknown page "${id}"`);
+  if (words(story) > 130) problems.push(`${id}: story has ${words(story)} words (max 130)`);
+  if (words(story) < 40) problems.push(`${id}: story has only ${words(story)} words`);
+}
 for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {
   console.error(problems.join('\n'));

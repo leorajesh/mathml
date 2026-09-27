@@ -185,6 +185,11 @@ h3 { margin: 0 0 10px; font-size: 1.22rem; }
 .flow-line { stroke: #6d746f; stroke-width: 3; }
 .shape-original { stroke: #87908b; stroke-width: 3; fill: rgba(135, 144, 139, 0.12); }
 .shape-result, .area-shape { stroke: var(--teal); stroke-width: 4; fill: rgba(47, 125, 128, 0.22); }
+.eigen-line { stroke: var(--plum); stroke-width: 9; opacity: 0.28; stroke-linecap: round; }
+.eigen-line.alt { stroke: var(--rust); }
+.faint-vector { stroke: #b9ad9b; stroke-width: 2; }
+.image-vector { stroke: var(--blue); stroke-width: 2.5; stroke-linecap: round; opacity: 0.75; }
+.dashed { stroke-dasharray: 8 6; }
 .spectral-ellipse { stroke: var(--plum); stroke-width: 3; fill: rgba(109, 90, 156, 0.16); }
 .bar-a { fill: rgba(50, 104, 168, 0.72); }
 .bar-b { fill: rgba(217, 93, 57, 0.72); }

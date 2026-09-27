@@ -27,4 +27,18 @@ export const courseHomework = [
       { problems: '15', topic: 'Matrices of a map with respect to different bases, [T]_{CB}, and converting between them', pages: ['transformation-matrix', 'change-of-basis', 'composition-of-transformations'] },
     ],
   },
+  {
+    id: 'math-w3-activities',
+    kind: 'activities',
+    track: 'math',
+    course: '99.512 Mathematics for AI',
+    title: 'Week 3 class activities',
+    note: 'The in-class activities of Week 3 (eigenvalues, diagonalization, Cholesky and LU), by topic only. The pages work the same methods on different matrices, and the Eigenvalues and Matrix decompositions homework sets have practice problems of each kind.',
+    items: [
+      { problems: 'Class 1, Activity 1', topic: 'Eigenvalues and eigenspaces of a triangular matrix with a repeated eigenvalue', pages: ['eigenvalues-eigenvectors', 'eigenspaces-multiplicity'] },
+      { problems: 'Class 1, Activity 2', topic: 'Deciding whether 3 by 3 matrices are diagonalizable and finding P and D; row operations before cofactor expansion for the characteristic polynomial', pages: ['eigenspaces-multiplicity', 'diagonalization', 'determinants-cofactor-row-ops'] },
+      { problems: 'Class 2, Activity 1', topic: 'Cholesky factor of a 3 by 3 symmetric positive definite matrix, solved entry by entry', pages: ['positive-definite', 'cholesky-decomposition'] },
+      { problems: 'Class 2, Activity 2', topic: 'Solving a 4 by 4 system directly and with LU (forward then back substitution)', pages: ['lu-decomposition', 'gaussian-elimination'] },
+    ],
+  },
 ];

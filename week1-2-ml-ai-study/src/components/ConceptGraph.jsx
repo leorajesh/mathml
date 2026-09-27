@@ -8,7 +8,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
+const EQUAL_ASPECT = new Set(['eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -85,6 +85,7 @@ const plotAxes = {
   functionMap: { x: '', y: '' },
   kfold: { x: '', y: '' },
   pagerank: { x: '', y: 'probability of each page' },
+  markov: { x: 'step n', y: 'P(in state 1), from 0 to 1' },
   matrixFactors: { x: '', y: '' },
   convexChord: { x: 'x', y: 'f(x) (rescaled to fit)' },
   subgradient: { x: 'x', y: 'f(x) = |x|' },
@@ -171,6 +172,9 @@ function renderGraph(type, values) {
     case 'subgradient': return SubgradientGraph({ values });
     case 'kfold': return KFoldGraph({ values });
     case 'pagerank': return PageRankGraph({ values });
+    case 'eigenspace': return EigenspaceGraph({ values });
+    case 'markov': return MarkovGraph({ values });
+    case 'quadraticForm': return QuadraticFormGraph({ values });
     case 'matrixFactors': return MatrixFactorsGraph({ values });
     case 'outerProduct': return OuterProductGraph({ values });
     case 'rowOpLines': return RowOpLinesGraph({ values });
@@ -957,6 +961,121 @@ function PageRankGraph({ values }) {
   return {
     content: <g>{r.map((value, index) => { const height = value * 8; return <g key={index}><rect className={index === 2 ? 'bar-b' : 'bar-a'} x={sx(-3 + index * 2.4)} y={sy(-4 + height)} width="80" height={base - sy(-4 + height)} rx="6" /><text x={sx(-3 + index * 2.4) + 40} y={base + 18} textAnchor="middle">page {index + 1}</text><text x={sx(-3 + index * 2.4) + 40} y={sy(-4 + height) - 6} textAnchor="middle">{value.toFixed(3)}</text></g>; })}</g>,
     readout: [`start: surfer on page 1; after ${values.steps} steps with d = ${d.toFixed(2)}`, `without damping the ranks settle to 2/7, 2/7, 3/7 = 0.286, 0.286, 0.429`],
+  };
+}
+
+// Eigen-directions of [[lambda_1, s], [0, lambda_2]]: a fan of unit vectors and their images.
+function EigenspaceGraph({ values }) {
+  const { lambda1: a, lambda2: d, shear: s } = values;
+  const apply = (v) => ({ x: a * v.x + s * v.y, y: d * v.y });
+  const repeated = a === d;
+  const scalar = repeated && s === 0;
+  const directions = scalar ? [] : [{ x: 1, y: 0 }];
+  if (!repeated) {
+    const length = Math.hypot(s, d - a);
+    directions.push({ x: s / length, y: (d - a) / length });
+  }
+  const fan = Array.from({ length: 12 }, (_, index) => {
+    const angle = (index * Math.PI) / 12;
+    return { x: 1.3 * Math.cos(angle), y: 1.3 * Math.sin(angle) };
+  });
+  const onItsLine = (v) => { const w = apply(v); return Math.abs(v.x * w.y - v.y * w.x) < 1e-9; };
+  return {
+    content: <g>
+      {directions.map((dir, index) => <path key={index} className="eigen-line" d={linePath([{ x: -7 * dir.x, y: -7 * dir.y }, { x: 7 * dir.x, y: 7 * dir.y }])} />)}
+      {fan.map((v, index) => <path key={`v${index}`} className="faint-vector" d={linePath([{ x: 0, y: 0 }, v])} />)}
+      {fan.map((v, index) => <path key={`w${index}`} className={onItsLine(v) ? 'result-vector' : 'image-vector'} d={linePath([{ x: 0, y: 0 }, apply(v)])} />)}
+      <text className="graph-note" x="44" y="48">{scalar ? 'every direction stays on its line' : `${directions.length === 1 ? 'one eigen-direction' : 'two eigen-directions'} (thick lines)`}</text>
+    </g>,
+    readout: repeated
+      ? (scalar
+        ? [`eigenvalue ${a} with AM = 2 and GM = 2: the matrix is ${a} I`, 'diagonalizable (it already is diagonal)']
+        : [`eigenvalue ${a} with AM = 2 but GM = 1: only the horizontal line is an eigenspace`, 'not diagonalizable: one eigen-direction is missing'])
+      : [`eigenvalues ${a} and ${d}, each with AM = GM = 1`, 'diagonalizable: two independent eigenvectors'],
+  };
+}
+
+// Two-state Markov chain: chance of being in state 1 after n steps from each start.
+function MarkovGraph({ values }) {
+  const { p, q, steps } = values;
+  const second = p + q - 1;
+  const steady = 2 - p - q > 1e-9 ? (1 - q) / (2 - p - q) : null;
+  const X = (n) => -4.6 + (9.2 * n) / steps;
+  const Y = (probability) => -4 + 8 * probability;
+  const path = (start) => {
+    let x = start;
+    const points = [];
+    for (let n = 0; n <= steps; n += 1) {
+      points.push({ x: X(n), y: Y(x[0]) });
+      x = [p * x[0] + (1 - q) * x[1], (1 - p) * x[0] + q * x[1]];
+    }
+    return points;
+  };
+  const fromOne = path([1, 0]);
+  const fromTwo = path([0, 1]);
+  return {
+    content: <g>
+      <path className="axis" d={linePath([{ x: -4.6, y: -4 }, { x: 4.6, y: -4 }])} />
+      <text x={sx(-4.6) - 6} y={sy(-4) + 4} textAnchor="end">0</text>
+      <text x={sx(-4.6) - 6} y={sy(4) + 4} textAnchor="end">1</text>
+      <text x={sx(-4.6)} y={sy(-4) + 18} textAnchor="middle">0</text>
+      <text x={sx(4.6)} y={sy(-4) + 18} textAnchor="middle">{steps}</text>
+      {steady !== null && <path className="residual thin" d={linePath([{ x: -4.6, y: Y(steady) }, { x: 4.6, y: Y(steady) }])} />}
+      <path className="line-a" d={linePath(fromOne)} />
+      <path className="line-b dashed" d={linePath(fromTwo)} />
+      {fromOne.map((point, index) => <circle key={`a${index}`} className="active-dot small" cx={sx(point.x)} cy={sy(point.y)} r="3.5" />)}
+    </g>,
+    readout: [
+      `A = [[${p.toFixed(2)}, ${(1 - q).toFixed(2)}], [${(1 - p).toFixed(2)}, ${q.toFixed(2)}]], eigenvalues 1 and ${second.toFixed(2)}`,
+      steady === null
+        ? 'p = q = 1: each state keeps its own probability forever, so there is no single steady state'
+        : `steady state: P(state 1) = ${steady.toFixed(3)}, P(state 2) = ${(1 - steady).toFixed(3)}`,
+      Math.abs(second) === 1 && steady !== null
+        ? 'second eigenvalue -1: the chain alternates and never settles'
+        : `gap to the steady state after ${steps} steps: ${Math.abs(second) ** steps < 0.0005 ? 'below 0.001' : (Math.abs(second) ** steps).toFixed(3)} of the start`,
+    ],
+  };
+}
+
+// Level curves x^T A x = 9 (solid) and = -9 (dashed) of a symmetric 2 by 2 matrix, with its eigen-axes.
+function QuadraticFormGraph({ values }) {
+  const { a, b, c } = values;
+  const level = 9;
+  const maxRadius = 9;
+  const curves = (sign) => {
+    const segments = [];
+    let current = [];
+    for (let index = 0; index <= 720; index += 1) {
+      const t = (index * Math.PI) / 360;
+      const u = { x: Math.cos(t), y: Math.sin(t) };
+      const form = sign * (a * u.x * u.x + 2 * b * u.x * u.y + c * u.y * u.y);
+      const radius = form > 1e-9 ? Math.sqrt(level / form) : Infinity;
+      if (radius <= maxRadius) current.push({ x: radius * u.x, y: radius * u.y });
+      else if (current.length) { segments.push(current); current = []; }
+    }
+    if (current.length) segments.push(current);
+    return segments.filter((segment) => segment.length > 1);
+  };
+  const mid = (a + c) / 2;
+  const spread = Math.hypot((a - c) / 2, b);
+  const big = mid + spread;
+  const small = mid - spread;
+  const angle = 0.5 * Math.atan2(2 * b, a - c);
+  const q1 = { x: Math.cos(angle), y: Math.sin(angle) };
+  const q2 = { x: -Math.sin(angle), y: Math.cos(angle) };
+  const format = (value) => (Math.abs(value) < 1e-9 ? '0' : value.toFixed(2));
+  const kind = small > 1e-9 ? 'positive definite: a closed ellipse (a bowl)'
+    : small > -1e-9 && big > 1e-9 ? 'positive semidefinite: two parallel lines (a trough, flat along one eigenvector)'
+    : big < -1e-9 ? 'negative definite: only the dashed ellipse (an upside-down bowl)'
+    : big > 1e-9 ? 'indefinite: hyperbolas (a saddle)' : 'the zero matrix: x^T A x = 0 everywhere';
+  return {
+    content: <g>
+      <path className="eigen-line" d={linePath([{ x: -8 * q1.x, y: -8 * q1.y }, { x: 8 * q1.x, y: 8 * q1.y }])} />
+      <path className="eigen-line alt" d={linePath([{ x: -8 * q2.x, y: -8 * q2.y }, { x: 8 * q2.x, y: 8 * q2.y }])} />
+      {curves(1).map((segment, index) => <path key={`p${index}`} className="line-a" d={linePath(segment)} />)}
+      {curves(-1).map((segment, index) => <path key={`n${index}`} className="line-b dashed" d={linePath(segment)} />)}
+    </g>,
+    readout: [`x^T A x = ${format(a)} x1^2 ${2 * b < 0 ? '-' : '+'} ${format(Math.abs(2 * b))} x1 x2 ${c < 0 ? '-' : '+'} ${format(Math.abs(c))} x2^2`, `eigenvalues ${format(big)} (purple line) and ${format(small)} (orange line)`, kind],
   };
 }
 

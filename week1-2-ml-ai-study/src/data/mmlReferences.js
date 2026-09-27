@@ -3,7 +3,7 @@
 // https://mml-book.github.io. Pages are the printed page numbers; the PDF has 6 front-matter pages
 // before printed page 1, so the link opens PDF page (printed + 6). The book is cited, never copied:
 // all text and figures on this site are our own. Pages with no matching section in the book
-// (sets, the perceptron, elastic net, LU decomposition, classification metrics) have no entry.
+// (sets, the perceptron, elastic net, LU decomposition, Markov chains, classification metrics) have no entry.
 
 export const MML_BOOK = {
   title: 'Mathematics for Machine Learning',
@@ -57,6 +57,8 @@ export const mmlReferences = {
   trace: [ref('4.1', 'Determinant and Trace (trace)', 103), ref('4.2', 'Eigenvalues and Eigenvectors (Theorem 4.17)', 113)],
   diagonalization: [ref('4.4', 'Eigendecomposition and Diagonalization', 115)],
   pagerank: [ref('4.2', 'Eigenvalues and Eigenvectors (PageRank example)', 113)],
+  'eigenspaces-multiplicity': [ref('4.2', 'Eigenvalues and Eigenvectors (eigenspaces, algebraic and geometric multiplicity)', 106), ref('4.2', 'Eigenvalues and Eigenvectors (Theorem 4.12, defective matrices)', 111)],
+  'positive-definite': [ref('3.2.3', 'Symmetric, Positive Definite Matrices', 73), ref('4.2', 'Eigenvalues and Eigenvectors (Theorem 4.14: A^T A is positive semidefinite)', 111)],
   'spectral-theorem': [ref('4.2', 'Eigenvalues and Eigenvectors (spectral theorem)', 111)],
   'dimensionality-reduction': [ref('10.1', 'Problem Setting', 318), ref('10.3', 'Projection Perspective', 325)],
   'exp-log': [ref('6.6.3', 'Exponential Family (Example 6.14, the sigmoid)', 212), ref('8.3.1', 'Maximum Likelihood Estimation (negative log-likelihood)', 265)],

@@ -556,6 +556,29 @@ export const intuitionDetails = {
       idea("The factorization", "A = P D P^-1: change into eigen-coordinates, stretch by the eigenvalues, change back. It needs n independent eigenvectors."),
       idea("Powers are cheap", "A^k = P D^k P^-1, and D^k just raises each eigenvalue to the power k."),
       idea("Long-run behaviour", "Directions with eigenvalues larger than 1 in size grow; those smaller than 1 fade."),
+      idea("Reading PDP^-1", "From the right: P^-1 turns standard coordinates into eigen-coordinates, D stretches each one by its eigenvalue, and P turns the result back into standard coordinates."),
+    ],
+  },
+  "eigenspaces-multiplicity": {
+    keyIdeas: [
+      idea("Two ways to count", "Algebraic multiplicity: how many times lambda is a root of det(A - lambda I). Geometric multiplicity: how many independent eigenvectors it has, the dimension of its eigenspace."),
+      idea("Computing GM", "Row reduce A - lambda I. The number of free variables is the geometric multiplicity: GM = n - rank(A - lambda I)."),
+      idea("The test", "A matrix is diagonalizable exactly when every eigenvalue has as many independent eigenvectors as its algebraic multiplicity. Distinct eigenvalues always pass, since every multiplicity is then 1."),
+    ],
+  },
+  "markov-chains": {
+    keyIdeas: [
+      idea("Columns are \"from\"", "In a column-stochastic matrix, column j lists where state j goes next, so every column is a probability vector adding up to 1. Some books use rows instead; transpose to switch."),
+      idea("Powers predict", "Entry (i, j) of A^k is the chance of being in state i after k steps from state j. Diagonalizing A gives A^k in closed form."),
+      idea("The steady state", "1 is always an eigenvalue. In a well-connected chain the other eigenvalues are smaller in size, so their parts die out and every start settles into the eigenvector for 1."),
+      idea("Power iteration", "In practice the steady state is found by applying A to any probability vector again and again. PageRank is computed this way."),
+    ],
+  },
+  "positive-definite": {
+    keyIdeas: [
+      idea("The quadratic form", "x^T A x is a single number. Positive definite means it is positive in every nonzero direction, so the surface z = x^T A x is a bowl with its lowest point at 0."),
+      idea("Eigenvalue test", "For a symmetric matrix: positive definite means all eigenvalues are positive, semidefinite means none is negative, because in the eigenbasis x^T A x is a weighted sum of squares."),
+      idea("Where they appear", "X^T X in least squares, covariance matrices, and Hessians at a minimum are symmetric positive semidefinite. Cholesky factors exactly the positive definite ones."),
     ],
   },
   "pagerank": {
@@ -563,12 +586,14 @@ export const intuitionDetails = {
       idea("The link matrix", "M holds the chance of moving from each page to each other page; its columns add up to 1."),
       idea("The steady state", "For well-connected graphs, applying M again and again settles to r with Mr = r: the eigenvector with eigenvalue 1."),
       idea("Damping", "With probability 1 - d the surfer jumps to a random page. This guarantees a single steady state for every graph, even ones that would otherwise cycle."),
+      idea("Two traps", "A page with no links (dangling) would leak rank, so its column is replaced by a uniform one. A loop that links only to itself (a rank sink) soaks up rank; random jumps let it escape."),
     ],
   },
   "spectral-theorem": {
     keyIdeas: [
       idea("The guarantee", "Real eigenvalues and a full set of perpendicular eigenvectors, so A = Q Lambda Q^T."),
       idea("Why PCA works", "Covariance matrices are symmetric, which is why PCA always finds perpendicular principal directions."),
+      idea("Repeated eigenvalues", "Eigenvectors from different eigenvalues of a symmetric matrix are automatically perpendicular. Inside one eigenspace they need not be, so run Gram-Schmidt there to get an orthonormal basis."),
     ],
   },
   "lu-decomposition": {
@@ -583,6 +608,7 @@ export const intuitionDetails = {
       idea("When it applies", "A must be symmetric with x^T A x > 0 for every nonzero x, such as X^T X in least squares when the features are independent."),
       idea("Why use it", "About half the work of LU, and no row swaps are ever needed."),
       idea("A built-in test", "If the algorithm meets a zero or negative number under a square root, the matrix was not positive definite."),
+      idea("Determinant for free", "det A = det(L) det(L^T) = the product of the squared diagonal entries of L, which is how many libraries compute determinants of positive definite matrices."),
     ],
   },
   "svd": {
@@ -590,6 +616,7 @@ export const intuitionDetails = {
       idea("The steps", "V^T rotates (or reflects) the input, Sigma stretches along the axes by the singular values, and W rotates into the output space."),
       idea("Singular values", "The square roots of the eigenvalues of A^T A, listed from largest to smallest."),
       idea("Low-rank approximation", "Keeping only the largest few gives the best low-rank approximation: the idea behind image compression and PCA."),
+      idea("SVD versus eigendecomposition", "Eigendecomposition needs a square matrix with a full set of eigenvectors, which need not be orthogonal, and its eigenvalues can be negative. The SVD exists for every matrix, uses two orthogonal matrices, and its singular values are never negative."),
     ],
   },
   "derivatives": {

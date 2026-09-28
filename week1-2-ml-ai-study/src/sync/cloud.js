@@ -1,6 +1,6 @@
 // Google sign-in and cloud sync of progress, with Firebase Authentication and Cloud Firestore.
 // Loaded on demand by account.js. Each progress entry is one document:
-//   users/{uid}/{store}/{key}  { json, updatedAt }   store: done | quiz | homework | code
+//   users/{uid}/{store}/{key}  { json, updatedAt }   store: done | quiz | homework | code | review
 // The browser's own copy (localStorage) stays the working copy, so the site works offline and
 // without an account; this module keeps it and the account in step with a three-way merge (merge.js).
 import { initializeApp } from 'firebase/app';
@@ -10,6 +10,7 @@ import '../progress.js';
 import '../quizScores.js';
 import '../homeworkProgress.js';
 import '../python/codeStore.js';
+import '../reviewProgress.js';
 import { firebaseConfig, setAccount } from './account.js';
 import { canonical, fingerprints, threeWayMerge } from './merge.js';
 import { onLocalChange, registeredStores } from './registry.js';

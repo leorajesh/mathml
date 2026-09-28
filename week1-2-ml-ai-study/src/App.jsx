@@ -3,9 +3,10 @@ import { ArrowLeft, BookOpen, Library, Network, Sigma, Sparkles } from 'lucide-r
 import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { ConceptFigure } from './components/Figures.jsx';
-import { MindMap } from './components/MindMap.jsx';
+import { CourseOverview } from './components/CourseOverview.jsx';
+import { QuickReview } from './components/QuickReview.jsx';
 import { codeExamples } from './data/codeExamples.js';
-import { concepts, conceptMap, entryFor, notCovered, topicMap, topicOf } from './data/concepts.js';
+import { conceptMap, entryFor, topicMap, topicOf } from './data/concepts.js';
 import { learningObjectives, selfChecksByConcept } from './data/learningObjectives.js';
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
@@ -32,6 +33,7 @@ import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.j
 //   #<concept-id>              concept page (as before)
 //   #<concept-id>?track=math   concept page inside the Math or ML track, with previous / next
 //   #track=ml                  the ML track's step-by-step list
+//   #review                    quick review of every page, grouped by category
 //   #homework=ml/regression    the homework of one track section (optionally ?problem=<id>)
 //   #<concept-id>?section=example&practice=1   jump to the worked example, steps hidden for practice
 function routeFromHash() {
@@ -42,6 +44,7 @@ function routeFromHash() {
     return {}; // Malformed escapes such as "#%E0" fall back to the landing page.
   }
   const [path, query = ''] = raw.split('?');
+  if (path === 'review') return { view: 'review' };
   if (path.startsWith('homework=')) {
     const homeworkKey = path.slice('homework='.length);
     if (Object.hasOwn(homework, homeworkKey)) return { homeworkKey, problemId: new URLSearchParams(query).get('problem'), trackId: homework[homeworkKey].track };
@@ -84,8 +87,8 @@ export function App() {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
     document.title = route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
-      : trackTitle ? `${trackTitle} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
-  }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey]);
+      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
+  }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view]);
 
   function go(hash) {
     window.location.hash = hash;
@@ -117,7 +120,7 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <button className="brand-button" onClick={showLanding} aria-label="Open mind map">
+        <button className="brand-button" onClick={showLanding} aria-label="Open the course overview">
           <Network size={22} />
           <span>ML + Math Study Map</span>
         </button>
@@ -125,6 +128,7 @@ export function App() {
           {trackIds.map((trackId) => (
             <button key={trackId} className={route.trackId === trackId ? 'active' : ''} onClick={() => showTrack(trackId)}>{tracks[trackId].title}</button>
           ))}
+          <button className={route.view === 'review' ? 'active' : ''} onClick={() => go('review')}>Quick Review</button>
         </nav>
         <SiteSearch onOpenPage={(id) => selectConcept(id)} onOpenTopic={(id) => go(id)} onOpenHomework={(key) => openHomework(key)} />
         <ThemeToggle />
@@ -138,60 +142,37 @@ export function App() {
       ) : selectedTopic ? (
         <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
-        <Landing trackId={route.trackId} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onOpenHomework={openHomework} />
+        <Landing trackId={route.trackId} view={route.view} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onShowReview={() => go('review')} onOpenHomework={openHomework} />
       )}
     </div>
   );
 }
 
-function Landing({ trackId, onSelect, onShowTrack, onShowLanding, onOpenHomework }) {
-  const [localTab, setLocalTab] = React.useState('map');
-  const activeTab = trackId ? `track-${trackId}` : localTab;
+function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowReview, onOpenHomework }) {
+  const [localTab, setLocalTab] = React.useState('overview');
+  const activeTab = trackId ? `track-${trackId}` : view === 'review' ? 'review' : localTab;
 
   function openLocalTab(tab) {
     setLocalTab(tab);
-    if (trackId) onShowLanding();
+    if (trackId || view) onShowLanding();
   }
 
   return (
     <main className="landing landing-full">
       <nav className="landing-tabs" aria-label="Landing views">
-        <button className={activeTab === 'map' ? 'active' : ''} onClick={() => openLocalTab('map')}>Concept Map</button>
+        <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => openLocalTab('overview')}>Overview</button>
         {trackIds.map((id) => (
           <button key={id} className={activeTab === `track-${id}` ? 'active' : ''} onClick={() => onShowTrack(id)}>{tracks[id].title}</button>
         ))}
+        <button className={activeTab === 'review' ? 'active' : ''} onClick={onShowReview}>Quick Review</button>
         <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => openLocalTab('objectives')}>Learning Objectives</button>
-        <button className={activeTab === 'concepts' ? 'active' : ''} onClick={() => openLocalTab('concepts')}>All Concepts</button>
       </nav>
 
-      {activeTab === 'map' && <MindMap onSelect={(id) => onSelect(id, null)} />}
+      {activeTab === 'overview' && <CourseOverview onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
+      {activeTab === 'review' && <QuickReview onOpen={onSelect} />}
       {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
       {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
-      {activeTab === 'concepts' && <ConceptIndex onSelect={(id) => onSelect(id, null)} />}
     </main>
-  );
-}
-
-function ConceptIndex({ onSelect }) {
-  return (
-    <section className="coverage-grid concept-index" aria-label="Concept index">
-      <div>
-        <h2>All Concepts</h2>
-        <div className="concept-list">
-          {concepts.map((concept) => (
-            <button key={concept.id} onClick={() => onSelect(concept.id)}>
-              <span>{concept.group} / {conceptLevel(concept.id)}</span>
-              {concept.title}
-              {topicOf(concept.id) && <small className="concept-topic">in {topicOf(concept.id).title}</small>}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="not-covered">
-        <h2>Not Covered</h2>
-        {notCovered.map((item) => <p key={item}>{item}</p>)}
-      </div>
-    </section>
   );
 }
 
@@ -206,7 +187,7 @@ function ConceptPage({ concept, trackId, section, practice, onBack, onSelect, on
         <TrackBar trackId={trackId} conceptId={concept.id} onOpen={onSelect} onShowTrack={onShowTrack} />
       ) : (
         <div className="concept-page-top">
-          <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to mind map</button>
+          <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to overview</button>
           <TrackMembership conceptId={concept.id} onOpen={onSelect} />
         </div>
       )}
@@ -215,6 +196,8 @@ function ConceptPage({ concept, trackId, section, practice, onBack, onSelect, on
         <p className="eyebrow">{concept.group} / {conceptLevel(concept.id)} / Source context: {concept.week}</p>
         <h1>{concept.title}</h1>
       </section>
+
+      <PageSections />
 
       <OrderedSection number="1" title="What Problem Does This Solve?">
         <p className="problem-sentence">{concept.problem}</p>
@@ -500,6 +483,58 @@ function BookReferences({ references }) {
   );
 }
 
+// "On this page": a slim bar that stays in view on concept pages, shows where the reader is (current
+// section and reading progress) and jumps to any section, so a long page never feels like a maze.
+const PAGE_SECTIONS = [
+  ['section-1', 'Problem'], ['section-2', 'Intuition'], ['section-3', 'Formulas'], ['worked-example', 'Example'],
+  ['section-5', 'Graph'], ['section-6', 'Python'], ['section-7', 'Misconception'], ['section-8', 'Quiz'], ['section-9', 'Connections'],
+];
+
+function PageSections() {
+  const [active, setActive] = React.useState(PAGE_SECTIONS[0][0]);
+  const [progress, setProgress] = React.useState(0);
+  const bar = React.useRef(null);
+
+  React.useEffect(() => {
+    function onScroll() {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? Math.min(1, window.scrollY / max) : 0);
+      // The current section is the last one whose top has passed just under the bars.
+      const line = (bar.current?.getBoundingClientRect().bottom ?? 0) + 24;
+      let current = PAGE_SECTIONS[0][0];
+      for (const [id] of PAGE_SECTIONS) {
+        const element = document.getElementById(id);
+        if (element && element.getBoundingClientRect().top <= line) current = id;
+      }
+      setActive(current);
+    }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
+  // Keep the active chip visible when the bar scrolls sideways (phones).
+  React.useEffect(() => {
+    bar.current?.querySelector('.active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [active]);
+
+  return (
+    <nav className="page-sections" ref={bar} aria-label="On this page">
+      <div className="page-sections-list">
+        {PAGE_SECTIONS.map(([id, label]) => (
+          <button key={id} className={active === id ? 'active' : ''} aria-current={active === id ? 'location' : undefined}
+            onClick={() => document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' })}>{label}</button>
+        ))}
+      </div>
+      <div className="page-sections-progress" aria-hidden="true"><span style={{ width: `${progress * 100}%` }} /></div>
+    </nav>
+  );
+}
+
 // The worked example, readable in full or practised: the first step (the setup) shows, and each
 // later step stays hidden until the student has tried it and asks to see it.
 function WorkedExample({ concept, startInPractice }) {
@@ -543,7 +578,7 @@ function WorkedExample({ concept, startInPractice }) {
 
 function OrderedSection({ number, title, id, children }) {
   return (
-    <section className="ordered-section" id={id}>
+    <section className="ordered-section" id={id ?? `section-${number}`}>
       <div className="section-number">{number}</div>
       <div>
         <h2>{title}</h2>
@@ -590,7 +625,7 @@ function TopicPage({ topic, onBack, onSelect }) {
   return (
     <main className="concept-page topic-page">
       <div className="concept-page-top">
-        <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to mind map</button>
+        <button className="back-button" onClick={onBack}><ArrowLeft size={18} /> Back to overview</button>
       </div>
       <section className="concept-hero">
         <p className="eyebrow">{topic.group} / Topic overview / Source context: {topic.week}</p>

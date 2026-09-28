@@ -18,6 +18,7 @@ import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
 import { homework } from '../src/data/homework.js';
 import { courseHomework } from '../src/data/courseHomework.js';
 import { stories } from '../src/data/stories.js';
+import { reviewCategories, reviewTree } from '../src/data/quickReview.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
 
@@ -195,6 +196,14 @@ for (const [id, story] of Object.entries(stories)) {
   if (!conceptMap[id]) problems.push(`story for unknown page "${id}"`);
   if (words(story) > 130) problems.push(`${id}: story has ${words(story)} words (max 130)`);
   if (words(story) < 40) problems.push(`${id}: story has only ${words(story)} words`);
+}
+{
+  const counts = {};
+  reviewTree.forEach((category, index) => {
+    if (category.subcategories.length !== reviewCategories[index].sections.length) problems.push(`quick review "${category.title}": a section name does not match a track section`);
+    for (const sub of category.subcategories) for (const id of sub.concepts) counts[id] = (counts[id] ?? 0) + 1;
+  });
+  for (const concept of concepts) if (counts[concept.id] !== 1) problems.push(`${concept.id}: appears ${counts[concept.id] ?? 0} times in the quick review (should be once)`);
 }
 for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {

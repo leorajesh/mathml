@@ -41,6 +41,18 @@ export const learningObjectives = [
     ],
   },
   {
+    area: 'Support Vector Machines, Kernels, and Feature Engineering',
+    items: [
+      { objective: 'Define functional and geometric margins, and explain why the SVM maximizes the geometric margin of the training set.', concepts: ['svm-margins', 'max-margin-svm'], check: 'What happens to each margin when theta and theta_0 are doubled?' },
+      { objective: 'Derive the SVM dual with Lagrange multipliers and the KKT conditions, and identify the support vectors.', concepts: ['svm-dual', 'lagrange-multipliers'], check: 'Which examples have alpha_t > 0, and how is theta_0 recovered?' },
+      { objective: 'Explain the soft margin: slack variables, the cost C, and the box constraint 0 <= alpha <= C.', concepts: ['soft-margin-svm', 'hinge-loss'], check: 'What does a larger C do to the margin and to the number of violations?' },
+      { objective: 'Explain what a kernel function is and how the kernel trick is used in SVMs, the perceptron and ridge regression.', concepts: ['kernel-trick'], check: 'Why does the dual form make kernels possible?' },
+      { objective: 'Decide whether a function is a valid kernel using the composition rules and Gram matrices, and define the polynomial and RBF kernels.', concepts: ['valid-kernels'], check: 'Why is ||x - x\'||^2 not a valid kernel?' },
+      { objective: 'Create features by encoding, binning, transforming, aggregating and crossing, using only information available at prediction time.', concepts: ['feature-engineering', 'feature-scaling'], check: 'What did you know, and when did you know it?' },
+      { objective: 'Classify missingness as MCAR, MAR or MNAR, choose an imputation method, and explain how imputation can bias a model or leak data.', concepts: ['missing-data-imputation'], check: 'Why keep a missingness flag even after imputing?' },
+    ],
+  },
+  {
     area: 'Mathematics Learning Outcomes',
     items: [
       { objective: 'Use sets, set operations, functions, inverses, and composition.', concepts: ['sets', 'functions', 'inverse-composition'], check: 'What extra properties does a function need before an inverse exists?' },

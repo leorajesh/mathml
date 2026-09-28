@@ -15,7 +15,8 @@ export const reviewCategories = [
   { subject: 'Machine Learning', title: 'Classification', sections: ['ml:Linear classification', 'ml:Logistic regression'] },
   { subject: 'Machine Learning', title: 'Losses and Optimization', sections: ['ml:Losses and convexity', 'ml:Optimization'] },
   { subject: 'Machine Learning', title: 'Regression and Generalization', sections: ['ml:Regression', 'ml:Generalization and regularization'] },
-  { subject: 'Machine Learning', title: 'ML in Production', sections: ['ml:ML in production'] },
+  { subject: 'Machine Learning', title: 'Support Vector Machines and Kernels', sections: ['ml:Support vector machines and kernels'] },
+  { subject: 'Machine Learning', title: 'Data and Production', sections: ['ml:Feature engineering and missing data', 'ml:ML in production'] },
 ];
 
 export const reviewSubjects = ['Mathematics', 'Machine Learning'];

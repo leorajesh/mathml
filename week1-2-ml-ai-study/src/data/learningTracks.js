@@ -27,7 +27,7 @@ export const tracks = {
     id: 'ml',
     title: 'ML Track',
     short: 'ML',
-    description: 'Machine learning from the supervised workflow through classifiers, margins, losses, optimization, regression, generalization, logistic regression, and what changes once a model is in production. Each page lists the course books to read and the math pages it builds on.',
+    description: 'Machine learning from the supervised workflow through classifiers, margins, losses, optimization, regression, generalization, logistic regression, support vector machines and kernels, feature engineering, and what changes once a model is in production. Each page lists the course books to read and the math pages it builds on.',
     sections: [
       { title: 'The learning problem', concepts: ['ml-landscape', 'ml-workflow', 'feature-representation'] },
       { title: 'Linear classification', concepts: ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence'] },
@@ -36,6 +36,8 @@ export const tracks = {
       { title: 'Regression', concepts: ['linear-regression', 'polynomial-regression', 'least-squares-normal-equation', 'feature-scaling', 'multicollinearity'] },
       { title: 'Generalization and regularization', concepts: ['model-complexity-generalization', 'bias-variance', 'ridge-regularization', 'lasso', 'elastic-net', 'train-validation-test', 'cross-validation', 'bootstrap'] },
       { title: 'Logistic regression', concepts: ['logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc'] },
+      { title: 'Support vector machines and kernels', concepts: ['svm-margins', 'svm-dual', 'soft-margin-svm', 'kernel-trick', 'valid-kernels'] },
+      { title: 'Feature engineering and missing data', concepts: ['feature-engineering', 'missing-data-imputation'] },
       { title: 'ML in production', concepts: ['ml-in-production'] },
     ],
   },

@@ -1991,4 +1991,252 @@ for _ in range(B):
 print(f"RMSE(A) - RMSE(B) = {np.sqrt(np.mean(err_a ** 2)) - np.sqrt(np.mean(err_b ** 2)):.3f}, 95% interval [{np.percentile(diffs, 2.5):.3f}, {np.percentile(diffs, 97.5):.3f}]")
 
 # Try: resample err_a and err_b with different indices. How much wider does the interval get?`,
+  'svm-margins': py`import numpy as np
+
+X = np.array([[3.0, 1.0], [1.0, -1.0], [2.0, 0.0]])
+y = np.array([1, -1, 1])
+theta, theta0 = np.array([3.0, 4.0]), -5.0
+
+functional = y * (X @ theta + theta0)
+geometric = functional / np.linalg.norm(theta)
+print("functional margins:", functional)          # [8. 6. 1.]
+print("geometric margins: ", geometric)           # [1.6 1.2 0.2]
+print("training set: functional", functional.min(), " geometric", geometric.min())
+
+# Rescaling theta and theta_0 moves nothing: functional margins scale, geometric ones do not
+for c in [2.0, 0.5]:
+    f = y * (X @ (c * theta) + c * theta0)
+    print(f"c = {c}: functional {f}, geometric {f / np.linalg.norm(c * theta)}")
+
+# Naive search for the best boundary: grade many directions and offsets by their worst example
+best = (-np.inf, None)
+for angle in np.linspace(0, np.pi, 721):
+    u = np.array([np.cos(angle), np.sin(angle)])
+    proj = X @ u
+    # For a fixed direction the best offset puts the boundary halfway between the classes
+    lo, hi = proj[y == 1].min(), proj[y == -1].max()
+    if lo > hi and (lo - hi) / 2 > best[0]:
+        best = ((lo - hi) / 2, u)
+print("best geometric margin found:", round(best[0], 3), "direction", best[1].round(3))
+
+# Try: move [2, 0] to [2.5, 0]. Which example now sets the training-set margin?`,
+
+  'svm-dual': py`import numpy as np
+
+X = np.array([[2.0, 0.0], [0.0, 0.0], [3.0, 1.0]])
+y = np.array([1.0, -1.0, 1.0])
+G = X @ X.T                                   # Gram matrix: all the dual needs from the data
+print("Gram matrix:\n", G)
+
+def dual(alpha):
+    v = alpha * y
+    return alpha.sum() - 0.5 * v @ G @ v
+
+# Projected gradient ascent on the dual. The projection onto {alpha >= 0, sum alpha y = 0} is
+# alpha = max(0, v - tau y), with tau found by bisection so that the constraint holds.
+def project(v):
+    lo, hi = -1e3, 1e3
+    for _ in range(100):
+        tau = (lo + hi) / 2
+        if np.maximum(0, v - tau * y) @ y > 0:
+            lo = tau
+        else:
+            hi = tau
+    return np.maximum(0, v - tau * y)
+
+alpha = np.zeros(3)
+for _ in range(2000):
+    grad = 1 - y * (G @ (alpha * y))
+    alpha = project(alpha + 0.05 * grad)
+print("alpha:", alpha.round(4))               # about [0.5, 0.5, 0]
+
+theta = (alpha * y) @ X
+sv = alpha > 1e-3
+theta0 = np.mean(y[sv] - X[sv] @ theta)       # average over the support vectors
+print("theta:", theta.round(4), " theta_0:", round(theta0, 4))
+print("functional margins:", (y * (X @ theta + theta0)).round(4))
+print("dual value", round(dual(alpha), 4), " primal value", round(0.5 * theta @ theta, 4))
+
+# Prediction needs only inner products with the support vectors
+x_new = np.array([1.5, 2.0])
+score = np.sum(alpha * y * (X @ x_new)) + theta0
+print("score of", x_new, "=", round(score, 4), "-> label", int(np.sign(score)))
+
+# Try: move x3 to [1.5, 1]. Does it become a support vector?`,
+
+  'soft-margin-svm': py`import numpy as np
+
+X = np.array([[2.5, 0.0], [1.5, 1.0], [0.5, 0.0], [-1.0, 2.0]])
+y = np.array([1.0, 1.0, 1.0, -1.0])
+theta, theta0, C = np.array([1.0, 0.0]), -1.0, 2.0
+
+margins = y * (X @ theta + theta0)
+slack = np.maximum(0, 1 - margins)            # the slack equals the hinge loss
+for name, m, s in zip("ABDE", margins, slack):
+    kind = "outside" if s == 0 else "inside, correct" if s <= 1 else "misclassified"
+    print(f"{name}: margin {m:5.2f}  slack {s:4.2f}  ({kind})")
+print("objective 0.5||theta||^2 + C sum(slack) =", 0.5 * theta @ theta + C * slack.sum())
+
+# Train a soft-margin SVM for several C by subgradient descent on the equivalent hinge form
+rng = np.random.default_rng(1)
+P = np.r_[rng.normal([1.5, 1.5], 1.2, (40, 2)), rng.normal([-1.5, -1.5], 1.2, (40, 2))]
+t = np.r_[np.ones(40), -np.ones(40)]
+for C in [0.01, 0.1, 1, 10]:
+    lam = 1 / (len(t) * C)                   # same problem as (lam/2)||w||^2 + mean hinge
+    w, b, avg_w, avg_b = np.zeros(2), 0.0, np.zeros(2), 0.0
+    for k in range(1, 20001):
+        viol = t * (P @ w + b) < 1
+        gw = lam * w - (t[viol, None] * P[viol]).sum(0) / len(t)
+        gb = -t[viol].sum() / len(t)
+        eta = 1 / (lam * (k + 10))
+        w, b = w - eta * gw, b - eta * gb
+        if k > 10000:                        # average the second half of the iterates
+            avg_w += w / 10000; avg_b += b / 10000
+    xi = np.maximum(0, 1 - t * (P @ avg_w + avg_b))
+    print(f"C = {C:5}: margin width {2 / np.linalg.norm(avg_w):.2f}, inside margin {np.sum(xi > 0)}, training errors {np.sum(xi > 1)}")
+
+# Try: which C would you pick? Hold out 20 points and compare validation errors.`,
+
+  'kernel-trick': py`import numpy as np
+
+# 1-D data that no threshold separates, lifted to (x, x^2)
+x = np.array([-2.0, -1.0, 1.0, 2.0])
+y = np.array([1, -1, -1, 1])
+phi = np.c_[x, x ** 2]
+theta, theta0 = np.array([0.0, 1.0]), -2.5
+print("lifted points:", phi.tolist())
+print("predictions:", np.sign(phi @ theta + theta0), " labels:", y)
+
+# The kernel shortcut: phi(x) . phi(x') = (x . x') + (x . x')^2
+def phi2(v):
+    return np.array([v[0], v[1], np.sqrt(2) * v[0] * v[1], v[0] ** 2, v[1] ** 2])
+a, b = np.array([1.0, 2.0]), np.array([3.0, 1.0])
+print("explicit:", phi2(a) @ phi2(b), " kernel:", a @ b + (a @ b) ** 2)
+
+# Kernel perceptron: alpha counts mistakes, theta is never built
+def K(u, v):
+    return (u @ v + 1) ** 2
+rng = np.random.default_rng(0)
+r = np.r_[rng.uniform(0, 1, 20), rng.uniform(2, 3, 20)]
+ang = rng.uniform(0, 2 * np.pi, 40)
+X = np.c_[r * np.cos(ang), r * np.sin(ang)]
+t = np.r_[np.ones(20), -np.ones(20)]
+Gram = np.array([[K(u, v) for v in X] for u in X])
+alpha = np.zeros(40)
+for epoch in range(20):
+    mistakes = 0
+    for i in range(40):
+        if t[i] * np.sum(alpha * t * Gram[:, i]) <= 0:
+            alpha[i] += 1
+            mistakes += 1
+    if mistakes == 0:
+        break
+print(f"kernel perceptron: separated after {epoch + 1} passes, {int(alpha.sum())} updates")
+
+# Kernel ridge regression: alpha = (K + lambda I)^-1 y
+xs = np.linspace(-3, 3, 30)
+ys = np.sin(xs) + rng.normal(0, 0.1, 30)
+Kr = np.exp(-(xs[:, None] - xs[None]) ** 2 / 2)
+coef = np.linalg.solve(Kr + 0.1 * np.eye(30), ys)
+print("kernel ridge fit at x = 1:", round(np.exp(-(xs - 1) ** 2 / 2) @ coef, 3), " sin(1) =", round(np.sin(1), 3))
+
+# Try: use K(u, v) = u @ v in the perceptron. Why does it never stop making mistakes?`,
+
+  'valid-kernels': py`import numpy as np
+
+def rbf(u, v, sigma=1.0):
+    return np.exp(-np.sum((u - v) ** 2) / (2 * sigma ** 2))
+
+P = np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 0.0]])
+G = np.array([[rbf(u, v) for v in P] for u in P])
+print("RBF Gram matrix:\n", G.round(3))
+print("eigenvalues:", np.linalg.eigvalsh(G).round(3), "(all >= 0: consistent with a valid kernel)")
+
+# A candidate that fails: the squared distance itself
+D = np.array([[np.sum((u - v) ** 2) for v in P] for u in P])
+print("squared-distance 'kernel' eigenvalues:", np.linalg.eigvalsh(D).round(3), "(a negative one: invalid)")
+
+# The composition rules keep validity: sums and products of Gram matrices stay PSD
+rng = np.random.default_rng(0)
+Z = rng.normal(size=(6, 2))
+lin = Z @ Z.T
+for name, M in [("linear", lin), ("sum lin + lin^2", lin + lin ** 2), ("product (lin + 1)^2", (lin + 1) ** 2),
+                ("RBF", np.array([[rbf(u, v) for v in Z] for u in Z]))]:
+    print(f"{name:22s} smallest eigenvalue {np.linalg.eigvalsh(M).min():8.4f}")
+
+# RBF = f(x) exp(x . x') f(x') with f(x) = exp(-||x||^2 / 2)
+u, v = P[1], P[2]
+print("rbf:", round(rbf(u, v), 4), " factorised:", round(np.exp(-u @ u / 2) * np.exp(u @ v) * np.exp(-v @ v / 2), 4))
+
+# Try: is K(x, x') = x . x' - 1 a valid kernel? Check K(x, x) for x = 0.`,
+
+  'feature-engineering': py`import numpy as np
+
+spend = {"Jan": 40, "Feb": 60, "Mar": 50, "Apr": 150}   # known on 1 May; May itself is not
+last3 = np.array([spend["Feb"], spend["Mar"], spend["Apr"]])
+avg3 = last3.mean()
+print(f"average of last 3 months: {avg3:.1f}")
+print(f"April relative to that average: {spend['Apr'] / avg3:.2f}")
+print(f"log(1 + April spend): {np.log1p(spend['Apr']):.2f}")
+
+# One-hot encoding with a fixed category order
+cities = ["SG", "KL", "BKK"]
+print("KL ->", [int(c == "KL") for c in cities])
+
+# Group rare levels into "Other" before encoding
+counts = {"SG": 520, "KL": 310, "BKK": 150, "HAN": 12, "MNL": 8}
+kept = [c for c, n in counts.items() if n >= 100]
+print("levels after grouping:", kept + ["Other"])
+
+# Equal-width versus equal-frequency bins on a skewed feature
+rng = np.random.default_rng(0)
+income = np.round(np.exp(rng.normal(3.9, 0.75, 40)))
+width_edges = np.linspace(income.min(), income.max(), 5)
+freq_edges = np.quantile(income, [0, 0.25, 0.5, 0.75, 1])
+print("equal width counts:", np.histogram(income, width_edges)[0])
+print("equal frequency counts:", np.histogram(income, freq_edges)[0])
+print("ages 18 to 78, 3 equal-width bins:", np.linspace(18, 78, 4))
+
+# Interaction: lets a linear model use "young AND student" together
+age = np.array([19, 45, 22]); student = np.array([1, 0, 0])
+print("age x student:", age * student)
+
+# Try: compute the 3-month average for the row dated 1 April. Which months may it use?`,
+
+  'missing-data-imputation': py`import numpy as np
+
+age = np.array([22, 25, 35, 45, 28, 50.0])
+income = np.array([30, np.nan, 56, 76, np.nan, 86.0])
+miss = np.isnan(income)
+obs_age, obs_inc = age[~miss], income[~miss]
+
+# Mean imputation: simple, but it shrinks the spread and ignores age
+mean_fill = np.where(miss, obs_inc.mean(), income)
+print("observed mean:", obs_inc.mean())
+print(f"variance observed {obs_inc.var():.1f}, after mean imputation {mean_fill.var():.1f}")
+
+# Regression imputation on age
+b, a = np.polyfit(obs_age, obs_inc, 1)
+reg_fill = np.where(miss, a + b * age, income)
+print("regression fills:", (a + b * age[miss]).round(2))
+
+# k-nearest neighbours (k = 2) by age, using observed rows only
+def knn_fill(t, k=2):
+    idx = np.argsort(np.abs(obs_age - t))[:k]
+    return obs_inc[idx].mean()
+print("kNN fills:", [knn_fill(t) for t in age[miss]])
+
+# Always keep a missingness flag
+print("income_missing flag:", miss.astype(int))
+
+# Correlation with age after each method
+for name, filled in [("mean", mean_fill), ("regression", reg_fill)]:
+    print(f"{name:10s} corr(age, income) = {np.corrcoef(age, filled)[0, 1]:.3f}")
+
+# Leakage-safe: fit on the training rows, then apply the same numbers to test rows
+train = np.array([True, True, True, False, True, False])
+train_mean = np.nanmean(income[train])
+print("mean learned on training rows only:", train_mean)
+
+# Try: make the missing rows the oldest people instead. How does mean imputation bias them now?`,
 };

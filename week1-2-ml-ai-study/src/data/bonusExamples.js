@@ -260,6 +260,40 @@ export const bonusExamples = {
       answer: 'NLL 1.386 → 0.627 after one step to θ = [0, 1].',
     },
   ],
+  'ml/support-vector-machines-and-kernels': [
+    {
+      id: 'svm-1d-dual', title: 'A one-dimensional SVM, primal and dual', source: mml('Section 12.3.1', 'Convex Duality via Lagrange Multipliers', 383), pages: ['svm-dual', 'svm-margins'],
+      task: 'Two examples on a line: x = 1 with y = -1 and x = 3 with y = +1. Find the hard-margin SVM (θ, θ0), its margin, and the multipliers α, and check that the dual and primal values agree.',
+      steps: ['The boundary sits halfway, at x = 2. Both examples must score ±1: 3θ + θ0 = 1 and θ + θ0 = -1, so θ = 1 and θ0 = -2.', 'Margin width 2/|θ| = 2, the distance between the examples; each is 1 away from the boundary.', 'Stationarity: θ = α1(-1)(1) + α2(+1)(3) and Σαy = 0 gives α1 = α2 = α, so θ = 2α = 1 and α = 0.5.', 'Dual value Σα - ½θ² = 1 - 0.5 = 0.5, equal to the primal value ½θ² = 0.5.'],
+      answer: 'θ = 1, θ0 = -2 (boundary x = 2), margin width 2, α = [0.5, 0.5].',
+    },
+    {
+      id: 'soft-as-hinge', title: 'The soft margin is the regularized hinge loss', source: mml('Section 12.2.5', 'Soft Margin SVM: Loss Function View', 380), pages: ['soft-margin-svm', 'max-margin-svm'],
+      task: 'With θ = [1, 0], θ0 = 0 and C = 2, evaluate the soft-margin objective on [2, 1], [0.5, 0] and [-0.2, 1] (all y = +1), then evaluate λ/2 ||θ||² plus the total hinge loss with λ = 1/C and compare.',
+      steps: ['Functional margins: 2, 0.5 and -0.2. Slacks max(0, 1 - margin): 0, 0.5 and 1.2, total 1.7.', 'Soft-margin objective: ½·1 + 2·1.7 = 3.9.', 'Regularized hinge with λ = 0.5: 0.25·1 + 1.7 = 1.95.', 'The two differ only by the factor C = 2 (3.9 = 2 × 1.95), so they have the same minimizer.'],
+      answer: '3.9 and 1.95: the same objective up to the factor C, so the soft-margin SVM is regularized hinge-loss minimization.',
+    },
+    {
+      id: 'poly-kernel-features', title: 'Find the features behind a polynomial kernel', source: mml('Section 12.4', 'Kernels', 388), pages: ['kernel-trick', 'valid-kernels'],
+      task: 'For one-dimensional inputs, find a feature map φ with φ(x) · φ(x\') = (x x\' + 1)², and check it at x = 2, x\' = 3.',
+      steps: ['Expand: (x x\' + 1)² = x²x\'² + 2x x\' + 1.', 'Match term by term: φ(x) = [x², √2 x, 1].', 'Check: (2·3 + 1)² = 49, and [4, 2√2, 1] · [9, 3√2, 1] = 36 + 12 + 1 = 49.'],
+      answer: 'φ(x) = [x², √2 x, 1]; both sides give 49.',
+    },
+  ],
+  'ml/feature-engineering-and-missing-data': [
+    {
+      id: 'dropping-rows', title: 'What dropping incomplete rows does', source: huyen('Ch. 5', 'Handling Missing Values'), pages: ['missing-data-imputation'],
+      task: 'Of 1000 loan applicants, 200 left income blank. 30% of those 200 defaulted, against 10% of the other 800. Compare the true default rate with the rate seen after dropping the incomplete rows.',
+      steps: ['True rate: (0.3·200 + 0.1·800)/1000 = (60 + 80)/1000 = 14%.', 'After dropping the 200 rows only the 800 remain, with a 10% default rate.', 'Missingness is linked to the outcome, so the rows that remain are not representative: the model would underestimate risk by 4 points.', 'Keeping the rows with an income_missing flag lets the model learn the 30% rate of blank-income applicants.'],
+      answer: '14% in truth versus 10% after dropping; keep the rows and add a missingness flag.',
+    },
+    {
+      id: 'feature-cross', title: 'Why a feature cross helps a linear model', source: huyen('Ch. 5', 'Feature Crossing'), pages: ['feature-engineering'],
+      task: 'Average orders per hour: SG weekday 10, SG weekend 30, KL weekday 20, KL weekend 20. Can a model that adds a city effect and a weekend effect fit all four? What does the cross city × weekend change?',
+      steps: ['An additive model predicts the same weekend jump in both cities: (SG weekend - SG weekday) = (KL weekend - KL weekday).', 'The data have a jump of 20 in SG and 0 in KL, so no additive model fits all four cells.', 'The crossed feature has four levels (SG-weekday, SG-weekend, KL-weekday, KL-weekend); one-hot encoding it gives each cell its own weight, which fits all four exactly.'],
+      answer: 'No: the weekend effect differs by city (20 versus 0). The cross gives each city-day pair its own weight.',
+    },
+  ],
   'ml/ml-in-production': [
     {
       id: 'feature-drift', title: 'Is this feature drifting?', source: huyen('Ch. 8', 'Data Distribution Shifts and Monitoring'), pages: ['ml-in-production', 'feature-scaling'],

@@ -6680,6 +6680,555 @@ export const homework = {
    }
   ]
  },
+ "ml/support-vector-machines-and-kernels": {
+  "track": "ml",
+  "section": "Support vector machines and kernels",
+  "intro": "Margins, the dual and its support vectors, slack and the cost C, and checking kernels by hand.",
+  "problems": [
+   {
+    "id": "two-points",
+    "title": "The SVM for two points, primal and dual",
+    "pages": [
+     "svm-margins",
+     "svm-dual"
+    ],
+    "statement": "Two training examples: x⁽¹⁾ = [1, 2] with y = +1 and x⁽²⁾ = [−1, 0] with y = −1. Find the hard-margin SVM.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "What is the geometric margin of the optimal boundary, the distance from each example to it (3 decimals)?",
+      "answer": 1.4142135623730951,
+      "hints": [
+       "With only two examples, the widest boundary is the perpendicular bisector of the segment joining them.",
+       "Each point is half the distance between the points away: ||x⁽¹⁾ − x⁽²⁾||/2 = √8/2."
+      ],
+      "why": "√8/2 = √2 ≈ 1.414.",
+      "mistakes": [
+       {
+        "value": 2.8284271247461903,
+        "message": "That is the distance between the two points, the full margin width; each point is half of it away from the boundary."
+       }
+      ]
+     },
+     {
+      "type": "vector",
+      "prompt": "Give θ, scaled so that both examples have functional margin exactly 1.",
+      "answer": [
+       0.5,
+       0.5
+      ],
+      "hints": [
+       "θ points from the negative to the positive example: θ = c (x⁽¹⁾ − x⁽²⁾) = c [2, 2].",
+       "The margin width 2/||θ|| must equal the distance √8, so ||θ|| = 2/√8."
+      ],
+      "why": "θ = [0.5, 0.5], with ||θ|| = 1/√2 ≈ 0.707 and width 2/0.707 = √8.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         2.0,
+         2.0
+        ],
+        "message": "That is only the direction; scale it so that the functional margins are exactly 1."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "Find θ₀.",
+      "answer": -0.5,
+      "hints": [
+       "The positive example must score exactly +1: θ · x⁽¹⁾ + θ₀ = 1.",
+       "θ · x⁽¹⁾ = 0.5 + 1 = 1.5."
+      ],
+      "why": "θ₀ = 1 − 1.5 = −0.5. Check the negative example: 0.5·(−1) + 0 − 0.5 = −1.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": 0.5,
+        "message": "Check the sign: the positive example must score +1, so θ₀ = 1 − θ · x⁽¹⁾."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "Both examples are support vectors with the same multiplier α. Find α.",
+      "answer": 0.25,
+      "hints": [
+       "Stationarity: θ = α⁽¹⁾y⁽¹⁾x⁽¹⁾ + α⁽²⁾y⁽²⁾x⁽²⁾, and Σ α y = 0 forces α⁽¹⁾ = α⁽²⁾ = α.",
+       "So θ = α (x⁽¹⁾ − x⁽²⁾) = α [2, 2]; compare with θ = [0.5, 0.5]."
+      ],
+      "why": "α = 0.25. The dual value Σα − ½||θ||² = 0.5 − 0.25 = 0.25 equals the primal value ½||θ||² = 0.25.",
+      "tol": 1e-06
+     },
+     {
+      "type": "choice",
+      "prompt": "A third example x⁽³⁾ = [3, 3] with y = +1 is added. What happens?",
+      "answer": "Nothing changes: its functional margin is 2.5, so α⁽³⁾ = 0",
+      "wrong": [
+       "It becomes a support vector and the boundary moves",
+       "The problem becomes infeasible",
+       "Every α is halved"
+      ],
+      "hints": [
+       "Compute y⁽³⁾(θ · x⁽³⁾ + θ₀) with the current θ and θ₀."
+      ],
+      "why": "0.5·3 + 0.5·3 − 0.5 = 2.5 ≥ 1: the constraint is not active, so its multiplier is 0 and the solution is unchanged.",
+      "mistakes": [
+       {
+        "value": "It becomes a support vector and the boundary moves",
+        "message": "Only examples on the margin (functional margin exactly 1) become support vectors; this one is well outside it."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "The optimal boundary bisects the segment from [−1, 0] to [1, 2]: θ ∝ [2, 2]."
+     },
+     {
+      "text": "Scale for margins of 1: θ = [0.5, 0.5], θ₀ = −0.5; geometric margin 1/||θ|| = √2.",
+      "tex": "\\theta=\\tfrac{2(x^{(1)}-x^{(2)})}{\\lVert x^{(1)}-x^{(2)}\\rVert^2}=\\begin{bmatrix}0.5\\\\0.5\\end{bmatrix}"
+     },
+     {
+      "text": "Dual: θ = α(x⁽¹⁾ − x⁽²⁾) gives α = 0.25; dual and primal values are both 0.25."
+     },
+     {
+      "text": "[3, 3] has margin 2.5 > 1, so α⁽³⁾ = 0 and nothing moves."
+     }
+    ],
+    "takeaway": "Only the examples on the margin carry weight; everything else could be deleted without changing the SVM."
+   },
+   {
+    "id": "slack",
+    "title": "Slack, violations and the objective",
+    "pages": [
+     "soft-margin-svm"
+    ],
+    "statement": "A soft-margin SVM has θ = [1, 1], θ₀ = −2 and cost C = 3. Examples: a = [3, 1] and b = [1.5, 1] with y = +1; c = [1, 0.5] and d = [2, 1] with y = −1.",
+    "parts": [
+     {
+      "type": "vector",
+      "prompt": "Give the slacks ξ of a, b, c and d, in that order.",
+      "answer": [
+       0.0,
+       0.5,
+       0.5,
+       2.0
+      ],
+      "hints": [
+       "First compute each functional margin y(θ · x + θ₀).",
+       "The slack is max(0, 1 − functional margin)."
+      ],
+      "why": "Margins 2, 0.5, 0.5 and −1 give slacks 0, 0.5, 0.5 and 2.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": [
+         0.0,
+         0.5,
+         1.5,
+         0.0
+        ],
+        "message": "For the negative examples multiply the score by y = −1 before comparing with 1."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "How many of the four examples are misclassified?",
+      "answer": 1.0,
+      "hints": [
+       "An example is misclassified when its functional margin is negative (slack above 1).",
+       "Look for slacks greater than 1."
+      ],
+      "why": "Only d (slack 2): it scores +1 but its label is −1. b and c are inside the margin but on the correct side.",
+      "tol": 0
+     },
+     {
+      "type": "number",
+      "prompt": "Compute the objective ½||θ||² + C Σξ.",
+      "answer": 10.0,
+      "hints": [
+       "||θ||² = 1² + 1².",
+       "Σξ = 3 and C = 3."
+      ],
+      "why": "½·2 + 3·3 = 1 + 9 = 10.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": 4.0,
+        "message": "Multiply the total slack by C = 3."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "If this θ, θ₀ were optimal, which examples would have α = C in the dual?",
+      "answer": "b, c and d",
+      "wrong": [
+       "Only d",
+       "a and d",
+       "All four"
+      ],
+      "hints": [
+       "The box constraint: α = 0 outside the margin, 0 < α < C exactly on it, α = C when the slack is positive."
+      ],
+      "why": "b, c and d have positive slack, so they sit at the cap α = C; a is outside the margin with α = 0.",
+      "mistakes": [
+       {
+        "value": "Only d",
+        "message": "b and c have positive slack too, even though they are classified correctly."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "C is raised from 3 to 300. What do you expect?",
+      "answer": "A narrower margin with fewer violations, closer to the hard margin",
+      "wrong": [
+       "A wider margin with more violations",
+       "No change, because C does not affect θ",
+       "The slacks become negative"
+      ],
+      "hints": [
+       "C is the price of each unit of slack."
+      ],
+      "why": "A high price on slack makes the optimizer give up margin width to reduce violations.",
+      "mistakes": [
+       {
+        "value": "A wider margin with more violations",
+        "message": "That is what lowering C does."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Functional margins: a 2, b 0.5, c 0.5, d −1; slacks 0, 0.5, 0.5, 2."
+     },
+     {
+      "text": "One mistake (d). Objective ½·2 + 3·3 = 10.",
+      "tex": "\\tfrac12\\lVert\\theta\\rVert^2+C\\sum_t\\xi_t=1+3\\cdot3=10"
+     },
+     {
+      "text": "Positive slack means α = C: b, c, d. Raising C trades margin for fewer violations."
+     }
+    ],
+    "takeaway": "Slack is the hinge loss; C sets how much the SVM pays for it, so it is tuned by validation, not maximized."
+   },
+   {
+    "id": "kernels",
+    "title": "Kernels by hand",
+    "pages": [
+     "kernel-trick",
+     "valid-kernels"
+    ],
+    "statement": "Take x = [1, −1] and x′ = [2, 0].",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Compute the linear kernel x · x′.",
+      "answer": 2.0,
+      "hints": [
+       "Multiply matching entries and add.",
+       "1·2 + (−1)·0."
+      ],
+      "why": "2.",
+      "tol": 0
+     },
+     {
+      "type": "number",
+      "prompt": "Compute the polynomial kernel (x · x′ + 1)².",
+      "answer": 9.0,
+      "hints": [
+       "Use the linear kernel from the previous part.",
+       "(2 + 1)²."
+      ],
+      "why": "3² = 9.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 4.0,
+        "message": "Add c = 1 before squaring."
+       },
+       {
+        "value": 5.0,
+        "message": "Square the whole of x · x′ + 1, not just x · x′."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "Compute the RBF kernel exp(−||x − x′||²/(2σ²)) with σ = 2 (3 decimals).",
+      "answer": 0.7788007830714049,
+      "hints": [
+       "First find ||x − x′||².",
+       "||x − x′||² = 1 + 1 = 2, and 2σ² = 8."
+      ],
+      "why": "exp(−2/8) = e^(−0.25) ≈ 0.779.",
+      "mistakes": [
+       {
+        "value": 0.36787944117144233,
+        "message": "That uses σ = 1; here 2σ² = 8."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "How many features does the explicit degree-2 map (all x_i and all products x_i x_j with i ≤ j) have for d = 10 inputs?",
+      "answer": 65.0,
+      "hints": [
+       "Count the linear terms and the quadratic terms separately.",
+       "d linear terms plus d(d + 1)/2 quadratic ones."
+      ],
+      "why": "10 + 55 = 65; the kernel still costs one 10-term inner product.",
+      "tol": 0,
+      "mistakes": [
+       {
+        "value": 55.0,
+        "message": "Include the d linear terms too."
+       },
+       {
+        "value": 100.0,
+        "message": "x_i x_j and x_j x_i are the same feature; count pairs with i ≤ j."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "Which of these is NOT a valid kernel?",
+      "answer": "K(x, x′) = −(x · x′)",
+      "wrong": [
+       "K(x, x′) = 5 + x · x′",
+       "K(x, x′) = (x · x′)²",
+       "K(x, x′) = exp(−||x − x′||²)"
+      ],
+      "hints": [
+       "A valid kernel has K(x, x) = ||φ(x)||² ≥ 0 for every x."
+      ],
+      "why": "K(x, x) = −||x||² < 0 for any x ≠ 0, so no feature map exists. The others follow from the rules: a positive constant plus a kernel, a product of kernels, and the RBF kernel.",
+      "mistakes": [
+       {
+        "value": "K(x, x′) = 5 + x · x′",
+        "message": "A positive constant is a kernel (rules 1 and 2, with f = √5), and sums of kernels are kernels."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "x · x′ = 2, so (x · x′ + 1)² = 9."
+     },
+     {
+      "text": "||x − x′||² = 2, so the RBF value with σ = 2 is e^(−0.25) ≈ 0.779."
+     },
+     {
+      "text": "Explicit degree-2 features for d = 10: 10 + 55 = 65."
+     },
+     {
+      "text": "−(x · x′) gives K(x, x) < 0: not a kernel."
+     }
+    ],
+    "takeaway": "Kernels are cheap inner products in feature spaces you never build; validity is what makes the SVM's optimization well posed."
+   }
+  ]
+ },
+ "ml/feature-engineering-and-missing-data": {
+  "track": "ml",
+  "section": "Feature engineering and missing data",
+  "intro": "Point-in-time features, encodings and bins, and choosing and checking an imputation.",
+  "problems": [
+   {
+    "id": "logins",
+    "title": "Features from an activity history",
+    "pages": [
+     "feature-engineering"
+    ],
+    "statement": "On 1 July you predict whether a user cancels in July. Monthly logins from January to June: 12, 15, 9, 20, 4, 6. The user's plan is one of basic, plus, pro (in that order), and it is pro.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Average monthly logins over the last 3 months.",
+      "answer": 10.0,
+      "hints": [
+       "Use April, May and June only.",
+       "(20 + 4 + 6)/3."
+      ],
+      "why": "30/3 = 10.",
+      "tol": 1e-06,
+      "mistakes": [
+       {
+        "value": 12.0,
+        "message": "That is January to March; the last three months are April to June."
+       }
+      ]
+     },
+     {
+      "type": "number",
+      "prompt": "June's logins relative to that 3-month average.",
+      "answer": 0.6,
+      "hints": [
+       "Divide June by the average from the previous part.",
+       "6/10."
+      ],
+      "why": "0.6: June is well below the recent level.",
+      "tol": 1e-06
+     },
+     {
+      "type": "number",
+      "prompt": "The 3-month average divided by the average of the three months before it (3 decimals).",
+      "answer": 0.8333333333333334,
+      "hints": [
+       "January to March average 12.",
+       "Recent average / earlier average."
+      ],
+      "why": "10/12 ≈ 0.833: activity is falling, a classic churn signal."
+     },
+     {
+      "type": "vector",
+      "prompt": "One-hot encode the plan in the order (basic, plus, pro).",
+      "answer": [
+       0.0,
+       0.0,
+       1.0
+      ],
+      "hints": [
+       "One column per plan, in the given order.",
+       "Put 1 in the pro column and 0 elsewhere."
+      ],
+      "why": "[0, 0, 1].",
+      "tol": 0
+     },
+     {
+      "type": "choice",
+      "prompt": "Which candidate feature leaks information?",
+      "answer": "Logins during July",
+      "wrong": [
+       "Days since the last login before 1 July",
+       "Logins in June",
+       "Plan on 1 July"
+      ],
+      "hints": [
+       "What was known on 1 July?"
+      ],
+      "why": "July's logins were not known on 1 July, and a user who cancels logs in less; using them leaks the answer.",
+      "mistakes": [
+       {
+        "value": "Logins in June",
+        "message": "June ended before 1 July, so it is allowed."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Last 3 months: (20 + 4 + 6)/3 = 10. June relative: 6/10 = 0.6."
+     },
+     {
+      "text": "Earlier 3 months: (12 + 15 + 9)/3 = 12, so the trend ratio is 10/12 ≈ 0.833."
+     },
+     {
+      "text": "Plan pro → [0, 0, 1]. July logins leak."
+     }
+    ],
+    "takeaway": "Aggregates, ratios and trends turn a history into features, but only from data available at prediction time."
+   },
+   {
+    "id": "impute",
+    "title": "Impute blood pressure three ways",
+    "pages": [
+     "missing-data-imputation"
+    ],
+    "statement": "Ages 30, 40, 60, 70 have systolic blood pressure 115, 125, 145, 150. Two more patients, aged 47 and 66, have it missing.",
+    "parts": [
+     {
+      "type": "number",
+      "prompt": "Mean imputation: what value do both missing patients get?",
+      "answer": 133.75,
+      "hints": [
+       "Average the four observed values.",
+       "(115 + 125 + 145 + 150)/4."
+      ],
+      "why": "133.75.",
+      "tol": 0.01
+     },
+     {
+      "type": "number",
+      "prompt": "The observed values have variance 204.69 (dividing by 4). What is the variance of all six values after mean imputation (2 decimals)?",
+      "answer": 136.45833333333334,
+      "hints": [
+       "Adding values equal to the mean adds nothing to the sum of squared deviations.",
+       "That sum is 4 × 204.69 = 818.75; divide it by 6."
+      ],
+      "why": "818.75/6 ≈ 136.46: the spread is understated.",
+      "tol": 0.02
+     },
+     {
+      "type": "number",
+      "prompt": "Regression imputation: the least-squares line on the observed rows is BP = 88.75 + 0.9 age. What value does the 47-year-old get?",
+      "answer": 131.05000000000004,
+      "hints": [
+       "Put age 47 into the line.",
+       "88.75 + 0.9 · 47."
+      ],
+      "why": "131.05: below the mean, as expected for a younger patient.",
+      "tol": 0.01
+     },
+     {
+      "type": "number",
+      "prompt": "k-nearest neighbours by age with k = 2: what value does the 66-year-old get?",
+      "answer": 147.5,
+      "hints": [
+       "Find the two observed ages closest to 66.",
+       "Ages 70 and 60 (distances 4 and 6)."
+      ],
+      "why": "(150 + 145)/2 = 147.5.",
+      "tol": 0.01,
+      "mistakes": [
+       {
+        "value": 133.75,
+        "message": "That is the mean of all observed values; kNN averages only the nearest neighbours."
+       }
+      ]
+     },
+     {
+      "type": "choice",
+      "prompt": "Patients with very high blood pressure were sent straight to treatment and were never measured here. What kind of missingness is this?",
+      "answer": "Missing not at random (MNAR)",
+      "wrong": [
+       "Missing completely at random (MCAR)",
+       "Missing at random (MAR)",
+       "It is not missing data"
+      ],
+      "hints": [
+       "Does the chance of being missing depend on the missing value itself?"
+      ],
+      "why": "Missingness depends on the unobserved value, so all three imputations here are biased downward; a missingness flag lets the model learn from \"not measured\".",
+      "mistakes": [
+       {
+        "value": "Missing at random (MAR)",
+        "message": "MAR would mean missingness depends only on observed columns such as age; here it depends on the blood pressure itself."
+       }
+      ]
+     }
+    ],
+    "solution": [
+     {
+      "text": "Mean: 133.75 for both; variance drops from 204.69 to 818.75/6 ≈ 136.46."
+     },
+     {
+      "text": "Regression: 88.75 + 0.9·47 = 131.05. kNN (k = 2) for age 66: (150 + 145)/2 = 147.5.",
+      "tex": "\\hat x_{47}=88.75+0.9\\cdot47=131.05"
+     },
+     {
+      "text": "Missingness driven by the value itself is MNAR: add a flag."
+     }
+    ],
+    "takeaway": "Imputation that uses related columns keeps the structure of the data; asking why values are missing tells you whether any fill can be trusted."
+   }
+  ]
+ },
  "ml/ml-in-production": {
   "track": "ml",
   "section": "ML in production",

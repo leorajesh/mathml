@@ -562,4 +562,43 @@ export const workedExampleMath = {
     tex`\Bigl(\tfrac23\Bigr)^3\approx0.30,\qquad \Bigl(1-\tfrac1n\Bigr)^n\to e^{-1}\approx0.368`,
     tex`\operatorname{RMSE}_{\text{OLS}}-\operatorname{RMSE}_{\text{ridge}}=-0.12,\qquad 95\%\text{ interval }[-2.54,\ 2.00]\ni0`,
   ],
+  'svm-margins': [
+    tex`\theta=\begin{bmatrix}3\\4\end{bmatrix},\ \theta_0=-5,\ \lVert\theta\rVert=5`,
+    tex`\gamma_f^{(i)}=8,\ 6,\ 1`,
+    tex`\gamma_g^{(i)}=\tfrac85,\ \tfrac65,\ \tfrac15=1.6,\ 1.2,\ 0.2`,
+    tex`\gamma_f=\min_i\gamma_f^{(i)}=1,\qquad \gamma_g=0.2`,
+    tex`(2\theta,2\theta_0):\ \gamma_f^{(i)}=16,\ 12,\ 2;\quad \gamma_g^{(i)}=1.6,\ 1.2,\ 0.2`,
+  ],
+  'svm-dual': [
+    null,
+    tex`K=\begin{bmatrix}4&0&6\\0&0&0\\6&0&10\end{bmatrix},\qquad \alpha_1-\alpha_2+\alpha_3=0`,
+    tex`\alpha_3=0,\ \alpha_2=\alpha_1:\quad 2\alpha_1-2\alpha_1^2\ \Rightarrow\ \alpha_1=\tfrac12`,
+    tex`\theta=\tfrac12\begin{bmatrix}2\\0\end{bmatrix}-\tfrac12\begin{bmatrix}0\\0\end{bmatrix}=\begin{bmatrix}1\\0\end{bmatrix},\qquad \theta_0=1-2=-1`,
+    tex`\textstyle\sum\alpha-\tfrac12\lVert\theta\rVert^2=1-\tfrac12=\tfrac12=\tfrac12\lVert\theta\rVert^2`,
+  ],
+  'soft-margin-svm': [
+    null,
+    tex`\gamma_f=1.5,\ 0.5,\ -0.5,\ 2`,
+    tex`\xi=\max(0,1-\gamma_f)=0,\ 0.5,\ 1.5,\ 0`,
+    tex`\tfrac12\lVert\theta\rVert^2+C\textstyle\sum\xi=0.5+2\cdot2=4.5`,
+  ],
+  'kernel-trick': [
+    null,
+    tex`\phi(x)=(x,x^2):\ (-2,4),\ (-1,1),\ (1,1),\ (2,4)`,
+    tex`x^2=2.5\ \Rightarrow\ x=\pm\sqrt{2.5}\approx\pm1.58`,
+    tex`x\cdot x'=5:\ \ 5+5^2=30=3+2+12+9+4`,
+    tex`d+\tfrac{d(d+1)}{2}=1000+500500=501500`,
+  ],
+  'valid-kernels': [
+    null,
+    tex`K(a,b)=e^{-1}\approx0.368,\quad K(a,c)=e^{-2}\approx0.135,\quad K(b,c)\approx0.368`,
+    tex`\lambda(K)\approx0.543,\ 0.865,\ 1.592>0`,
+    tex`\begin{bmatrix}0&2\\2&0\end{bmatrix}:\ \lambda=2,\ -2`,
+  ],
+  'missing-data-imputation': [
+    null,
+    tex`\bar x_{\text{obs}}=\tfrac14(30+56+76+86)=62`,
+    tex`\operatorname{Var}_{\text{obs}}=\tfrac{1832}{4}=458\ \to\ \tfrac{1832}{6}\approx305.3`,
+    tex`\hat x=2\cdot25-14=36,\quad 2\cdot28-14=42;\qquad k\text{NN}: \tfrac{30+56}{2}=43`,
+  ],
 };

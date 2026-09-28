@@ -10,6 +10,7 @@ import { learningObjectives, selfChecksByConcept } from './data/learningObjectiv
 import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { intuitionDetails } from './data/intuitionDetails.js';
+import { stories } from './data/stories.js';
 import { codingGuides } from './data/codingGuides.js';
 import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
@@ -204,6 +205,12 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack, onOpenHo
 
       <OrderedSection number="1" title="What Problem Does This Solve?">
         <p className="problem-sentence">{concept.problem}</p>
+        {stories[concept.id] && (
+          <aside className="invent-story">
+            <h3>Why would you invent this?</h3>
+            <p>{stories[concept.id]}</p>
+          </aside>
+        )}
       </OrderedSection>
 
       <OrderedSection number="2" title="Plain-Language Intuition">
@@ -243,6 +250,7 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack, onOpenHo
 
       <OrderedSection number="5" title="Interactive Graph">
         <ConceptGraph graph={concept.graph} />
+        {concept.graph2 && <ConceptGraph graph={concept.graph2} />}
       </OrderedSection>
 
       <OrderedSection number="6" title="Try It in Python">

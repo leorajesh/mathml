@@ -2,14 +2,15 @@ import { useMemo, useState } from 'react';
 import { entryFor, mindMapEdges, topicMap } from '../data/concepts.js';
 import { conceptLevel, recommendedPaths } from '../data/studyGuidance.js';
 
+// Theme colours (CSS variables), so the map follows light and dark mode.
 const groupColors = {
-  Problem: '#d95d39',
-  Representation: '#2f7d80',
-  Model: '#3268a8',
-  Loss: '#b23a48',
-  Optimization: '#6d5a9c',
-  Complexity: '#99722b',
-  Generalization: '#3f7a3b',
+  Problem: 'var(--c-coral)',
+  Representation: 'var(--c-teal)',
+  Model: 'var(--c-blue)',
+  Loss: 'var(--c-rose)',
+  Optimization: 'var(--c-violet)',
+  Complexity: 'var(--c-amber)',
+  Generalization: 'var(--c-green)',
 };
 
 const domains = [
@@ -225,7 +226,7 @@ function OverviewMap({ onOpenDomain, onSelect }) {
       <svg className="overview-svg" viewBox={`0 0 1080 ${80 + Math.ceil(domains.length / 4) * 210}`} role="img" aria-label="Overall concept domains">
         <defs>
           <marker id="overviewArrow" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto">
-            <path d="M 1 1 L 11 6 L 1 11 z" fill="#2f3436" />
+            <path d="M 1 1 L 11 6 L 1 11 z" style={{ fill: 'var(--c-ink)' }} />
           </marker>
         </defs>
         {overviewEdges.map(([from, to]) => {
@@ -239,8 +240,8 @@ function OverviewMap({ onOpenDomain, onSelect }) {
           const fundamentalCount = domain.concepts.filter((id) => conceptLevel(id) === 'Fundamental').length;
           return (
             <g key={domain.id} className="overview-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onOpenDomain(domain.id)} onKeyDown={activateOnKey(() => onOpenDomain(domain.id))} role="button" tabIndex="0" aria-label={`Open ${domain.title}`}>
-              <rect width={node.width} height={node.height} rx="10" fill="#fffdf8" stroke={groupColors[domain.group]} strokeWidth="3" />
-              <text x="16" y="26" className="node-group" fill={groupColors[domain.group]}>{domain.group}</text>
+              <rect width={node.width} height={node.height} rx="10" strokeWidth="3" style={{ fill: 'var(--surface)', stroke: groupColors[domain.group] }} />
+              <text x="16" y="26" className="node-group" style={{ fill: groupColors[domain.group] }}>{domain.group}</text>
               {lines.map((line, index) => <text key={line} x="16" y={58 + index * 18} className="overview-title">{line}</text>)}
               <text x="16" y="126" className="overview-count">{fundamentalCount} fundamental / {domain.concepts.length - fundamentalCount} advanced</text>
             </g>
@@ -279,7 +280,7 @@ function FocusedMap({ domain, layout, nodeMap, edges, onBack, onSelect }) {
         <svg className="mind-map cluster-map" viewBox={`0 0 ${layout.width} ${layout.height}`} role="img" aria-label={`${domain.title} sub-map`}>
           <defs>
             <marker id="clusterArrow" viewBox="0 0 12 12" refX="10.5" refY="6" markerWidth="10" markerHeight="10" orient="auto">
-              <path d="M 1 1 L 11 6 L 1 11 z" fill="#2f3436" />
+              <path d="M 1 1 L 11 6 L 1 11 z" style={{ fill: 'var(--c-ink)' }} />
             </marker>
           </defs>
           {edges.map(([from, to]) => <path key={`${from}-${to}`} className="map-edge" d={edgePath(nodeMap[from], nodeMap[to])} markerEnd="url(#clusterArrow)" />)}
@@ -291,8 +292,8 @@ function FocusedMap({ domain, layout, nodeMap, edges, onBack, onSelect }) {
             const levelLabel = isTopic ? `${topicMap[node.id].children.length} sub` : level === 'Fundamental' ? 'Base' : 'Adv';
             return (
               <g key={node.id} className="cluster-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)} onKeyDown={activateOnKey(() => onSelect(node.id))} role="button" tabIndex="0" aria-label={`Open ${concept.title}`}>
-                <rect width={node.width} height={node.height} rx="9" fill="#fffdf8" stroke={groupColors[concept.group]} strokeWidth="3" />
-                <text x="14" y="22" className="node-group" fill={groupColors[concept.group]}>{concept.group}</text>
+                <rect width={node.width} height={node.height} rx="9" strokeWidth="3" style={{ fill: 'var(--surface)', stroke: groupColors[concept.group] }} />
+                <text x="14" y="22" className="node-group" style={{ fill: groupColors[concept.group] }}>{concept.group}</text>
                 <g className={`level-pill ${isTopic ? 'topic' : level.toLowerCase()}`} transform={`translate(${node.width - 58}, 10)`}>
                   <rect width="44" height="18" rx="9" />
                   <text x="22" y="12" textAnchor="middle">{levelLabel}</text>

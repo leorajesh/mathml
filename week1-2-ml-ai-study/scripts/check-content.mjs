@@ -19,6 +19,7 @@ import { homework } from '../src/data/homework.js';
 import { courseHomework } from '../src/data/courseHomework.js';
 import { stories } from '../src/data/stories.js';
 import { exampleTasks } from '../src/data/exampleTasks.js';
+import { bonusExamples } from '../src/data/bonusExamples.js';
 import { reviewCategories, reviewTree } from '../src/data/quickReview.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
@@ -212,6 +213,25 @@ for (const concept of concepts) {
   else if (words(task) > 70) problems.push(`${concept.id}: task statement has ${words(task)} words (max 70)`);
 }
 for (const id of Object.keys(exampleTasks)) if (!conceptMap[id]) problems.push(`task for unknown page "${id}"`);
+for (const key of sectionKeys) {
+  const list = bonusExamples[key] ?? [];
+  if (list.length < 2) problems.push(`section "${key}" needs at least 2 bonus examples (has ${list.length})`);
+}
+{
+  const ids = new Set();
+  for (const [key, list] of Object.entries(bonusExamples)) {
+    if (!sectionKeys.has(key)) problems.push(`bonus examples for unknown section "${key}"`);
+    for (const example of list) {
+      const where = `bonus ${key}/${example.id}`;
+      if (ids.has(example.id)) problems.push(`${where}: duplicate id`);
+      ids.add(example.id);
+      if (!example.title || !example.task || !example.answer || example.steps.length < 2) problems.push(`${where}: needs a title, task, answer and at least 2 steps`);
+      for (const id of example.pages) if (!conceptMap[id]) problems.push(`${where}: unknown page "${id}"`);
+      const source = example.source;
+      if (source.book === 'mml' ? !(source.page >= 1 && source.page <= 400) || !source.label : !courseBooks[source.book]) problems.push(`${where}: malformed source`);
+    }
+  }
+}
 for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {
   console.error(problems.join('\n'));

@@ -25,6 +25,7 @@ import { homework } from './data/homework.js';
 import { HomeworkForPage, HomeworkPage } from './components/Homework.jsx';
 import { AccountMenu } from './components/AccountMenu.jsx';
 import { SiteSearch } from './components/SiteSearch.jsx';
+import { ThemeToggle } from './components/ThemeToggle.jsx';
 import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
 
 // Routes live in the URL hash so Back/Forward and shared links work:
@@ -126,6 +127,7 @@ export function App() {
           ))}
         </nav>
         <SiteSearch onOpenPage={(id) => selectConcept(id)} onOpenTopic={(id) => go(id)} onOpenHomework={(key) => openHomework(key)} />
+        <ThemeToggle />
         <AccountMenu />
       </header>
 

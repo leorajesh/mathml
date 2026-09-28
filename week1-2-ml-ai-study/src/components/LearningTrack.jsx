@@ -7,6 +7,7 @@ import { useProgress } from '../progress.js';
 import { QuizBadge } from './Quiz.jsx';
 import { projects } from '../data/projects.js';
 import { HomeworkButton } from './Homework.jsx';
+import { PracticeLinks } from './PracticeLinks.jsx';
 import { courseHomework } from '../data/courseHomework.js';
 
 function otherTrack(trackId) {
@@ -73,6 +74,8 @@ export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
                     <button className="inline-link" onClick={() => onOpen(id, tracksContaining(id).includes(trackId) ? trackId : null)}>{conceptMap[id].title}</button>
                   </React.Fragment>
                 ))}
+                <br />
+                <PracticeLinks ids={item.pages} compact />
               </li>
             ))}
           </ol>

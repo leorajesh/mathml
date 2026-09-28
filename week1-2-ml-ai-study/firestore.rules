@@ -11,7 +11,7 @@ service cloud.firestore {
       match /{store}/{key} {
         allow read, delete: if request.auth != null && request.auth.uid == uid;
         allow create, update: if request.auth != null && request.auth.uid == uid
-          && store in ['done', 'quiz', 'homework', 'code']
+          && store in ['done', 'quiz', 'homework', 'code', 'review']
           && request.resource.data.keys().hasOnly(['json', 'updatedAt'])
           && request.resource.data.json is string
           && request.resource.data.json.size() < 500000;

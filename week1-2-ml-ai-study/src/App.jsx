@@ -4,6 +4,7 @@ import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { ConceptFigure } from './components/Figures.jsx';
 import { Dashboard, HeaderStats } from './components/Dashboard.jsx';
+import { CheatSheet } from './components/CheatSheet.jsx';
 import { QuickReview } from './components/QuickReview.jsx';
 import { codeExamples } from './data/codeExamples.js';
 import { conceptMap, entryFor, topicMap, topicOf } from './data/concepts.js';
@@ -20,7 +21,7 @@ import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
 import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
 import { mathLinks, mlUsesOf } from './data/mathLinks.js';
-import { normalizeDefinitionSymbol } from './utils/mathText.js';
+import { FormulaDefinition } from './components/FormulaDefinition.jsx';
 import { PythonRunner } from './python/PythonRunner.jsx';
 import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
 import { Quiz, QuizBadge } from './components/Quiz.jsx';
@@ -49,6 +50,7 @@ function routeFromHash() {
   }
   const [path, query = ''] = raw.split('?');
   if (path === 'review') return { view: 'review' };
+  if (path === 'cheatsheet') return { view: 'cheatsheet' };
   if (path.startsWith('bonus=')) {
     const bonusKey = path.slice('bonus='.length);
     if (Object.hasOwn(bonusExamples, bonusKey)) return { bonusKey, trackId: bonusKey.slice(0, bonusKey.indexOf('/')) };
@@ -96,7 +98,7 @@ export function App() {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
     document.title = route.bonusKey ? `Bonus examples | ML + Math Study Map` : route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
-      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
+      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : route.view === 'cheatsheet' ? 'Formula Cheat Sheet | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
   }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view, route.bonusKey]);
 
   function go(hash) {
@@ -138,6 +140,7 @@ export function App() {
             <button key={trackId} className={route.trackId === trackId ? 'active' : ''} onClick={() => showTrack(trackId)}>{tracks[trackId].title}</button>
           ))}
           <button className={route.view === 'review' ? 'active' : ''} onClick={() => go('review')}>Quick Review</button>
+          <button className={route.view === 'cheatsheet' ? 'active' : ''} onClick={() => go('cheatsheet')}>Cheat Sheet</button>
         </nav>
         <HeaderStats />
         <SiteSearch onOpenPage={(id) => selectConcept(id)} onOpenTopic={(id) => go(id)} onOpenHomework={(key) => openHomework(key)} />
@@ -154,15 +157,15 @@ export function App() {
       ) : selectedTopic ? (
         <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
-        <Landing trackId={route.trackId} view={route.view} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onShowReview={() => go('review')} onOpenHomework={openHomework} />
+        <Landing trackId={route.trackId} view={route.view} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onShowReview={() => go('review')} onShowCheatSheet={() => go('cheatsheet')} onOpenHomework={openHomework} />
       )}
     </div>
   );
 }
 
-function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowReview, onOpenHomework }) {
+function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowReview, onShowCheatSheet, onOpenHomework }) {
   const [localTab, setLocalTab] = React.useState('overview');
-  const activeTab = trackId ? `track-${trackId}` : view === 'review' ? 'review' : localTab;
+  const activeTab = trackId ? `track-${trackId}` : view === 'review' || view === 'cheatsheet' ? view : localTab;
 
   function openLocalTab(tab) {
     setLocalTab(tab);
@@ -177,11 +180,13 @@ function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowRe
           <button key={id} className={activeTab === `track-${id}` ? 'active' : ''} onClick={() => onShowTrack(id)}>{tracks[id].title}</button>
         ))}
         <button className={activeTab === 'review' ? 'active' : ''} onClick={onShowReview}>Quick Review</button>
+        <button className={activeTab === 'cheatsheet' ? 'active' : ''} onClick={onShowCheatSheet}>Cheat Sheet</button>
         <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => openLocalTab('objectives')}>Learning Objectives</button>
       </nav>
 
       {activeTab === 'overview' && <Dashboard onOpen={onSelect} onOpenHomework={onOpenHomework} onShowReview={onShowReview} />}
       {activeTab === 'review' && <QuickReview onOpen={onSelect} />}
+      {activeTab === 'cheatsheet' && <CheatSheet onOpen={(id) => onSelect(id, null)} />}
       {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
       {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
     </main>
@@ -342,24 +347,6 @@ function SelfChecks({ conceptId }) {
   );
 }
 
-function FormulaDefinition({ definition }) {
-  const separatorIndex = definition.indexOf(':');
-
-  if (separatorIndex === -1) {
-    return <li>{definition}</li>;
-  }
-
-  const symbol = definition.slice(0, separatorIndex).trim();
-  const explanation = definition.slice(separatorIndex + 1).trim();
-  const symbolMath = normalizeDefinitionSymbol(symbol);
-
-  return (
-    <li>
-      <span className="definition-symbol"><InlineMath math={symbolMath} /></span>
-      <span className="definition-explanation">{explanation}</span>
-    </li>
-  );
-}
 
 // ML pages: the math pages they build on, and why. Math pages: the ML pages that use them.
 // The end-to-end project anchored on this page: stages with links, a runnable program, and its output.

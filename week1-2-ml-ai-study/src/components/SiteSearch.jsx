@@ -48,6 +48,16 @@ const entries = [
     summary_: normalize(`${set.intro} ${set.problems.map((problem) => problem.title).join(' ')}`),
     body_: '',
   })),
+  {
+    kind: 'view',
+    id: 'cheatsheet',
+    title: 'Formula Cheat Sheet',
+    context: 'Every formula on one searchable, printable page',
+    blurb: 'All key formulas by category, with symbols, copy-as-LaTeX, pins and worked derivations.',
+    title_: normalize('formula cheat sheet formulas reference latex'),
+    summary_: normalize('cheatsheet formula sheet equations symbols print pdf'),
+    body_: '',
+  },
   ...Object.entries(bonusExamples).map(([key, list]) => ({
     kind: 'bonus',
     id: key,
@@ -128,6 +138,7 @@ export function SiteSearch({ onOpenPage, onOpenTopic, onOpenHomework }) {
     if (entry.kind === 'page') onOpenPage(entry.id);
     else if (entry.kind === 'topic') onOpenTopic(entry.id);
     else if (entry.kind === 'bonus') window.location.hash = `bonus=${entry.id}`;
+    else if (entry.kind === 'view') window.location.hash = entry.id;
     else onOpenHomework(entry.id);
   }
 

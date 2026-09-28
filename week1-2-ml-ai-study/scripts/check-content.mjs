@@ -18,6 +18,7 @@ import { sectionKey, trackOrder, tracks } from '../src/data/learningTracks.js';
 import { homework } from '../src/data/homework.js';
 import { courseHomework } from '../src/data/courseHomework.js';
 import { stories } from '../src/data/stories.js';
+import { exampleTasks } from '../src/data/exampleTasks.js';
 import { reviewCategories, reviewTree } from '../src/data/quickReview.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
 import { normalizeDefinitionSymbol } from '../src/utils/mathText.js';
@@ -205,6 +206,12 @@ for (const [id, story] of Object.entries(stories)) {
   });
   for (const concept of concepts) if (counts[concept.id] !== 1) problems.push(`${concept.id}: appears ${counts[concept.id] ?? 0} times in the quick review (should be once)`);
 }
+for (const concept of concepts) {
+  const task = exampleTasks[concept.id];
+  if (!task) problems.push(`${concept.id}: worked example has no task statement in exampleTasks.js`);
+  else if (words(task) > 70) problems.push(`${concept.id}: task statement has ${words(task)} words (max 70)`);
+}
+for (const id of Object.keys(exampleTasks)) if (!conceptMap[id]) problems.push(`task for unknown page "${id}"`);
 for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);
 if (problems.length) {
   console.error(problems.join('\n'));

@@ -12,6 +12,7 @@ import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { intuitionDetails } from './data/intuitionDetails.js';
 import { stories } from './data/stories.js';
+import { exampleTasks } from './data/exampleTasks.js';
 import { codingGuides } from './data/codingGuides.js';
 import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
@@ -549,13 +550,21 @@ function WorkedExample({ concept, startInPractice }) {
     setShown(1);
   }
 
+  const task = exampleTasks[concept.id];
+
   return (
     <div className={`worked-example-box${practice ? ' practising' : ''}`}>
+      {task && (
+        <div className="example-task">
+          <span className="example-task-label">The task</span>
+          <p>{task}</p>
+        </div>
+      )}
       <div className="worked-example-bar">
         <button className="practice-toggle" onClick={togglePractice} aria-pressed={practice}>
           {practice ? 'Show all steps' : 'Practise: hide the steps'}
         </button>
-        {practice && <span className="practice-count">Step {Math.min(shown, steps.length)} of {steps.length}. Work out the next step yourself, then check it.</span>}
+        {practice && <span className="practice-count">Step {Math.min(shown, steps.length)} of {steps.length}. Try the next step of the task yourself, then check it.</span>}
       </div>
       <ol className="worked-example">
         {visible.map((line, index) => (
@@ -571,7 +580,7 @@ function WorkedExample({ concept, startInPractice }) {
           <button className="practice-all" onClick={() => setShown(steps.length)}>Show the rest</button>
         </div>
       )}
-      {practice && shown >= steps.length && <p className="practice-done">That is the whole example. Now try the homework with your own numbers.</p>}
+      {practice && shown >= steps.length && <p className="practice-done">That completes the task. Now try the homework with its own numbers.</p>}
     </div>
   );
 }

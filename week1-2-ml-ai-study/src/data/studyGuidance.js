@@ -38,19 +38,6 @@ export function conceptLevel(id) {
   return advancedConceptIds.has(id) ? 'Advanced' : 'Fundamental';
 }
 
-export const recommendedPaths = {
-  'overview-foundations': ['ml-landscape', 'ml-workflow', 'sets-functions', 'feature-vectors', 'ml-in-production'],
-  'overview-linear-algebra': ['matrix-operations', 'matrix-multiplication-outer-product', 'matrix-systems', 'gaussian-elimination', 'solution-structure', 'vector-spaces-bases', 'linear-independence-subspaces', 'linear-transformations', 'transformation-matrix', 'composition-of-transformations', 'invertible-transformations', 'rank-inverse-determinant', 'determinants-cofactor-row-ops', 'change-of-basis'],
-  'overview-classification': ['linear-classifier', 'linear-classifier-through-origin', 'linear-separability', 'perceptron', 'perceptron-convergence', 'empirical-risk-zero-one', 'hinge-loss', 'max-margin-svm'],
-  'overview-optimization': ['convexity-surrogate-losses', 'gradient-descent', 'stochastic-subgradient-descent', 'lagrange-multipliers'],
-  'overview-regression': ['linear-regression', 'least-squares-normal-equation', 'gradient-descent', 'polynomial-regression', 'feature-scaling', 'multicollinearity', 'ridge-regularization', 'lasso-elastic-net'],
-  'overview-generalization': ['model-complexity-generalization', 'bias-variance', 'validation-cross-validation', 'logistic-regression', 'logistic-loss', 'classification-metrics', 'roc-auc', 'ml-in-production'],
-  'overview-probability': ['exp-log', 'probability-statistics', 'logistic-regression', 'logistic-loss', 'bias-variance', 'classification-metrics'],
-  'overview-vector-calculus': ['vector-calculus', 'gradient-descent', 'least-squares-normal-equation', 'logistic-loss'],
-  'overview-analytic-geometry': ['norms-inner-products', 'orthogonality-spectral-theorem', 'projections-gram-schmidt', 'least-squares-normal-equation'],
-  'overview-advanced-math': ['affine-dimensionality-reduction', 'eigenvalues-eigenvectors', 'trace', 'diagonalization-pagerank', 'orthogonality-spectral-theorem', 'matrix-decompositions', 'pca'],
-};
-
 export const guidedSelfChecks = {
   'ml-landscape': [
     { question: 'Name one activity from each MLOps phase for a spam filter.', answer: 'Data phase: agree what counts as spam and what error rate is acceptable, and collect labelled emails. Model phase: engineer features and train and validate a classifier. Operations phase: deploy it behind the mail server, version the model and data, and monitor whether new spam still looks like the training spam.' },

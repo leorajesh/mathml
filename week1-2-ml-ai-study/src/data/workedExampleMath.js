@@ -593,7 +593,7 @@ export const workedExampleMath = {
     null,
     tex`K(a,b)=e^{-1}\approx0.368,\quad K(a,c)=e^{-2}\approx0.135,\quad K(b,c)\approx0.368`,
     tex`\lambda(K)\approx0.543,\ 0.865,\ 1.592>0`,
-    tex`\begin{bmatrix}0&2\\2&0\end{bmatrix}:\ \lambda=2,\ -2`,
+    tex`\begin{bmatrix}1&e\\e&1\end{bmatrix}:\ \lambda=1+e\approx3.718,\ \ 1-e\approx-1.718`,
   ],
   'missing-data-imputation': [
     null,

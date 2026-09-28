@@ -495,7 +495,7 @@ export const quizzes = {
     {"question": "In the kernel perceptron, what does alpha_t count?", "answer": "The number of mistakes made on example t", "wrong": ["The distance of example t to the boundary", "The label of example t", "The number of features of example t"], "why": "Each mistake on example t adds y_t phi(x_t) to theta, so theta = sum alpha_t y_t phi(x_t)."},
   ],
   "valid-kernels": [
-    {"question": "Which is NOT a valid kernel?", "answer": "K(x, x') = ||x - x'||^2", "wrong": ["K(x, x') = (x . x' + 1)^2", "K(x, x') = exp(-||x - x'||^2 / 2)", "K(x, x') = 3 (x . x')"], "why": "For two distinct points its Gram matrix [[0, d], [d, 0]] has a negative eigenvalue -d, so no feature map exists."},
+    {"question": "Which is NOT a valid kernel?", "answer": "K(x, x') = exp(+||x - x'||^2 / 2)", "wrong": ["K(x, x') = (x . x' + 1)^2", "K(x, x') = exp(-||x - x'||^2 / 2)", "K(x, x') = 3 (x . x')"], "why": "For two distinct points its Gram matrix [[1, a], [a, 1]] has a > 1, so the eigenvalue 1 - a is negative and no feature map exists."},
     {"question": "With sigma = 1, what is the RBF kernel value for x = [0, 0] and x' = [1, 1]?", "answer": "e^-1 ≈ 0.368", "wrong": ["e^-2 ≈ 0.135", "1", "e^-0.5 ≈ 0.607"], "why": "||x - x'||^2 = 2, and exp(-2/2) = e^-1."},
     {"question": "Why is the feature space of the RBF kernel infinite-dimensional?", "answer": "exp(x . x') is an infinite sum of polynomial kernels (x . x')^k / k!", "wrong": ["Because sigma can be any number", "Because it uses the Euclidean distance", "Because it is always equal to 1"], "why": "Each term (x . x')^k/k! is a kernel, and summing infinitely many appends infinitely many features."},
   ],

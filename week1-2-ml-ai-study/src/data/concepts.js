@@ -2,6 +2,7 @@ import { calculusConcepts } from './calculusConcepts.js';
 import { mlConcepts } from './mlConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
 import { probabilityConcepts } from './probabilityConcepts.js';
+import { week3MlConcepts } from './week3MlConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
 // Reading order of every concept page (topics are overview pages, not listed here).
@@ -72,6 +73,13 @@ export const conceptOrder = [
   'logistic-loss',
   'classification-metrics',
   'roc-auc',
+  'svm-margins',
+  'svm-dual',
+  'soft-margin-svm',
+  'kernel-trick',
+  'valid-kernels',
+  'feature-engineering',
+  'missing-data-imputation',
   'ml-in-production',
   'eigenvalues-eigenvectors',
   'eigenspaces-multiplicity',
@@ -490,7 +498,7 @@ const baseConcepts = [
     graph: { type: 'hinge', title: 'Hinge loss versus zero-one loss', caption: 'Solid: hinge loss. Dashed: zero-one loss. Hinge is never below zero-one (it is a convex upper bound on it), and it still slopes for correct points with margin below 1.', sliders: [{ key: 'margin', label: 'signed margin z', min: -3, max: 3, step: 0.1, value: 0.2 }] },
     misconception: 'Hinge loss is not the actual test error; it is a surrogate chosen because it is easier to optimize and gives richer feedback.',
     prerequisites: ['empirical-risk-zero-one', 'perceptron'],
-    followOns: ['max-margin-svm', 'surrogate-losses', 'gradient-descent-method', 'ridge-regularization'],
+    followOns: ['max-margin-svm', 'surrogate-losses', 'gradient-descent-method', 'ridge-regularization', 'soft-margin-svm'],
     sources: ['Week1_03-HingeLoss.pdf', 'Production ML slides - Linear Classification Lesson 2.pdf'],
   },
   {
@@ -698,7 +706,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts, ...week3MlConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 

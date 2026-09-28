@@ -239,6 +239,36 @@ export const courseReferences = {
     ref('bishop', '1.2.3', 'Bayesian Probabilities (the bootstrap for frequentist error bars)', 23),
     ref('dhs', '9.4.2', 'Bootstrap'),
   ],
+  'svm-margins': [
+    ref('bishop', '7.1', "Maximum Margin Classifiers (distance to the boundary, canonical representation)", 326),
+    ref('isl', '9.1.3', "The Maximal Margin Classifier"),
+    ref('dhs', '5.11', "Support Vector Machines"),
+  ],
+  'svm-dual': [
+    ref('bishop', '7.1', "Maximum Margin Classifiers (the dual representation, support vectors)", 326),
+    ref('bishop', 'Appendix E', "Lagrange Multipliers (KKT conditions)", 707),
+    ref('isl', '9.3.2', "The Support Vector Machine (inner products)"),
+  ],
+  'soft-margin-svm': [
+    ref('bishop', '7.1.1', "Overlapping class distributions (slack variables, the box constraint)", 331),
+    ref('isl', '9.2.2', "Details of the Support Vector Classifier (the budget for violations)"),
+  ],
+  'kernel-trick': [
+    ref('bishop', '6.1', "Dual Representations (kernel ridge regression)", 293),
+    ref('isl', '9.3.1', "Classification with Non-linear Decision Boundaries"),
+    ref('isl', '9.3.2', "The Support Vector Machine (kernels)"),
+  ],
+  'valid-kernels': [
+    ref('bishop', '6.2', "Constructing Kernels (the composition rules, Gaussian kernel)", 294),
+    ref('isl', '9.3.2', "The Support Vector Machine (polynomial and radial kernels)"),
+  ],
+  'feature-engineering': [
+    ref('huyen', 'Ch. 5', "Feature Engineering (discretization, encoding categorical features, feature crossing, data leakage)"),
+    ref('mlops', 'Ch. 4', "Developing Models (feature engineering and selection)"),
+  ],
+  'missing-data-imputation': [
+    ref('huyen', 'Ch. 5', "Feature Engineering: Handling Missing Values (MNAR, MAR, MCAR; deletion and imputation)"),
+  ],
 };
 
 // Real-world case studies from the Designing Machine Learning Systems resource list.

@@ -1,4 +1,6 @@
 export const advancedConceptIds = new Set([
+  'svm-dual',
+  'valid-kernels',
   'multicollinearity',
   'max-margin-svm',
   'roc-auc',
@@ -262,5 +264,26 @@ export const guidedSelfChecks = {
   ],
   'bootstrap': [
     { question: 'Why does increasing the number of resamples B not make the bootstrap interval narrower?', answer: 'B only controls how accurately we estimate the spread of the statistic under resampling; the spread itself is set by the sample size n and the data. More B gives a smoother, more precise estimate of the same width.' },
+  ],
+  'svm-margins': [
+    { question: "Why can the SVM fix the functional margin of the training set at 1 without losing any boundaries?", answer: "Scaling theta and theta_0 by c > 0 keeps the same boundary and multiplies the functional margin by c. So any separating boundary can be rescaled to have functional margin exactly 1, and then the geometric margin is 1/||theta||: maximizing it means minimizing ||theta||." },
+  ],
+  'svm-dual': [
+    { question: "Why does deleting an example with alpha_t = 0 leave the SVM unchanged?", answer: "theta = sum alpha_t y_t x_t does not use it, and its constraint is not active, so the remaining problem has the same optimum. Only the support vectors (alpha_t > 0) carry the solution." },
+  ],
+  'soft-margin-svm': [
+    { question: "Why is the sum of the slacks an upper bound on the number of training mistakes?", answer: "A misclassified example has functional margin at most 0, so its slack 1 - margin is at least 1; the other slacks are nonnegative. Adding them up counts every mistake at least once." },
+  ],
+  'kernel-trick': [
+    { question: "Which parts of the SVM need phi(x) itself, and which only need kernels?", answer: "None of them needs phi explicitly: the dual objective uses K(x_t, x_s), theta_0 comes from the margin condition written with kernels, and the prediction is sign(sum alpha_t y_t K(x_t, x) + theta_0). Only theta itself would need phi, and it is never formed." },
+  ],
+  'valid-kernels': [
+    { question: "How would you show that K(x, x') = x . x' - 1 is not a valid kernel?", answer: "Take x = 0: K(0, 0) = -1 < 0. A valid kernel has K(x, x) = ||phi(x)||^2 >= 0, so no feature map exists." },
+  ],
+  'feature-engineering': [
+    { question: "Why can a well-chosen feature let you use a simpler model?", answer: "The feature already contains the non-linear or historical structure (a ratio, a log, an aggregate, an interaction), so a linear or shallow model only has to combine it, which is faster, easier to explain and easier to maintain." },
+  ],
+  'missing-data-imputation': [
+    { question: "Income is missing mostly for people with very high income (MNAR). What goes wrong with mean imputation, and what helps?", answer: "The mean of the observed incomes is too low for exactly the rows that are missing, so imputed values are biased down and the model loses the signal. A missingness flag keeps \"did not report\" as a feature the model can learn from, and domain knowledge or other columns can inform a better fill." },
   ],
 };

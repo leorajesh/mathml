@@ -46,7 +46,7 @@ export const mlConcepts = [
     graph: { type: 'maxMargin', title: 'Soft-margin SVM: wide margin versus few violations', caption: 'Blue points are y = +1 and orange points y = -1. The solid line is the boundary and the dashed lines are the margin lines (score +1 and -1); ringed points are on or inside the margin. Raise lambda to widen the margin at the cost of more violations.', sliders: [{ key: 'lambda', label: 'regularization lambda', min: 0.02, max: 1.5, step: 0.02, value: 0.1 }] },
     misconception: 'A support vector machine does not draw a different kind of boundary: it is still a linear classifier sign(theta . x + theta_0). What changes is the objective used to choose theta, which rewards a wide margin instead of only counting training mistakes.',
     prerequisites: ['hinge-loss', 'linear-separability', 'norms'],
-    followOns: ['convex-functions', 'stochastic-subgradient-descent', 'lagrange-multipliers', 'ridge-regularization'],
+    followOns: ['convex-functions', 'stochastic-subgradient-descent', 'lagrange-multipliers', 'ridge-regularization', 'svm-margins', 'svm-dual'],
     sources: ['Week1_03-HingeLoss.pdf', 'Bishop §7.1', 'James et al. §9.1-9.2'],
   },
   {
@@ -65,7 +65,7 @@ export const mlConcepts = [
     graph: { type: 'scaling', title: 'Unscaled features make a narrow valley', caption: 'Contours of a least-squares loss over two weights when the second feature is s times larger in scale than the first, and the gradient-descent path with step size 1.8/s^2, just under the stability limit 2/s^2 (step 1 once the contours are round). Standardizing makes the contours round and gradient descent fast.', sliders: [{ key: 's', label: 'scale ratio s of feature 2', min: 1, max: 6, step: 0.5, value: 4 }, { key: 'standardize', label: 'standardize (0 = no, 1 = yes)', min: 0, max: 1, step: 1, value: 0 }, { key: 'steps', label: 'gradient steps', min: 1, max: 40, step: 1, value: 15 }] },
     misconception: 'Scaling does not change what a linear model can represent (the weights rescale, and the intercept absorbs the shift by the mean), but it changes how fast gradient descent trains, how ridge and lasso penalize each feature, and how distance-based methods behave. The standard deviation here divides by n, as NumPy and scikit-learn do; pandas .std() divides by n - 1 and would give 500 instead of 408.2 in the example.',
     prerequisites: ['feature-representation', 'gradient-descent-method', 'least-squares-normal-equation'],
-    followOns: ['multicollinearity', 'ridge-regularization', 'lasso', 'train-validation-test'],
+    followOns: ['multicollinearity', 'ridge-regularization', 'lasso', 'train-validation-test', 'feature-engineering'],
     sources: ['Production ML Slides Lesson 3 - Linear Regression.pdf', 'Huyen Ch. 5', 'James et al. §6.2.1'],
   },
   {

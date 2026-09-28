@@ -180,7 +180,7 @@ export const mmlConcepts = [
     figure: 'lagrange-tangent',
     misconception: 'At a constrained minimum the gradient of f is usually not zero; only its component along the constraint vanishes. Setting grad f = 0 and ignoring the constraint finds the unconstrained minimum, which may break the constraint.',
     prerequisites: ['partial-derivatives-gradient', 'convex-functions'],
-    followOns: ['ridge-regularization', 'lasso'],
+    followOns: ['ridge-regularization', 'lasso', 'svm-dual'],
     sources: ['Mathematics for Machine Learning, §7.2'],
   },
 ];

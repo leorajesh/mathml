@@ -157,6 +157,37 @@ export const mathLinks = {
     use('probability-basics', 'Each resample makes n independent, uniform draws from the data, with replacement.'),
     use('exp-log', '(1 - 1/n)^n approaches e^-1, so about 36.8% of the examples are left out of each resample.'),
   ],
+  'svm-margins': [
+    use('norms', "The geometric margin divides by ||theta||; scaling theta scales its norm by the same factor."),
+    use('orthogonal-projections', "The distance from x to the boundary is the length of the projection of x onto the unit normal theta/||theta||, shifted by the offset."),
+  ],
+  'svm-dual': [
+    use('partial-derivatives-gradient', "Setting the gradient of the Lagrangian in theta and theta_0 to zero gives theta = sum alpha y x and sum alpha y = 0."),
+    use('vectors-dot-product', "The dual objective and the prediction use the data only through inner products x . x'."),
+    use('positive-definite', "The Gram matrix of inner products is positive semidefinite, which makes the dual a concave problem."),
+  ],
+  'soft-margin-svm': [
+    use('norms', "The objective trades the margin term (1/2)||theta||^2 against the total slack."),
+    use('partial-derivatives-gradient', "Differentiating the soft-margin Lagrangian in the slacks gives C - alpha - beta = 0, which caps alpha at C."),
+  ],
+  'kernel-trick': [
+    use('inner-products', "A kernel is an inner product in a feature space, computed without building the feature vectors."),
+    use('matrix-multiplication-outer-product', "The Gram matrix K = Phi Phi^T collects all pairwise inner products of the lifted examples."),
+  ],
+  'valid-kernels': [
+    use('positive-definite', "A valid kernel gives a positive semidefinite Gram matrix for every set of points; a negative eigenvalue proves a function is not a kernel."),
+    use('exp-log', "The RBF kernel factors as f(x) exp(x . x') f(x'), and the exponential series makes its feature space infinite-dimensional."),
+    use('eigenvalues-eigenvectors', "Checking validity on examples means checking that the Gram matrix has no negative eigenvalue."),
+  ],
+  'feature-engineering': [
+    use('exp-log', "A log transform compresses a long right tail and turns multiplicative effects into additive ones."),
+    use('expectation-variance', "Aggregates such as the mean and standard deviation over a time window are summary statistics of the entity's history."),
+  ],
+  'missing-data-imputation': [
+    use('expectation-variance', "Filling gaps with the mean leaves the mean unchanged but shrinks the variance by the fraction of observed values."),
+    use('probability-basics', "MCAR, MAR and MNAR are statements about the conditional probability of a value being missing."),
+    use('covariance-gaussian', "Mean imputation weakens the covariance and correlation with other features; regression imputation keeps them."),
+  ],
 };
 
 // Reverse lookup for a math page: every ML page that uses it, with the same explanation.

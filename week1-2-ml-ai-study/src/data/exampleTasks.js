@@ -93,4 +93,11 @@ export const exampleTasks = {
   'covariance-gaussian': 'For the points (0, 0), (2, 2), (4, 1), (2, 5), find the covariance matrix, the correlation and the variance along [1, 1]/√2. Then find the TPR, FPR and AUC of two Gaussian score distributions.',
   'likelihood-mle': 'For the labels 1, 1, 0, 1, write the Bernoulli likelihood, compare mu = 0.5 with mu = 0.75, and find the maximum likelihood estimate.',
   pca: 'For four centred points (2, 2), (-2, -2), (1, -1), (-1, 1), find the covariance matrix and its first principal component, then the codes, the reconstructions and the variance explained.',
+  'svm-margins': "For theta = [3, 4], theta_0 = -5 and the examples [3, 1] (+1), [1, -1] (-1) and [2, 0] (+1), find each functional and geometric margin, the margins of the training set, and what doubling theta and theta_0 changes.",
+  'svm-dual': "For x1 = [2, 0] and x3 = [3, 1] labelled +1 and x2 = [0, 0] labelled -1, write the dual problem, solve it for alpha, recover theta and theta_0, and check that the dual and primal values agree.",
+  'soft-margin-svm': "With the boundary x_1 = 1 (theta = [1, 0], theta_0 = -1) and C = 2, find the slack of the examples A = [2.5, 0], B = [1.5, 1], D = [0.5, 0] (all +1) and E = [-1, 2] (-1), classify each, and compute the soft-margin objective.",
+  'kernel-trick': "Show that x = -2, 2 (+1) and x = -1, 1 (-1) cannot be split by one threshold, lift them with phi(x) = (x, x^2) and separate them, then check the kernel shortcut phi(x) . phi(x') = (x . x') + (x . x')^2 for x = [1, 2], x' = [3, 1].",
+  'valid-kernels': "Compute the RBF Gram matrix (sigma = 1) for [0, 0], [1, 1] and [2, 0] and check that it is positive semidefinite; then show that the squared distance is not a valid kernel, and build (x . x') + (x . x')^2 from the four rules.",
+  'feature-engineering': "On 1 May, build features for a customer whose monthly spend from January to April was 40, 60, 50, 150 and who lives in KL: a 3-month average, a relative feature, a log feature, a one-hot city and equal-width age bins, and name one feature that would leak.",
+  'missing-data-imputation': "Six people have ages 22, 25, 35, 45, 28, 50 and incomes 30, ?, 56, 76, ?, 86 (thousands). Fill the gaps by mean, regression and 2-nearest-neighbour imputation, and compare what each does to the spread and to the young group.",
 };

@@ -9,7 +9,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['svdSteps', 'eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
+const EQUAL_ASPECT = new Set(['svdSteps', 'eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity', 'marginScale', 'svmDual', 'softMargin', 'kernelBoundary']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -153,6 +153,9 @@ const plotAxes = {
   roc: { x: '', y: '' },
   driftRetrain: { x: 'months after deployment (0 to 24)', y: 'accuracy (%)' },
   mlopsPhases: { x: '', y: '' },
+  featureLift: { x: 'x', y: 'x^2 after the lift' },
+  featureBins: { x: 'income (raw or log)', y: 'examples per bin' },
+  imputation: { x: 'age (18 to 63)', y: 'income (thousands)' },
 };
 
 function renderCanvas(content, axes) {
@@ -257,6 +260,13 @@ function renderGraph(type, values) {
     case 'roc': return RocGraph({ values });
     case 'driftRetrain': return DriftRetrainGraph({ values });
     case 'mlopsPhases': return MlopsPhasesGraph({ values });
+    case 'marginScale': return MarginScaleGraph({ values });
+    case 'svmDual': return SvmDualGraph({ values });
+    case 'softMargin': return SoftMarginGraph({ values });
+    case 'featureLift': return FeatureLiftGraph({ values });
+    case 'kernelBoundary': return KernelBoundaryGraph({ values });
+    case 'featureBins': return FeatureBinsGraph({ values });
+    case 'imputation': return ImputationGraph({ values });
     default: return null;
   }
 }
@@ -1980,5 +1990,330 @@ function MlopsPhasesGraph({ values }) {
       </g>
     ),
     readout: [`${mlopsPhases[active].name}: ${mlopsPhases[active].detail}`, `skills most used here: ${mlopsPhases[active].skill}`, 'an MLOps engineer mixes software development, machine learning, and data engineering'],
+  };
+}
+
+// ---- Production ML Week 3: support vector machines, kernels, feature engineering, imputation ----
+
+// Exact hard-margin SVM for a handful of 2-D points. The optimum is fixed by its support vectors: either
+// a pair of opposite labels (theta along their difference) or three points on the two margin lines. Every
+// feasible candidate has ||theta|| at least the optimum's, so the feasible candidate with the smallest
+// norm is the optimum. Returns null when the classes cannot be separated.
+function solve3(A, rhs) {
+  const det = (M) => M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1]) - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0]) + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+  const D = det(A);
+  if (Math.abs(D) < 1e-9) return null;
+  return [0, 1, 2].map((col) => det(A.map((row, r) => row.map((v, c) => (c === col ? rhs[r] : v)))) / D);
+}
+
+function hardMarginSvm(points) {
+  const feasible = (w, b) => points.every((p) => p.label * (w[0] * p.x + w[1] * p.y + b) >= 1 - 1e-7);
+  let best = null;
+  const consider = (w, b) => {
+    const norm = Math.hypot(w[0], w[1]);
+    if (feasible(w, b) && (!best || norm < best.norm - 1e-9)) best = { w, b, norm };
+  };
+  for (let i = 0; i < points.length; i += 1) {
+    for (let j = i + 1; j < points.length; j += 1) {
+      const [p, q] = points[i].label > 0 ? [points[i], points[j]] : [points[j], points[i]];
+      if (p.label !== q.label) {
+        const d = [p.x - q.x, p.y - q.y];
+        const d2 = d[0] ** 2 + d[1] ** 2;
+        const w = [(2 * d[0]) / d2, (2 * d[1]) / d2];
+        consider(w, -(w[0] * (p.x + q.x) + w[1] * (p.y + q.y)) / 2);
+      }
+      for (let k = j + 1; k < points.length; k += 1) {
+        const trio = [points[i], points[j], points[k]];
+        const solved = solve3(trio.map((t) => [t.x, t.y, 1]), trio.map((t) => t.label));
+        if (solved) consider([solved[0], solved[1]], solved[2]);
+      }
+    }
+  }
+  if (!best) return null;
+  // Multipliers: theta = sum alpha_t y_t x_t and sum alpha_t y_t = 0, alpha >= 0, over the support vectors.
+  const sv = points.map((p, index) => ({ ...p, index })).filter((p) => p.label * (best.w[0] * p.x + best.w[1] * p.y + best.b) <= 1 + 1e-6);
+  const alpha = points.map(() => 0);
+  let found = false;
+  for (let i = 0; i < sv.length && !found; i += 1) {
+    for (let j = i + 1; j < sv.length && !found; j += 1) {
+      if (sv[i].label !== sv[j].label) {
+        const d2 = (sv[i].x - sv[j].x) ** 2 + (sv[i].y - sv[j].y) ** 2;
+        const a = 2 / d2;
+        const w = [a * sv[i].label * sv[i].x + a * sv[j].label * sv[j].x, a * sv[i].label * sv[i].y + a * sv[j].label * sv[j].y];
+        if (Math.hypot(w[0] - best.w[0], w[1] - best.w[1]) < 1e-6) { alpha[sv[i].index] = a; alpha[sv[j].index] = a; found = true; }
+      }
+      for (let k = j + 1; k < sv.length && !found; k += 1) {
+        const trio = [sv[i], sv[j], sv[k]];
+        const a = solve3([trio.map((t) => t.label * t.x), trio.map((t) => t.label * t.y), trio.map((t) => t.label)], [best.w[0], best.w[1], 0]);
+        if (a && a.every((v) => v >= -1e-9)) { trio.forEach((t, m) => { alpha[t.index] = a[m]; }); found = true; }
+      }
+    }
+  }
+  return { ...best, alpha };
+}
+
+function boundaryLine(w, b, level = 0) {
+  return Math.abs(w[1]) > 1e-9
+    ? [{ x: -xHalf, y: (level - b - w[0] * -xHalf) / w[1] }, { x: xHalf, y: (level - b - w[0] * xHalf) / w[1] }]
+    : [{ x: (level - b) / w[0], y: -5 }, { x: (level - b) / w[0], y: 5 }];
+}
+
+const marginPoints = [
+  { x: 1, y: 2, label: 1 }, { x: 2, y: 3.5, label: 1 }, { x: 3, y: 1.5, label: 1 }, { x: 4.5, y: 3, label: 1 },
+  { x: -1, y: -1.5, label: -1 }, { x: -2.5, y: 0, label: -1 }, { x: -0.5, y: -3, label: -1 }, { x: -4, y: -2.5, label: -1 },
+];
+
+function MarginScaleGraph({ values }) {
+  const angle = (values.angle * Math.PI) / 180;
+  const u = [Math.cos(angle), Math.sin(angle)];
+  const scale = values.scale;
+  const w = [scale * u[0], scale * u[1]];
+  const b = scale * values.offset;
+  const geometric = marginPoints.map((p) => p.label * (u[0] * p.x + u[1] * p.y + values.offset));
+  const closest = geometric.indexOf(Math.min(...geometric));
+  const p = marginPoints[closest];
+  const signed = u[0] * p.x + u[1] * p.y + values.offset;
+  const foot = { x: p.x - signed * u[0], y: p.y - signed * u[1] };
+  const best = hardMarginSvm(marginPoints);
+  const gammaG = geometric[closest];
+  return {
+    content: <g><path className="boundary" d={linePath(boundaryLine(w, b))} /><path className="residual" d={linePath([p, foot])} />{marginPoints.map((q, index) => <g key={index}>{index === closest && <circle className="support-ring" cx={sx(q.x)} cy={sy(q.y)} r="11" />}<circle className={`${q.label > 0 ? 'point-a' : 'point-b'}${geometric[index] <= 0 ? ' misclassified' : ''}`} cx={sx(q.x)} cy={sy(q.y)} r="6" /></g>)}<text className="graph-note" x="44" y="48">geometric margin of the set = {gammaG.toFixed(2)}</text></g>,
+    readout: [
+      `theta = [${w[0].toFixed(2)}, ${w[1].toFixed(2)}], theta_0 = ${b.toFixed(2)}, ||theta|| = ${scale.toFixed(1)}`,
+      `functional margin of the set = ${(scale * gammaG).toFixed(2)} (changes with the scale); geometric = ${gammaG.toFixed(2)} (does not)`,
+      gammaG <= 0 ? 'some example is on the wrong side: the geometric margin is negative' : `largest geometric margin possible here: ${(1 / best.norm).toFixed(2)} (the SVM's boundary)`,
+    ],
+  };
+}
+
+function SvmDualGraph({ values }) {
+  const base = [{ x: 2.5, y: 2.5, label: 1 }, { x: 3.5, y: -1, label: 1 }, { x: -1, y: 0, label: -1 }, { x: -2.5, y: 2, label: -1 }, { x: -1.5, y: -2.5, label: -1 }];
+  const points = [...base, { x: values.px, y: values.py, label: 1, movable: true }];
+  const svm = hardMarginSvm(points);
+  if (!svm) {
+    return {
+      content: <g>{points.map((q, index) => <g key={index}><circle className={q.label > 0 ? 'point-a' : 'point-b'} cx={sx(q.x)} cy={sy(q.y)} r="6" />{q.movable && <text x={sx(q.x) + 9} y={sy(q.y) - 9}>P</text>}</g>)}<text className="graph-note" x="44" y="48">not separable: no hard-margin solution</text></g>,
+      readout: ['P is on the negative side of every separating line, so the hard-margin problem has no solution.', 'This is the case the soft margin (next page) handles.'],
+    };
+  }
+  const { w, b, alpha, norm } = svm;
+  const dual = alpha.reduce((s, a) => s + a, 0) - (norm * norm) / 2;
+  const svCount = alpha.filter((a) => a > 1e-9).length;
+  return {
+    content: <g><path className="margin-line" d={linePath(boundaryLine(w, b, 1))} /><path className="margin-line" d={linePath(boundaryLine(w, b, -1))} /><path className="boundary" d={linePath(boundaryLine(w, b))} />{points.map((q, index) => <g key={index}>{alpha[index] > 1e-9 && <circle className="support-ring" cx={sx(q.x)} cy={sy(q.y)} r="11" />}<circle className={q.label > 0 ? 'point-a' : 'point-b'} cx={sx(q.x)} cy={sy(q.y)} r="6" />{(alpha[index] > 1e-9 || q.movable) && <text x={sx(q.x) + 12} y={sy(q.y) - 10}>{q.movable ? 'P ' : ''}{alpha[index] > 1e-9 ? `alpha = ${alpha[index].toFixed(2)}` : 'alpha = 0'}</text>}</g>)}</g>,
+    readout: [
+      `${svCount} support vectors; the other ${points.length - svCount} examples have alpha = 0`,
+      `theta = sum alpha y x = [${w[0].toFixed(2)}, ${w[1].toFixed(2)}], theta_0 = ${b.toFixed(2)}, margin width ${(2 / norm).toFixed(2)}`,
+      `dual value ${dual.toFixed(3)} = primal value (1/2)||theta||^2 = ${((norm * norm) / 2).toFixed(3)}`,
+    ],
+  };
+}
+
+// Soft-margin SVM solved exactly in the dual with a simple SMO loop over all pairs (linear kernel).
+const softCache = new Map();
+function softMarginSvm(points, C) {
+  const key = C.toPrecision(4);
+  if (softCache.has(key)) return softCache.get(key);
+  const n = points.length;
+  const K = points.map((p) => points.map((q) => p.x * q.x + p.y * q.y));
+  const y = points.map((p) => p.label);
+  const alpha = Array(n).fill(0);
+  let b = 0;
+  const f = (i) => alpha.reduce((s, a, t) => s + a * y[t] * K[t][i], 0) + b;
+  for (let pass = 0; pass < 400; pass += 1) {
+    let changed = 0;
+    for (let i = 0; i < n; i += 1) {
+      for (let j = 0; j < n; j += 1) {
+        if (i === j) continue;
+        const Ei = f(i) - y[i];
+        const Ej = f(j) - y[j];
+        const eta = K[i][i] + K[j][j] - 2 * K[i][j];
+        if (eta <= 1e-12) continue;
+        const [L, H] = y[i] === y[j] ? [Math.max(0, alpha[i] + alpha[j] - C), Math.min(C, alpha[i] + alpha[j])] : [Math.max(0, alpha[j] - alpha[i]), Math.min(C, C + alpha[j] - alpha[i])];
+        if (H - L < 1e-12) continue;
+        const aj = clamp(alpha[j] + (y[j] * (Ei - Ej)) / eta, L, H);
+        if (Math.abs(aj - alpha[j]) < 1e-10) continue;
+        const ai = alpha[i] + y[i] * y[j] * (alpha[j] - aj);
+        const b1 = b - Ei - y[i] * (ai - alpha[i]) * K[i][i] - y[j] * (aj - alpha[j]) * K[i][j];
+        const b2 = b - Ej - y[i] * (ai - alpha[i]) * K[i][j] - y[j] * (aj - alpha[j]) * K[j][j];
+        alpha[i] = ai;
+        alpha[j] = aj;
+        b = ai > 1e-9 && ai < C - 1e-9 ? b1 : aj > 1e-9 && aj < C - 1e-9 ? b2 : (b1 + b2) / 2;
+        changed += 1;
+      }
+    }
+    if (!changed) break;
+  }
+  const w = [0, 1].map((d) => alpha.reduce((s, a, t) => s + a * y[t] * (d ? points[t].y : points[t].x), 0));
+  // Recompute theta_0 from the free support vectors (0 < alpha < C) when there are any.
+  const free = alpha.map((a, t) => t).filter((t) => alpha[t] > 1e-6 && alpha[t] < C - 1e-6);
+  if (free.length) b = free.reduce((s, t) => s + y[t] - (w[0] * points[t].x + w[1] * points[t].y), 0) / free.length;
+  const result = { w, b, alpha };
+  softCache.set(key, result);
+  return result;
+}
+
+function SoftMarginGraph({ values }) {
+  const C = 10 ** values.logC;
+  const { w, b, alpha } = softMarginSvm(svmPoints, C);
+  const norm = Math.hypot(w[0], w[1]);
+  let slackSum = 0;
+  let errors = 0;
+  const dots = svmPoints.map((p, index) => {
+    const margin = p.label * (w[0] * p.x + w[1] * p.y + b);
+    const xi = Math.max(0, 1 - margin);
+    slackSum += xi;
+    if (margin <= 0) errors += 1;
+    return <g key={index}>{alpha[index] > 1e-6 && <circle className="support-ring" cx={sx(p.x)} cy={sy(p.y)} r="11" />}<circle className={`${p.label > 0 ? 'point-a' : 'point-b'}${margin <= 0 ? ' misclassified' : ''}`} cx={sx(p.x)} cy={sy(p.y)} r="6" />{xi > 0.01 && <text x={sx(p.x) + 12} y={sy(p.y) + 16}>{`xi ${xi.toFixed(2)}`}</text>}</g>;
+  });
+  const atCap = alpha.filter((a) => a > C - 1e-6).length;
+  const onMargin = alpha.filter((a) => a > 1e-6 && a < C - 1e-6).length;
+  return {
+    content: <g><path className="margin-line" d={linePath(boundaryLine(w, b, 1))} /><path className="margin-line" d={linePath(boundaryLine(w, b, -1))} /><path className="boundary" d={linePath(boundaryLine(w, b))} />{dots}</g>,
+    readout: [
+      `C = ${C < 1 ? C.toFixed(3) : C.toFixed(1)}: margin width 2/||theta|| = ${(2 / norm).toFixed(2)}`,
+      `sum of slacks ${slackSum.toFixed(2)}, ${errors} misclassified; objective (1/2)||theta||^2 + C sum xi = ${(norm * norm / 2 + C * slackSum).toFixed(2)}`,
+      `${onMargin} support vectors on the margin (0 < alpha < C), ${atCap} at the cap alpha = C (inside the margin or misclassified)`,
+    ],
+  };
+}
+
+const liftData = [{ x: -3, label: 1 }, { x: -2.4, label: 1 }, { x: 2.1, label: 1 }, { x: 2.8, label: 1 }, { x: -1.3, label: -1 }, { x: -0.5, label: -1 }, { x: 0.4, label: -1 }, { x: 1.2, label: -1 }];
+
+function FeatureLiftGraph({ values }) {
+  const { lift, cut } = values;
+  const Y = (v) => -4 + (lift * v * 8) / 9;
+  const curve = Array.from({ length: 61 }, (_, index) => { const x = -3.2 + index * (6.4 / 60); return { x, y: Y(x * x) }; });
+  const mistakes = liftData.filter((p) => (p.x * p.x > cut ? 1 : -1) !== p.label).length;
+  const root = Math.sqrt(cut);
+  return {
+    content: <g><path className="axis" d={linePath([{ x: -xHalf, y: -4 }, { x: xHalf, y: -4 }])} />{lift > 0.02 && <path className="zero-one-line" d={linePath(curve)} />}{lift > 0.5 && <path className="boundary" d={linePath([{ x: -4.5, y: Y(cut) }, { x: 4.5, y: Y(cut) }])} />}{[-root, root].map((x) => <path key={x} className="margin-line" d={linePath([{ x, y: -4.6 }, { x, y: -3.4 }])} />)}{liftData.map((p, index) => <circle key={index} className={p.label > 0 ? 'point-a' : 'point-b'} cx={sx(p.x)} cy={sy(Y(p.x * p.x))} r="7" />)}<text className="graph-note" x="44" y="48">{lift < 0.05 ? 'on the line: no single threshold separates the classes' : `lifted to (x, ${lift < 0.99 ? `${lift.toFixed(2)} x^2` : 'x^2'})`}</text></g>,
+    readout: [`boundary x^2 = ${cut.toFixed(1)}: cut points x = ±${root.toFixed(2)} on the original line (dashed ticks)`, `${mistakes} of ${liftData.length} examples on the wrong side`, 'a straight line in the lifted plane is two cut points on the original line'],
+  };
+}
+
+const ringPoints = (() => {
+  const draw = mulberry32(11);
+  const points = [];
+  for (let k = 0; k < 8; k += 1) { const a = (2 * Math.PI * k) / 8 + draw() * 0.4; const r = 0.6 + draw() * 0.9; points.push({ x: r * Math.cos(a), y: r * Math.sin(a), label: 1 }); }
+  for (let k = 0; k < 14; k += 1) { const a = (2 * Math.PI * k) / 14 + draw() * 0.3; const r = 2.6 + draw() * 1.2; points.push({ x: r * Math.cos(a) * 1.4, y: r * Math.sin(a), label: -1 }); }
+  return points;
+})();
+
+function kernelFunction(kind, sigma) {
+  if (kind === 1) return (p, q) => p.x * q.x + p.y * q.y;
+  if (kind === 2) return (p, q) => (p.x * q.x + p.y * q.y + 1) ** 2;
+  return (p, q) => Math.exp(-((p.x - q.x) ** 2 + (p.y - q.y) ** 2) / (2 * sigma * sigma));
+}
+
+function KernelBoundaryGraph({ values }) {
+  const kind = Math.round(values.kernel);
+  const K = kernelFunction(kind, values.sigma);
+  const n = ringPoints.length;
+  const gram = ringPoints.map((p) => ringPoints.map((q) => K(p, q)));
+  const alpha = Array(n).fill(0);
+  let theta0 = 0;
+  let epochs = 0;
+  let lastMistakes = n;
+  for (; epochs < 50 && lastMistakes > 0; epochs += 1) {
+    lastMistakes = 0;
+    for (let t = 0; t < n; t += 1) {
+      const score = alpha.reduce((s, a, j) => s + a * ringPoints[j].label * gram[j][t], 0) + theta0;
+      if (ringPoints[t].label * score <= 0) { alpha[t] += 1; theta0 += ringPoints[t].label; lastMistakes += 1; }
+    }
+  }
+  const f = (p) => alpha.reduce((s, a, j) => (a ? s + a * ringPoints[j].label * K(ringPoints[j], p) : s), 0) + theta0;
+  const cells = [];
+  for (let gx = -Math.ceil(xHalf); gx < Math.ceil(xHalf); gx += 0.5) {
+    for (let gy = yMin; gy < yMax; gy += 0.5) {
+      if (f({ x: gx + 0.25, y: gy + 0.25 }) > 0) cells.push(<rect key={`${gx},${gy}`} className="positive-region" x={sx(gx)} y={sy(gy + 0.5)} width={sx(gx + 0.5) - sx(gx)} height={sy(gy) - sy(gy + 0.5)} />);
+    }
+  }
+  const trainingErrors = ringPoints.filter((p) => p.label * f(p) <= 0).length;
+  const names = { 1: 'linear kernel x . x\'', 2: 'polynomial kernel (x . x\' + 1)^2', 3: `RBF kernel, sigma = ${values.sigma.toFixed(1)}` };
+  return {
+    content: <g>{cells}{ringPoints.map((p, index) => <g key={index}>{alpha[index] > 0 && <circle className="support-ring" cx={sx(p.x)} cy={sy(p.y)} r="10" />}<circle className={`${p.label > 0 ? 'class-pos' : 'class-neg'}${p.label * f(p) <= 0 ? ' misclassified' : ''}`} cx={sx(p.x)} cy={sy(p.y)} r="6" /></g>)}<text className="graph-note" x="44" y="48">{names[kind]}</text></g>,
+    readout: [
+      trainingErrors === 0 ? `separated after ${epochs} passes over the data` : `still ${trainingErrors} training mistakes after ${epochs} passes: this kernel cannot separate a ring`,
+      `${alpha.filter((a) => a > 0).length} of ${n} examples ever caused a mistake (ringed, alpha > 0); ${alpha.reduce((s, a) => s + a, 0)} updates in total`,
+      'green = +1 (inner points), red = -1 (outer ring); shaded area is predicted +1',
+    ],
+  };
+}
+
+const incomeSample = (() => {
+  const draw = mulberry32(21);
+  return Array.from({ length: 40 }, () => {
+    const z = Math.sqrt(-2 * Math.log(1 - draw())) * Math.cos(2 * Math.PI * draw());
+    return Math.round(Math.exp(3.9 + 0.75 * z));
+  }).sort((a, b) => a - b);
+})();
+
+function FeatureBinsGraph({ values }) {
+  const B = Math.round(values.bins);
+  const useLog = values.log >= 0.5;
+  const t = (v) => (useLog ? Math.log(v) : v);
+  const shown = incomeSample.map(t);
+  const lo = shown[0];
+  const hi = shown[shown.length - 1];
+  const X = (v) => -4.5 + (9 * (v - lo)) / (hi - lo);
+  const edges = values.mode >= 0.5
+    ? Array.from({ length: B + 1 }, (_, k) => (k === 0 ? lo : k === B ? hi : (shown[Math.floor((k * shown.length) / B) - 1] + shown[Math.floor((k * shown.length) / B)]) / 2))
+    : Array.from({ length: B + 1 }, (_, k) => lo + (k * (hi - lo)) / B);
+  const counts = Array(B).fill(0);
+  for (const v of shown) { let k = edges.findIndex((e, i) => i > 0 && v <= e + 1e-12) - 1; if (k < 0) k = B - 1; counts[clamp(k, 0, B - 1)] += 1; }
+  const tallest = Math.max(...counts);
+  const back = (e) => (useLog ? Math.exp(e) : e);
+  return {
+    content: <g>{counts.map((c, k) => <rect key={k} className="bar-a" x={sx(X(edges[k])) + 1} y={sy(-2.2 + (6.8 * c) / tallest)} width={Math.max(sx(X(edges[k + 1])) - sx(X(edges[k])) - 2, 1)} height={sy(-2.2) - sy(-2.2 + (6.8 * c) / tallest)} />)}{edges.map((e, k) => <path key={k} className="margin-line" d={linePath([{ x: X(e), y: -4.4 }, { x: X(e), y: 4.6 }])} />)}{shown.map((v, index) => <circle key={index} className="point-b" cx={sx(X(v))} cy={sy(-3.4 + (index % 3) * 0.35)} r="4" />)}</g>,
+    readout: [
+      `counts per bin: ${counts.join(', ')}`,
+      `bin edges (thousands): ${edges.map((e) => Math.round(back(e))).join(', ')}`,
+      `${useLog ? 'log scale: the long tail is compressed' : 'raw incomes: a long right tail'}; ${values.mode >= 0.5 ? 'equal frequency puts about the same number in each bin' : 'equal width uses evenly spaced edges'}`,
+    ],
+  };
+}
+
+// Toy survey: incomes rise with age; the missing incomes (hollow) belong to younger people, so the
+// missingness depends on an observed column (missing at random). The hidden true values are drawn faintly.
+const imputationRows = (() => {
+  const draw = mulberry32(5);
+  const ages = [21, 23, 24, 26, 27, 29, 31, 34, 36, 39, 42, 45, 48, 51, 54, 57, 60];
+  return ages.map((age, index) => {
+    const income = Math.round(-10 + 1.9 * age + (draw() - 0.5) * 14);
+    return { age, income, missing: [0, 2, 3, 5, 8].includes(index) };
+  });
+})();
+
+function ImputationGraph({ values }) {
+  const method = Math.round(values.method);
+  const k = Math.round(values.k);
+  const observed = imputationRows.filter((r) => !r.missing);
+  const mean = observed.reduce((s, r) => s + r.income, 0) / observed.length;
+  const ma = observed.reduce((s, r) => s + r.age, 0) / observed.length;
+  const slope = observed.reduce((s, r) => s + (r.age - ma) * (r.income - mean), 0) / observed.reduce((s, r) => s + (r.age - ma) ** 2, 0);
+  const fill = (row) => {
+    if (method === 1) return mean;
+    if (method === 2) return mean + slope * (row.age - ma);
+    const near = [...observed].sort((a, b) => Math.abs(a.age - row.age) - Math.abs(b.age - row.age) || a.age - b.age).slice(0, k);
+    return near.reduce((s, r) => s + r.income, 0) / near.length;
+  };
+  const rows = imputationRows.map((r) => ({ ...r, value: r.missing ? fill(r) : r.income }));
+  const X = (age) => -4.5 + (9 * (age - 18)) / 45;
+  const Y = (inc) => -4.4 + (8.8 * inc) / 110;
+  const variance = (list) => { const m = list.reduce((s, v) => s + v, 0) / list.length; return list.reduce((s, v) => s + (v - m) ** 2, 0) / list.length; };
+  const corr = (a, b) => { const ma2 = a.reduce((s, v) => s + v, 0) / a.length; const mb = b.reduce((s, v) => s + v, 0) / b.length; const cov = a.reduce((s, v, i) => s + (v - ma2) * (b[i] - mb), 0); return cov / Math.sqrt(a.reduce((s, v) => s + (v - ma2) ** 2, 0) * b.reduce((s, v) => s + (v - mb) ** 2, 0)); };
+  const trueVar = variance(imputationRows.map((r) => r.income));
+  const filledVar = variance(rows.map((r) => r.value));
+  const missingRows = rows.filter((r) => r.missing);
+  const error = missingRows.reduce((s, r) => s + Math.abs(r.value - r.income), 0) / missingRows.length;
+  const names = { 1: 'mean imputation', 2: 'regression on age', 3: `${k}-nearest neighbours by age` };
+  return {
+    content: <g>{method === 2 && <path className="zero-one-line" d={linePath([{ x: X(18), y: Y(mean + slope * (18 - ma)) }, { x: X(63), y: Y(mean + slope * (63 - ma)) }])} />}{method === 1 && <path className="zero-one-line" d={linePath([{ x: X(18), y: Y(mean) }, { x: X(63), y: Y(mean) }])} />}{missingRows.map((r) => <g key={`m${r.age}`}><circle className="muted-dot" cx={sx(X(r.age))} cy={sy(Y(r.income))} r="4" /><path className="residual" d={linePath([{ x: X(r.age), y: Y(r.income) }, { x: X(r.age), y: Y(r.value) }])} /><circle className="imputed-point" cx={sx(X(r.age))} cy={sy(Y(r.value))} r="7" /></g>)}{rows.filter((r) => !r.missing).map((r) => <circle key={r.age} className="point-a" cx={sx(X(r.age))} cy={sy(Y(r.income))} r="6" />)}<text className="graph-note" x="44" y="48">{names[method]}</text></g>,
+    readout: [
+      `average error on the ${missingRows.length} filled values: ${error.toFixed(1)} thousand (grey dots are the hidden true incomes)`,
+      `spread kept: variance ${filledVar.toFixed(0)} versus ${trueVar.toFixed(0)} with the true values`,
+      `correlation of age and income: ${corr(rows.map((r) => r.age), rows.map((r) => r.value)).toFixed(3)} (true ${corr(imputationRows.map((r) => r.age), imputationRows.map((r) => r.income)).toFixed(3)})`,
+    ],
   };
 }

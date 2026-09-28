@@ -750,4 +750,62 @@ export const intuitionDetails = {
       idea("Versus cross-validation", "Cross-validation estimates how well a model predicts; the bootstrap estimates how much a number would vary. The diabetes project uses both."),
     ],
   },
+  "svm-margins": {
+    keyIdeas: [
+      idea("Functional margin", "y (theta . x + theta_0): positive when the example is on the right side, bigger when it is further in. But it grows if you simply scale theta up."),
+      idea("Geometric margin", "Divide by ||theta|| to get a true distance to the boundary. Scaling theta and theta_0 together leaves it unchanged."),
+      idea("Margin of a training set", "The smallest margin over all examples: a boundary is only as safe as its closest example."),
+      idea("The SVM's choice", "Pick the hyperplane with the largest geometric margin. Fixing the functional margin at 1 turns this into minimizing (1/2)||theta||^2."),
+    ],
+  },
+  "svm-dual": {
+    keyIdeas: [
+      idea("One multiplier per example", "Each margin constraint gets an alpha_t >= 0 in the Lagrangian. The KKT conditions then express theta as sum alpha_t y_t x_t."),
+      idea("Support vectors", "Complementary slackness: alpha_t > 0 only for examples exactly on the margin. All other examples could be deleted without changing the boundary."),
+      idea("Only inner products", "The dual objective and the prediction use the data only through x . x'. That is the door to kernels."),
+      idea("Recovering theta_0", "For any support vector, y (theta . x + theta_0) = 1, so theta_0 = y - theta . x; average it over all support vectors."),
+    ],
+  },
+  "soft-margin-svm": {
+    keyIdeas: [
+      idea("Slack", "Each example may fall short of margin 1 by xi_t >= 0: xi = 0 outside the margin, between 0 and 1 inside it, above 1 when misclassified."),
+      idea("The price C", "Minimize (1/2)||theta||^2 + C sum xi. Large C: few violations and a narrow margin. Small C: a wide margin that tolerates more."),
+      idea("Same as hinge", "At the optimum each slack equals the hinge loss, so this is the regularized hinge objective with C = 1/lambda."),
+      idea("Box constraint", "In the dual, 0 <= alpha_t <= C. Examples at the cap alpha_t = C are the ones inside the margin or misclassified."),
+    ],
+  },
+  "kernel-trick": {
+    keyIdeas: [
+      idea("Lift, then separate", "Map x to features phi(x), such as x and x^2. A line in the lifted space is a curve back in the original space."),
+      idea("The cost problem", "Explicit features explode: all degree-2 terms of 1000 inputs are about half a million numbers."),
+      idea("The shortcut", "The SVM dual needs only phi(x) . phi(x'). A kernel K(x, x') computes it directly from x and x'."),
+      idea("Beyond SVMs", "Any method written with inner products can be kernelized: the perceptron (alpha counts mistakes) and ridge regression (alpha = (K + lambda I)^-1 y)."),
+    ],
+  },
+  "valid-kernels": {
+    keyIdeas: [
+      idea("What makes K valid", "K(x, x') must be phi(x) . phi(x') for some feature map. Then every Gram matrix is symmetric and positive semidefinite."),
+      idea("Four building rules", "The constant 1, f(x) K f(x'), sums and products of kernels are kernels. Most common kernels follow from these."),
+      idea("Polynomial kernel", "(x . x' + c)^d holds all monomials up to degree d; c weights the lower-order terms."),
+      idea("RBF kernel", "exp(-||x - x'||^2 / (2 sigma^2)) is a similarity between 0 and 1 with an infinite-dimensional feature map. It can separate any set of distinct points."),
+      idea("Test for invalid", "Find points whose Gram matrix has a negative eigenvalue, or any K(x, x) < 0."),
+    ],
+  },
+  "feature-engineering": {
+    keyIdeas: [
+      idea("Features are hints", "They encode domain knowledge. Historical aggregates of outcomes and comparisons to the population are often the most predictive."),
+      idea("Know when you knew it", "A row dated t may use only information available before t; anything later leaks the answer."),
+      idea("Categoricals", "One-hot encode, grouping rare or very fine levels (into regions or Other) first, and add presence flags."),
+      idea("Numbers", "Bin by width, frequency or domain meaning; transform with log or square root for skewed values; scale when the model needs it."),
+      idea("Iterate", "Start with a few strong features per data source, test each in the pipeline, and keep only those that help."),
+    ],
+  },
+  "missing-data-imputation": {
+    keyIdeas: [
+      idea("Why is it missing?", "MCAR: pure chance. MAR: depends on other observed columns. MNAR: depends on the missing value itself, such as high earners not reporting income."),
+      idea("Methods", "Mean, median or mode (fast, shrinks spread); regression or k-nearest neighbours (uses correlated columns); multiple imputation (shows the uncertainty); models such as xgboost that route missing values themselves."),
+      idea("Keep a flag", "Add a 0/1 missing indicator even after imputing: missingness itself can predict the outcome."),
+      idea("Avoid bias and leakage", "A global mean misleads when one group is missing more often. Fit imputers on training rows only, and do not drop rows without a very good reason."),
+    ],
+  },
 };

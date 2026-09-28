@@ -102,6 +102,11 @@ export const mmlReferences = {
   'bias-variance': [ref('9.2.2', 'Overfitting in Linear Regression (related reading)', 298), ref('8.2.3', 'Regularization to Reduce Overfitting (related reading)', 262)],
   'logistic-loss': [ref('8.3.1', 'Maximum Likelihood Estimation', 265), ref('5.5', 'Useful Identities for Computing Gradients', 158)],
   multicollinearity: [ref('4.4', 'Eigendecomposition and Diagonalization', 115), ref('9.2.1', 'Maximum Likelihood Estimation (related reading: when X^T X can be inverted)', 293)],
+  'svm-margins': [ref('12.2.1', 'Concept of the Margin', 374), ref('12.2.2', 'Traditional Derivation of the Margin', 376), ref('12.2.3', 'Why We Can Set the Margin to 1', 378)],
+  'svm-dual': [ref('12.3.1', 'Convex Duality via Lagrange Multipliers', 383), ref('12.3.2', 'Dual SVM: Convex Hull View', 386), ref('7.2', 'Constrained Optimization and Lagrange Multipliers', 233)],
+  'soft-margin-svm': [ref('12.2.4', 'Soft Margin SVM: Geometric View', 379), ref('12.2.5', 'Soft Margin SVM: Loss Function View', 380)],
+  'kernel-trick': [ref('12.4', 'Kernels', 388)],
+  'valid-kernels': [ref('12.4', 'Kernels', 388), ref('12.5', 'Numerical Solution (the Gram matrix)', 390)],
 };
 
 // A topic page lists the sections of its subtopics, without repeats.

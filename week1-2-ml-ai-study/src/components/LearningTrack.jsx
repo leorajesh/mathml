@@ -1,4 +1,6 @@
 import React from 'react';
+import { Sparkles } from 'lucide-react';
+import { bonusExamples } from '../data/bonusExamples.js';
 import { ArrowLeft, ArrowRight, Check, ListOrdered } from 'lucide-react';
 import { conceptMap } from '../data/concepts.js';
 import { conceptLevel } from '../data/studyGuidance.js';
@@ -125,6 +127,9 @@ export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
             </button>
           ))}
           <HomeworkButton setKey={sectionKey(trackId, section)} onOpen={onOpenHomework} />
+          {bonusExamples[sectionKey(trackId, section)] && (
+            <a className="bonus-link" href={`#bonus=${sectionKey(trackId, section)}`}><Sparkles size={15} aria-hidden="true" /> Bonus examples from the book ({bonusExamples[sectionKey(trackId, section)].length})</a>
+          )}
         </div>
       ))}
     </section>

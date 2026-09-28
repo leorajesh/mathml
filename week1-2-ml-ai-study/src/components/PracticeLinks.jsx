@@ -1,6 +1,7 @@
 import React from 'react';
 import { PenLine } from 'lucide-react';
 import { conceptMap } from '../data/concepts.js';
+import { exampleTasks } from '../data/exampleTasks.js';
 
 // Links from a homework problem to the worked examples that practise the same method. Each opens the
 // page at its worked example with the steps hidden, so the student works through a solved example
@@ -38,7 +39,7 @@ export function PracticeLinks({ ids, compact = false }) {
         {pages.map((id) => (
           <li key={id}>
             <a href={practiceHref(id)}>{conceptMap[id].title}</a>
-            <span className="practice-preview"> ({conceptMap[id].example.length} steps) {preview(conceptMap[id].example[0])}</span>
+            <span className="practice-preview"> ({conceptMap[id].example.length} steps) {preview(exampleTasks[id] ?? conceptMap[id].example[0])}</span>
           </li>
         ))}
       </ul>

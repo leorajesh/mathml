@@ -14,7 +14,7 @@ function panel(originX, originY, unit) {
   };
 }
 
-const arrowColors = { blue: '#3268a8', rust: '#d95d39', teal: '#2f7d80', ink: '#2f3436' };
+const arrowColors = { blue: 'var(--c-blue)', rust: 'var(--c-coral)', teal: 'var(--c-teal)', ink: 'var(--c-ink)' };
 
 function Arrow({ from, to, color = 'ink', variant = '' }) {
   return <line className={`fig-vector ${color} ${variant}`} x1={from[0]} y1={from[1]} x2={to[0]} y2={to[1]} markerEnd={`url(#fig-arrow-${color})`} />;
@@ -36,7 +36,7 @@ function Markers() {
     <defs>
       {Object.entries(arrowColors).map(([name, color]) => (
         <marker key={name} id={`fig-arrow-${name}`} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+          <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: color }} />
         </marker>
       ))}
     </defs>

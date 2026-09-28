@@ -775,11 +775,11 @@ function MatrixCells({ x, y, values, title }) {
     <g>
       <text className="matrix-title" x={x + (values[0].length * cell) / 2} y={y - 12} textAnchor="middle">{title}</text>
       {values.map((row, rowIndex) => row.map((value, columnIndex) => {
-        const tone = 96 - 42 * Math.abs(value / max);
-        const hue = value >= 0 ? 200 : 12;
+        const strength = Math.round(8 + 50 * Math.abs(value / max)); // % of the accent mixed into the surface
+        const accent = value >= 0 ? 'var(--c-blue)' : 'var(--c-coral)';
         return (
           <g key={`${rowIndex}-${columnIndex}`}>
-            <rect x={x + columnIndex * cell} y={y + rowIndex * cell} width={cell - 4} height={cell - 4} rx="6" fill={`hsl(${hue}, 72%, ${tone}%)`} stroke="#cdbfae" />
+            <rect x={x + columnIndex * cell} y={y + rowIndex * cell} width={cell - 4} height={cell - 4} rx="6" style={{ fill: `color-mix(in srgb, ${accent} ${strength}%, var(--surface))`, stroke: 'var(--border)' }} />
             <text x={x + columnIndex * cell + 20} y={y + rowIndex * cell + 25} textAnchor="middle">{value.toFixed(1)}</text>
           </g>
         );
@@ -957,7 +957,7 @@ function FunctionMapGraph({ values }) {
   return {
     content: (
       <g>
-        <defs><marker id="fnArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M 1 1 L 11 6 L 1 11 z" fill="#b23a48" /></marker></defs>
+        <defs><marker id="fnArrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto"><path d="M 1 1 L 11 6 L 1 11 z" style={{ fill: 'var(--c-rose)' }} /></marker></defs>
         <ellipse className="venn-a" cx={sx(-2.8)} cy={sy(0)} rx="70" ry="130" /><ellipse className="venn-b" cx={sx(2.8)} cy={sy(0)} rx="70" ry="130" />
         <text className="matrix-title" x={sx(-2.8)} y={sy(3.9)} textAnchor="middle">A (inputs)</text><text className="matrix-title" x={sx(2.8)} y={sy(3.9)} textAnchor="middle">B (outputs)</text>
         {preset.map.map((target, index) => {
@@ -1568,7 +1568,7 @@ function SvdCompressionGraph({ values }) {
   const rebuilt = svdPicture(approx, `k${k}`);
   const panel = (x, url, label) => (
     <g>
-      <rect x={x - 2} y={52} width={side + 4} height={side + 4} rx="4" fill="none" stroke="#cdbfae" />
+      <rect x={x - 2} y={52} width={side + 4} height={side + 4} rx="4" fill="none" style={{ stroke: 'var(--border)' }} />
       {url && <image href={url} x={x} y={54} width={side} height={side} preserveAspectRatio="none" style={{ imageRendering: 'pixelated' }} />}
       <text x={x + side / 2} y={40} textAnchor="middle" className="matrix-title">{label}</text>
     </g>

@@ -2152,9 +2152,9 @@ G = np.array([[rbf(u, v) for v in P] for u in P])
 print("RBF Gram matrix:\n", G.round(3))
 print("eigenvalues:", np.linalg.eigvalsh(G).round(3), "(all >= 0: consistent with a valid kernel)")
 
-# A candidate that fails: the squared distance itself
-D = np.array([[np.sum((u - v) ** 2) for v in P] for u in P])
-print("squared-distance 'kernel' eigenvalues:", np.linalg.eigvalsh(D).round(3), "(a negative one: invalid)")
+# A candidate that fails: the RBF formula with the wrong sign in the exponent
+B = np.array([[np.exp(np.sum((u - v) ** 2) / 2) for v in P] for u in P])
+print("exp(+||x - x'||^2 / 2) eigenvalues:", np.linalg.eigvalsh(B).round(3), "(a negative one: invalid)")
 
 # The composition rules keep validity: sums and products of Gram matrices stay PSD
 rng = np.random.default_rng(0)

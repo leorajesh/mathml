@@ -1,4 +1,5 @@
 import React from 'react';
+import { Pause, Play } from 'lucide-react';
 
 const width = 640;
 const height = 360;
@@ -8,7 +9,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
+const EQUAL_ASPECT = new Set(['svdSteps', 'eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -18,15 +19,61 @@ function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 function linePath(points) { return points.map((point, index) => `${index ? 'L' : 'M'} ${sx(point.x)} ${sy(point.y)}`).join(' '); }
 function circlePoint(point, className, label) { return <g><circle className={className} cx={sx(point.x)} cy={sy(point.y)} r="6" />{label && <text x={sx(point.x) + 8} y={sy(point.y) - 8}>{label}</text>}</g>; }
 
+// Animated graphs name one of their sliders in graph.animation.key (for example a 0-to-1 "progress"
+// through a transformation). The play button sweeps that slider smoothly from its minimum to its
+// maximum; the student can pause, replay, or drag the slider to any in-between moment.
+const reducedMotion = () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+function useSliderAnimation(graph, values, setValues) {
+  const animation = graph.animation;
+  const slider = animation && graph.sliders.find((item) => item.key === animation.key);
+  const [playing, setPlaying] = React.useState(false);
+  const frame = React.useRef(null);
+
+  const stop = React.useCallback(() => {
+    if (frame.current) cancelAnimationFrame(frame.current);
+    frame.current = null;
+    setPlaying(false);
+  }, []);
+
+  React.useEffect(() => stop, [stop]);
+
+  function play() {
+    if (!slider) return;
+    const { min, max } = slider;
+    const current = values[slider.key];
+    const from = current >= max - 1e-9 ? min : current; // at the end: replay from the start
+    const duration = (animation.duration ?? 3000) * ((max - from) / (max - min));
+    const start = performance.now();
+    // With reduced motion the sweep moves in a few visible jumps instead of continuously.
+    const jumps = reducedMotion() ? 5 : 0;
+    setPlaying(true);
+    const tick = (now) => {
+      let progress = Math.min(1, (now - start) / Math.max(duration, 1));
+      if (jumps) progress = Math.ceil(progress * jumps) / jumps;
+      const eased = progress < 0.5 ? 2 * progress * progress : 1 - 2 * (1 - progress) ** 2;
+      setValues((currentValues) => ({ ...currentValues, [slider.key]: from + (max - from) * (animation.linear ? progress : eased) }));
+      if (progress < 1) frame.current = requestAnimationFrame(tick);
+      else { frame.current = null; setPlaying(false); }
+    };
+    frame.current = requestAnimationFrame(tick);
+  }
+
+  return { slider, playing, play, stop, atEnd: slider ? values[slider.key] >= slider.max - 1e-9 : false };
+}
+
 export function ConceptGraph({ graph }) {
   const initial = { ...graph.fixed, ...Object.fromEntries(graph.sliders.map((slider) => [slider.key, slider.value])) };
   const [values, setValues] = React.useState(initial);
+  const animation = useSliderAnimation(graph, values, setValues);
 
   function update(key, value) {
+    if (animation.slider && key === animation.slider.key) animation.stop();
     setValues((current) => ({ ...current, [key]: Number(value) }));
   }
 
   function reset() {
+    animation.stop();
     setValues(initial);
   }
 
@@ -42,6 +89,12 @@ export function ConceptGraph({ graph }) {
       <div className="graph-body">
         {canvas}
         <div className="graph-controls">
+          {animation.slider && (
+            <button className="graph-play" onClick={animation.playing ? animation.stop : animation.play} aria-label={animation.playing ? 'Pause the animation' : graph.animation.label ?? 'Play the animation'}>
+              {animation.playing ? <Pause size={16} /> : <Play size={16} />}
+              <span>{animation.playing ? 'Pause' : animation.atEnd ? (graph.animation.label ?? 'Play') : 'Continue'}</span>
+            </button>
+          )}
           <div className="slider-grid">
             {graph.sliders.map((slider) => (
               <label key={slider.key}>
@@ -86,6 +139,7 @@ const plotAxes = {
   kfold: { x: '', y: '' },
   pagerank: { x: '', y: 'probability of each page' },
   markov: { x: 'step n', y: 'P(in state 1), from 0 to 1' },
+  svdSteps: { x: '', y: '' },
   matrixFactors: { x: '', y: '' },
   convexChord: { x: 'x', y: 'f(x) (rescaled to fit)' },
   subgradient: { x: 'x', y: 'f(x) = |x|' },
@@ -175,6 +229,7 @@ function renderGraph(type, values) {
     case 'eigenspace': return EigenspaceGraph({ values });
     case 'markov': return MarkovGraph({ values });
     case 'quadraticForm': return QuadraticFormGraph({ values });
+    case 'svdSteps': return SvdStepsGraph({ values });
     case 'matrixFactors': return MatrixFactorsGraph({ values });
     case 'outerProduct': return OuterProductGraph({ values });
     case 'rowOpLines': return RowOpLinesGraph({ values });
@@ -646,13 +701,38 @@ function LogLossGraph({ values }) {
   return <g><path className="loss-line" d={linePath(points)} />{circlePoint({ x: values.prob * 10 - 5, y: clamp(loss, 0, 5) - 2.5 }, 'active-dot', `loss=${loss.toFixed(2)}`)}</g>;
 }
 
+// The matrix diag(lambda_1, lambda_2) applied gradually: at progress t it is (1 - t) I + t A, so the
+// grid and every arrow move smoothly from where they start to where A sends them.
 function EigenGraph({ values }) {
+  const t = values.t ?? 1;
+  const s1 = 1 + t * (values.lambda1 - 1);
+  const s2 = 1 + t * (values.lambda2 - 1);
+  const apply = (p) => ({ x: s1 * p.x, y: s2 * p.y });
   const radians = values.angle * Math.PI / 180;
   const v = { x: Math.cos(radians) * 2, y: Math.sin(radians) * 2 };
-  const av = { x: values.lambda1 * v.x, y: values.lambda2 * v.y };
-  const e1 = { x: values.lambda1 * 1.8, y: 0 };
-  const e2 = { x: 0, y: values.lambda2 * 1.8 };
-  return <g><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(v.x)} ${sy(v.y)}`} /><path className="vector-b" d={`M ${sx(0)} ${sy(0)} L ${sx(av.x)} ${sy(av.y)}`} /><path className="result-vector" d={`M ${sx(0)} ${sy(0)} L ${sx(e1.x)} ${sy(e1.y)}`} /><path className="result-vector" d={`M ${sx(0)} ${sy(0)} L ${sx(e2.x)} ${sy(e2.y)}`} />{circlePoint(av, 'active-dot', 'Av')}<text className="graph-note" x="44" y="48">axis directions stay eigen-directions</text></g>;
+  const av = apply(v);
+  const grid = [];
+  for (let k = -4; k <= 4; k += 1) {
+    grid.push([apply({ x: 2 * k, y: -6 }), apply({ x: 2 * k, y: 6 })]);
+    grid.push([apply({ x: -10, y: 1.5 * k }), apply({ x: 10, y: 1.5 * k })]);
+  }
+  const turned = Math.abs(Math.atan2(v.x * av.y - v.y * av.x, v.x * av.x + v.y * av.y)) * 180 / Math.PI;
+  return {
+    content: <g>
+      {grid.map(([from, to], index) => <path key={index} className="grid-line" d={linePath([from, to])} />)}
+      <path className="vector-a" d={linePath([{ x: 0, y: 0 }, v])} />
+      <path className="vector-b" d={linePath([{ x: 0, y: 0 }, av])} />
+      <path className="result-vector" d={linePath([{ x: 0, y: 0 }, apply({ x: 1.8, y: 0 })])} />
+      <path className="result-vector" d={linePath([{ x: 0, y: 0 }, apply({ x: 0, y: 1.8 })])} />
+      {circlePoint(av, 'active-dot', 'Av')}
+      <text className="graph-note" x="44" y="48">the axis arrows stay on their lines; the test arrow turns</text>
+    </g>,
+    readout: [
+      `matrix now: [[${s1.toFixed(2)}, 0], [0, ${s2.toFixed(2)}]], ${Math.round(t * 100)}% of the way from I to A`,
+      `test arrow (blue to orange) turned by ${turned.toFixed(0)} degrees`,
+      'eigenvectors only stretch, shrink or flip: they never leave their line',
+    ],
+  };
 }
 
 function DiagonalizationGraph({ values }) {
@@ -748,6 +828,8 @@ function LineProjectionGraph({ values }) {
   };
 }
 
+// Coordinates as walking instructions: the progress slider walks alpha along b1, then beta along b2,
+// over a grid drawn in the basis B = {b1, b2}.
 function BasisCoordsGraph({ values }) {
   const b1 = { x: 1, y: 1 };
   const b2 = { x: 1, y: -1 };
@@ -755,10 +837,33 @@ function BasisCoordsGraph({ values }) {
   const determinant = b1.x * b2.y - b2.x * b1.y;
   const alpha = (vector.x * b2.y - b2.x * vector.y) / determinant;
   const beta = (b1.x * vector.y - vector.x * b1.y) / determinant;
-  const alphaB1 = { x: alpha * b1.x, y: alpha * b1.y };
+  const t = values.t ?? 2;
+  const a = alpha * clamp(t, 0, 1);
+  const b = beta * clamp(t - 1, 0, 1);
+  const first = { x: a * b1.x, y: a * b1.y };
+  const here = { x: first.x + b * b2.x, y: first.y + b * b2.y };
+  const grid = [];
+  for (let k = -8; k <= 8; k += 1) {
+    grid.push([{ x: k * b1.x - 9 * b2.x, y: k * b1.y - 9 * b2.y }, { x: k * b1.x + 9 * b2.x, y: k * b1.y + 9 * b2.y }]);
+    grid.push([{ x: k * b2.x - 9 * b1.x, y: k * b2.y - 9 * b1.y }, { x: k * b2.x + 9 * b1.x, y: k * b2.y + 9 * b1.y }]);
+  }
+  const signed = (value) => `${value < 0 ? '- ' : '+ '}${Math.abs(value).toFixed(2)}`;
   return {
-    content: <g><path className="shape-original" d={linePath([{ x: -5, y: -5 }, { x: 5, y: 5 }])} /><path className="shape-original" d={linePath([{ x: -5, y: 5 }, { x: 5, y: -5 }])} /><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(b1.x)} ${sy(b1.y)}`} /><path className="vector-b" d={`M ${sx(0)} ${sy(0)} L ${sx(b2.x)} ${sy(b2.y)}`} /><path className="vector-a" d={`M ${sx(0)} ${sy(0)} L ${sx(alphaB1.x)} ${sy(alphaB1.y)}`} /><path className="vector-b" d={`M ${sx(alphaB1.x)} ${sy(alphaB1.y)} L ${sx(vector.x)} ${sy(vector.y)}`} /><path className="result-vector" d={`M ${sx(0)} ${sy(0)} L ${sx(vector.x)} ${sy(vector.y)}`} />{circlePoint(vector, 'active-dot', 'v')}</g>,
-    readout: [`standard coordinates = (${vector.x.toFixed(2)}, ${vector.y.toFixed(2)})`, `B-coordinates = (${alpha.toFixed(2)}, ${beta.toFixed(2)})`],
+    content: <g>
+      {grid.map(([from, to], index) => <path key={index} className="grid-line" d={linePath([from, to])} />)}
+      <path className="faint-vector dashed" d={linePath([{ x: 0, y: 0 }, { x: vector.x, y: 0 }, vector])} />
+      <path className="result-vector" d={linePath([{ x: 0, y: 0 }, vector])} />
+      <path className="vector-a" d={linePath([{ x: 0, y: 0 }, b1])} />
+      <path className="vector-b" d={linePath([{ x: 0, y: 0 }, b2])} />
+      {Math.abs(a) > 1e-9 && <path className="vector-a" d={linePath([{ x: 0, y: 0 }, first])} />}
+      {Math.abs(b) > 1e-9 && <path className="vector-b" d={linePath([first, here])} />}
+      {circlePoint(here, 'active-dot', t >= 2 - 1e-9 ? 'v' : '')}
+    </g>,
+    readout: [
+      `standard coordinates (walk along x, then y, dashed): (${vector.x.toFixed(2)}, ${vector.y.toFixed(2)})`,
+      `B-coordinates (walk along b1, then b2): (${alpha.toFixed(2)}, ${beta.toFixed(2)})`,
+      t >= 2 - 1e-9 ? `${alpha.toFixed(2)} b1 ${signed(beta)} b2 lands exactly on v` : `walked so far: ${a.toFixed(2)} b1 ${signed(b)} b2`,
+    ],
   };
 }
 
@@ -1011,8 +1116,20 @@ function MarkovGraph({ values }) {
     }
     return points;
   };
-  const fromOne = path([1, 0]);
-  const fromTwo = path([0, 1]);
+  // The progress slider reveals the steps one by one (a fraction reveals part of the next segment).
+  const shown = (values.progress ?? 1) * steps;
+  const reveal = (points) => {
+    const whole = Math.floor(shown);
+    const part = points.slice(0, whole + 1);
+    if (whole < steps && shown > whole) {
+      const from = points[whole];
+      const to = points[whole + 1];
+      part.push({ x: from.x + (to.x - from.x) * (shown - whole), y: from.y + (to.y - from.y) * (shown - whole) });
+    }
+    return part;
+  };
+  const fromOne = reveal(path([1, 0]));
+  const fromTwo = reveal(path([0, 1]));
   return {
     content: <g>
       <path className="axis" d={linePath([{ x: -4.6, y: -4 }, { x: 4.6, y: -4 }])} />
@@ -1023,9 +1140,12 @@ function MarkovGraph({ values }) {
       {steady !== null && <path className="residual thin" d={linePath([{ x: -4.6, y: Y(steady) }, { x: 4.6, y: Y(steady) }])} />}
       <path className="line-a" d={linePath(fromOne)} />
       <path className="line-b dashed" d={linePath(fromTwo)} />
-      {fromOne.map((point, index) => <circle key={`a${index}`} className="active-dot small" cx={sx(point.x)} cy={sy(point.y)} r="3.5" />)}
+      {fromOne.slice(0, Math.floor(shown) + 1).map((point, index) => <circle key={`a${index}`} className="active-dot small" cx={sx(point.x)} cy={sy(point.y)} r="3.5" />)}
+      {fromOne.length > 1 && <circle className="active-dot" cx={sx(fromOne[fromOne.length - 1].x)} cy={sy(fromOne[fromOne.length - 1].y)} r="6" />}
+      {fromTwo.length > 1 && <circle className="active-dot" cx={sx(fromTwo[fromTwo.length - 1].x)} cy={sy(fromTwo[fromTwo.length - 1].y)} r="6" />}
     </g>,
     readout: [
+      `step ${Math.floor(shown)}: P(state 1) = ${((fromOne[Math.min(Math.floor(shown), fromOne.length - 1)].y + 4) / 8).toFixed(3)} from state 1, ${((fromTwo[Math.min(Math.floor(shown), fromTwo.length - 1)].y + 4) / 8).toFixed(3)} from state 2`,
       `A = [[${p.toFixed(2)}, ${(1 - q).toFixed(2)}], [${(1 - p).toFixed(2)}, ${q.toFixed(2)}]], eigenvalues 1 and ${second.toFixed(2)}`,
       steady === null
         ? 'p = q = 1: each state keeps its own probability forever, so there is no single steady state'
@@ -1076,6 +1196,60 @@ function QuadraticFormGraph({ values }) {
       {curves(-1).map((segment, index) => <path key={`n${index}`} className="line-b dashed" d={linePath(segment)} />)}
     </g>,
     readout: [`x^T A x = ${format(a)} x1^2 ${2 * b < 0 ? '-' : '+'} ${format(Math.abs(2 * b))} x1 x2 ${c < 0 ? '-' : '+'} ${format(Math.abs(c))} x2^2`, `eigenvalues ${format(big)} (purple line) and ${format(small)} (orange line)`, kind],
+  };
+}
+
+// A = W Sigma V^T acting on the unit circle, one factor at a time: progress 0 to 1 applies V^T (a
+// rotation), 1 to 2 applies Sigma (stretch the axes), 2 to 3 applies W (a rotation or reflection).
+function svdOf2x2(a, b, c, d) {
+  const p = a * a + c * c;
+  const q = a * b + c * d;
+  const r = b * b + d * d;
+  const spread = Math.hypot((p - r) / 2, q);
+  const sigma1 = Math.sqrt(Math.max((p + r) / 2 + spread, 0));
+  const sigma2 = Math.sqrt(Math.max((p + r) / 2 - spread, 0));
+  const thetaV = 0.5 * Math.atan2(2 * q, p - r);
+  const v1 = { x: Math.cos(thetaV), y: Math.sin(thetaV) };
+  const v2 = { x: -v1.y, y: v1.x };
+  const times = (v) => ({ x: a * v.x + b * v.y, y: c * v.x + d * v.y });
+  const w1 = sigma1 > 1e-9 ? { x: times(v1).x / sigma1, y: times(v1).y / sigma1 } : { x: 1, y: 0 };
+  const w2 = sigma2 > 1e-9 ? { x: times(v2).x / sigma2, y: times(v2).y / sigma2 } : { x: -w1.y, y: w1.x };
+  const reflects = w1.x * w2.y - w1.y * w2.x < 0;
+  return { sigma1, sigma2, thetaV, v1, v2, w1, w2, reflects, thetaW: Math.atan2(w1.y, w1.x) };
+}
+
+function SvdStepsGraph({ values }) {
+  const { a, b, c, d } = values;
+  const t = values.t ?? 3;
+  const svd = svdOf2x2(a, b, c, d);
+  const scale = 0.7;
+  const s1 = clamp(t, 0, 1);
+  const s2 = clamp(t - 1, 0, 1);
+  const s3 = clamp(t - 2, 0, 1);
+  const rotate = (p, angle) => ({ x: p.x * Math.cos(angle) - p.y * Math.sin(angle), y: p.x * Math.sin(angle) + p.y * Math.cos(angle) });
+  const move = (p) => {
+    let q = rotate(p, -svd.thetaV * s1);
+    q = { x: q.x * (1 + (svd.sigma1 - 1) * s2), y: q.y * (1 + (svd.sigma2 - 1) * s2) };
+    if (svd.reflects) q = { x: q.x, y: q.y * (1 - 2 * s3) };
+    q = rotate(q, svd.thetaW * s3);
+    return { x: scale * q.x, y: scale * q.y };
+  };
+  const circle = Array.from({ length: 97 }, (_, index) => { const angle = (index * Math.PI) / 48; return { x: Math.cos(angle), y: Math.sin(angle) }; });
+  const target = circle.map((p) => ({ x: scale * (a * p.x + b * p.y), y: scale * (c * p.x + d * p.y) }));
+  const stage = t < 1 ? 'Step 1, V^T: turn the circle so v1 and v2 lie on the axes (it still looks like the same circle)'
+    : t < 2 ? `Step 2, Sigma: stretch the axes by sigma_1 = ${svd.sigma1.toFixed(2)} and sigma_2 = ${svd.sigma2.toFixed(2)}`
+    : `Step 3, W: ${svd.reflects ? 'reflect and rotate' : 'rotate'} the ellipse into place, with half-axes sigma_1 w1 and sigma_2 w2`;
+  return {
+    content: <g>
+      <path className="axis" d={linePath([{ x: -8.5, y: 0 }, { x: 8.5, y: 0 }])} />
+      <path className="axis" d={linePath([{ x: 0, y: -4.6 }, { x: 0, y: 4.6 }])} />
+      <path className="residual thin" d={linePath(target)} />
+      <path className="spectral-ellipse" d={`${linePath(circle.map(move))} Z`} />
+      <path className="vector-a" d={linePath([{ x: 0, y: 0 }, move(svd.v1)])} />
+      <path className="vector-b" d={linePath([{ x: 0, y: 0 }, move(svd.v2)])} />
+      <text className="graph-note" x="44" y="48">unit circle, drawn at 0.7 scale; dotted: where A sends it</text>
+    </g>,
+    readout: [`A = [[${a}, ${b}], [${c}, ${d}]]: sigma_1 = ${svd.sigma1.toFixed(3)}, sigma_2 = ${svd.sigma2.toFixed(3)}`, stage, 'blue arrow: v1 (becomes sigma_1 w1); orange arrow: v2 (becomes sigma_2 w2)'],
   };
 }
 

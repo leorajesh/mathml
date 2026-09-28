@@ -101,7 +101,11 @@ export function SiteSearch({ onOpenPage, onOpenTopic, onOpenHomework }) {
     function onKey(event) {
       const target = event.target;
       const typing = target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
-      if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        input.current?.focus();
+        input.current?.select();
+      } else if (event.key === '/' && !typing && !event.metaKey && !event.ctrlKey) {
         event.preventDefault();
         input.current?.focus();
       }
@@ -142,7 +146,7 @@ export function SiteSearch({ onOpenPage, onOpenTopic, onOpenHomework }) {
         ref={input}
         type="search"
         value={query}
-        placeholder="Search topics  ( / )"
+        placeholder="Search topics  ( / or Ctrl K )"
         aria-label="Search topics, pages and homework"
         aria-expanded={showList}
         aria-controls="site-search-results"

@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpen, Library, Network, Sigma, Sparkles } from 'lucide-r
 import { BlockMath, InlineMath } from 'react-katex';
 import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { ConceptFigure } from './components/Figures.jsx';
-import { CourseOverview } from './components/CourseOverview.jsx';
+import { Dashboard, HeaderStats } from './components/Dashboard.jsx';
 import { QuickReview } from './components/QuickReview.jsx';
 import { codeExamples } from './data/codeExamples.js';
 import { conceptMap, entryFor, topicMap, topicOf } from './data/concepts.js';
@@ -31,6 +31,7 @@ import { AccountMenu } from './components/AccountMenu.jsx';
 import { SiteSearch } from './components/SiteSearch.jsx';
 import { ThemeToggle } from './components/ThemeToggle.jsx';
 import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
+import { recordVisit } from './activity.js';
 
 // Routes live in the URL hash so Back/Forward and shared links work:
 //   #<concept-id>              concept page (as before)
@@ -138,6 +139,7 @@ export function App() {
           ))}
           <button className={route.view === 'review' ? 'active' : ''} onClick={() => go('review')}>Quick Review</button>
         </nav>
+        <HeaderStats />
         <SiteSearch onOpenPage={(id) => selectConcept(id)} onOpenTopic={(id) => go(id)} onOpenHomework={(key) => openHomework(key)} />
         <ThemeToggle />
         <AccountMenu />
@@ -170,7 +172,7 @@ function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowRe
   return (
     <main className="landing landing-full">
       <nav className="landing-tabs" aria-label="Landing views">
-        <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => openLocalTab('overview')}>Overview</button>
+        <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => openLocalTab('overview')}>Dashboard</button>
         {trackIds.map((id) => (
           <button key={id} className={activeTab === `track-${id}` ? 'active' : ''} onClick={() => onShowTrack(id)}>{tracks[id].title}</button>
         ))}
@@ -178,7 +180,7 @@ function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowRe
         <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => openLocalTab('objectives')}>Learning Objectives</button>
       </nav>
 
-      {activeTab === 'overview' && <CourseOverview onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
+      {activeTab === 'overview' && <Dashboard onOpen={onSelect} onOpenHomework={onOpenHomework} onShowReview={onShowReview} />}
       {activeTab === 'review' && <QuickReview onOpen={onSelect} />}
       {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
       {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
@@ -187,6 +189,7 @@ function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowRe
 }
 
 function ConceptPage({ concept, trackId, section, practice, onBack, onSelect, onShowTrack, onOpenHomework }) {
+  React.useEffect(() => { recordVisit(concept.id, trackId); }, [concept.id, trackId]);
   React.useEffect(() => {
     if (section === 'example') document.getElementById('worked-example')?.scrollIntoView({ block: 'start' });
   }, [section, practice]);

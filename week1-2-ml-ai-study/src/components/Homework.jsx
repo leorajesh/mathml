@@ -5,6 +5,7 @@ import { conceptMap } from '../data/concepts.js';
 import { homework } from '../data/homework.js';
 import { sectionKey, tracks } from '../data/learningTracks.js';
 import { checkAnswer } from '../utils/answerCheck.js';
+import { PracticeLinks } from './PracticeLinks.jsx';
 import { partState, recordAttempt, recordClue, recordSolutionOpened, resetProblem, setSummary, solutionOpened, stuckNote, useHomeworkProgress } from '../homeworkProgress.js';
 
 // The full solution of a problem unlocks once at least half of its parts have been tried.
@@ -133,6 +134,7 @@ function Problem({ setKey, problem, number, onSelect }) {
         <span className={`hw-count${allSolved ? ' full' : ''}`}>{solved} / {problem.parts.length} parts</span>
       </header>
       <p className="hw-uses">Pages to review: <PageLinks ids={problem.pages} onSelect={onSelect} /></p>
+      <PracticeLinks ids={problem.pages} />
       <p className="hw-statement">{problem.statement}</p>
       {problem.tex && <BlockMath math={problem.tex} />}
       <ol className="hw-parts" type="a">

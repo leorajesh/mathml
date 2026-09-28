@@ -24,6 +24,7 @@ import { quizzes } from './data/quizzes.js';
 import { homework } from './data/homework.js';
 import { HomeworkForPage, HomeworkPage } from './components/Homework.jsx';
 import { AccountMenu } from './components/AccountMenu.jsx';
+import { SiteSearch } from './components/SiteSearch.jsx';
 import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.js';
 
 // Routes live in the URL hash so Back/Forward and shared links work:
@@ -31,6 +32,7 @@ import { isTrackId, trackIds, trackOrder, tracks } from './data/learningTracks.j
 //   #<concept-id>?track=math   concept page inside the Math or ML track, with previous / next
 //   #track=ml                  the ML track's step-by-step list
 //   #homework=ml/regression    the homework of one track section (optionally ?problem=<id>)
+//   #<concept-id>?section=example&practice=1   jump to the worked example, steps hidden for practice
 function routeFromHash() {
   let raw;
   try {
@@ -53,6 +55,8 @@ function routeFromHash() {
     conceptId,
     // A concept keeps its track only if the track actually contains it.
     trackId: conceptId ? (trackId && trackOrder(trackId).includes(conceptId) ? trackId : null) : trackId,
+    section: conceptId && params.get('section') === 'example' ? 'example' : null,
+    practice: Boolean(conceptId) && params.get('practice') === '1',
   };
 }
 
@@ -63,8 +67,9 @@ export function App() {
 
   React.useEffect(() => {
     function syncFromUrl() {
-      setRoute(routeFromHash());
-      window.scrollTo({ top: 0 });
+      const next = routeFromHash();
+      setRoute(next);
+      if (!next.section) window.scrollTo({ top: 0 }); // a section link scrolls to that section instead
     }
     window.addEventListener('hashchange', syncFromUrl);
     window.addEventListener('popstate', syncFromUrl);
@@ -83,8 +88,9 @@ export function App() {
 
   function go(hash) {
     window.location.hash = hash;
-    setRoute(routeFromHash());
-    window.scrollTo({ top: 0 });
+    const next = routeFromHash();
+    setRoute(next);
+    if (!next.section) window.scrollTo({ top: 0 });
   }
 
   // Opening a concept keeps the current track when the concept belongs to it, so prerequisite and
@@ -119,13 +125,14 @@ export function App() {
             <button key={trackId} className={route.trackId === trackId ? 'active' : ''} onClick={() => showTrack(trackId)}>{tracks[trackId].title}</button>
           ))}
         </nav>
+        <SiteSearch onOpenPage={(id) => selectConcept(id)} onOpenTopic={(id) => go(id)} onOpenHomework={(key) => openHomework(key)} />
         <AccountMenu />
       </header>
 
       {route.homeworkKey ? (
         <HomeworkPage key={route.homeworkKey} setKey={route.homeworkKey} problemId={route.problemId} onSelect={(id) => selectConcept(id, null)} onShowTrack={showTrack} onOpenHomework={openHomework} />
       ) : selectedConcept ? (
-        <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
+        <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} section={route.section} practice={route.practice} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
       ) : selectedTopic ? (
         <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
@@ -186,7 +193,11 @@ function ConceptIndex({ onSelect }) {
   );
 }
 
-function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack, onOpenHomework }) {
+function ConceptPage({ concept, trackId, section, practice, onBack, onSelect, onShowTrack, onOpenHomework }) {
+  React.useEffect(() => {
+    if (section === 'example') document.getElementById('worked-example')?.scrollIntoView({ block: 'start' });
+  }, [section, practice]);
+
   return (
     <main className="concept-page">
       {trackId ? (
@@ -237,15 +248,8 @@ function ConceptPage({ concept, trackId, onBack, onSelect, onShowTrack, onOpenHo
         </div>
       </OrderedSection>
 
-      <OrderedSection number="4" title="Fully Worked Numeric Example">
-        <ol className="worked-example">
-          {concept.example.map((line, index) => (
-            <li key={line}>
-              <p>{line}</p>
-              {workedExampleMath[concept.id]?.[index] && <BlockMath math={workedExampleMath[concept.id][index]} />}
-            </li>
-          ))}
-        </ol>
+      <OrderedSection number="4" title="Fully Worked Numeric Example" id="worked-example">
+        <WorkedExample key={`${concept.id}:${practice}`} concept={concept} startInPractice={practice} />
       </OrderedSection>
 
       <OrderedSection number="5" title="Interactive Graph">
@@ -494,9 +498,50 @@ function BookReferences({ references }) {
   );
 }
 
-function OrderedSection({ number, title, children }) {
+// The worked example, readable in full or practised: the first step (the setup) shows, and each
+// later step stays hidden until the student has tried it and asks to see it.
+function WorkedExample({ concept, startInPractice }) {
+  const [practice, setPractice] = React.useState(startInPractice);
+  const [shown, setShown] = React.useState(1);
+  const steps = concept.example;
+  const visible = practice ? steps.slice(0, shown) : steps;
+  const math = workedExampleMath[concept.id] ?? [];
+
+  function togglePractice() {
+    setPractice((current) => !current);
+    setShown(1);
+  }
+
   return (
-    <section className="ordered-section">
+    <div className={`worked-example-box${practice ? ' practising' : ''}`}>
+      <div className="worked-example-bar">
+        <button className="practice-toggle" onClick={togglePractice} aria-pressed={practice}>
+          {practice ? 'Show all steps' : 'Practise: hide the steps'}
+        </button>
+        {practice && <span className="practice-count">Step {Math.min(shown, steps.length)} of {steps.length}. Work out the next step yourself, then check it.</span>}
+      </div>
+      <ol className="worked-example">
+        {visible.map((line, index) => (
+          <li key={line}>
+            <p>{line}</p>
+            {math[index] && <BlockMath math={math[index]} />}
+          </li>
+        ))}
+      </ol>
+      {practice && shown < steps.length && (
+        <div className="practice-actions">
+          <button className="practice-next" onClick={() => setShown((count) => count + 1)}>Check step {shown + 1}</button>
+          <button className="practice-all" onClick={() => setShown(steps.length)}>Show the rest</button>
+        </div>
+      )}
+      {practice && shown >= steps.length && <p className="practice-done">That is the whole example. Now try the homework with your own numbers.</p>}
+    </div>
+  );
+}
+
+function OrderedSection({ number, title, id, children }) {
+  return (
+    <section className="ordered-section" id={id}>
       <div className="section-number">{number}</div>
       <div>
         <h2>{title}</h2>

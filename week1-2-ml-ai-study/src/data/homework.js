@@ -2379,7 +2379,7 @@ export const homework = {
  "math/eigenvalues-and-eigenvectors": {
   "track": "math",
   "section": "Eigenvalues and eigenvectors",
-  "intro": "Eigenvalues and eigenvectors, trace and determinant, diagonalization, Markov chains, and symmetric matrices.",
+  "intro": "Eigenvalues and eigenvectors, trace and determinant, multiplicities and diagonalization, Markov chains and PageRank, and symmetric matrices.",
   "problems": [
    {
     "id": "find",
@@ -3179,7 +3179,7 @@ export const homework = {
  "math/matrix-decompositions": {
   "track": "math",
   "section": "Matrix decompositions",
-  "intro": "LU, Cholesky and the singular value decomposition.",
+  "intro": "LU and Cholesky by hand (2 by 2 and 3 by 3), and the singular value decomposition and low-rank approximation.",
   "problems": [
    {
     "id": "lu",

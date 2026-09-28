@@ -4,6 +4,8 @@ import { concepts, topics } from '../data/concepts.js';
 import { homework } from '../data/homework.js';
 import { tracks } from '../data/learningTracks.js';
 import { intuitionDetails } from '../data/intuitionDetails.js';
+import { bonusExamples } from '../data/bonusExamples.js';
+import { sectionForKey } from './BonusExamples.jsx';
 
 // Search box in the top bar: type part of a topic ("eigen", "svd", "hinge loss") and jump to the
 // page. Titles count most, then short descriptions, then the page's words (key ideas, formula
@@ -45,6 +47,16 @@ const entries = [
     title_: normalize(`homework practice exercises ${set.section}`),
     summary_: normalize(`${set.intro} ${set.problems.map((problem) => problem.title).join(' ')}`),
     body_: '',
+  })),
+  ...Object.entries(bonusExamples).map(([key, list]) => ({
+    kind: 'bonus',
+    id: key,
+    title: `Bonus examples: ${sectionForKey(key)?.section.title ?? key}`,
+    context: `${list.length} extra worked examples from the book`,
+    blurb: list.map((example) => example.title).join(' · '),
+    title_: normalize(`bonus examples extra practice ${sectionForKey(key)?.section.title ?? ''}`),
+    summary_: normalize(list.map((example) => `${example.title} ${example.task}`).join(' ')),
+    body_: normalize(list.map((example) => `${example.source.label} ${example.source.title} ${example.steps.join(' ')}`).join(' ')),
   })),
 ];
 
@@ -111,6 +123,7 @@ export function SiteSearch({ onOpenPage, onOpenTopic, onOpenHomework }) {
     input.current?.blur();
     if (entry.kind === 'page') onOpenPage(entry.id);
     else if (entry.kind === 'topic') onOpenTopic(entry.id);
+    else if (entry.kind === 'bonus') window.location.hash = `bonus=${entry.id}`;
     else onOpenHomework(entry.id);
   }
 

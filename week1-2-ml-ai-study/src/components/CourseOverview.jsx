@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, Check, ClipboardList } from 'lucide-react';
+import { ArrowRight, Check, ClipboardList, Sparkles } from 'lucide-react';
+import { bonusExamples } from '../data/bonusExamples.js';
 import { conceptMap } from '../data/concepts.js';
 import { homework } from '../data/homework.js';
 import { sectionKey, trackIds, trackOrder, tracks } from '../data/learningTracks.js';
@@ -61,9 +62,14 @@ export function CourseOverview({ onOpen, onShowTrack, onOpenHomework }) {
                           </li>
                         ))}
                       </ul>
-                      {homework[key] && (
-                        <button className="overview-homework" onClick={() => onOpenHomework(key)}><ClipboardList size={14} /> Homework: {homework[key].problems.length} problems</button>
-                      )}
+                      <div className="overview-extras">
+                        {homework[key] && (
+                          <button className="overview-homework" onClick={() => onOpenHomework(key)}><ClipboardList size={14} /> Homework: {homework[key].problems.length} problems</button>
+                        )}
+                        {bonusExamples[key] && (
+                          <a className="overview-homework" href={`#bonus=${key}`}><Sparkles size={14} /> {bonusExamples[key].length} bonus examples</a>
+                        )}
+                      </div>
                     </li>
                   );
                 })}

@@ -12,6 +12,9 @@ import { conceptLevel, guidedSelfChecks } from './data/studyGuidance.js';
 import { workedExampleMath } from './data/workedExampleMath.js';
 import { intuitionDetails } from './data/intuitionDetails.js';
 import { stories } from './data/stories.js';
+import { exampleTasks } from './data/exampleTasks.js';
+import { bonusExamples } from './data/bonusExamples.js';
+import { BonusPage } from './components/BonusExamples.jsx';
 import { codingGuides } from './data/codingGuides.js';
 import { projects } from './data/projects.js';
 import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlReferences.js';
@@ -45,6 +48,11 @@ function routeFromHash() {
   }
   const [path, query = ''] = raw.split('?');
   if (path === 'review') return { view: 'review' };
+  if (path.startsWith('bonus=')) {
+    const bonusKey = path.slice('bonus='.length);
+    if (Object.hasOwn(bonusExamples, bonusKey)) return { bonusKey, trackId: bonusKey.slice(0, bonusKey.indexOf('/')) };
+    return {};
+  }
   if (path.startsWith('homework=')) {
     const homeworkKey = path.slice('homework='.length);
     if (Object.hasOwn(homework, homeworkKey)) return { homeworkKey, problemId: new URLSearchParams(query).get('problem'), trackId: homework[homeworkKey].track };
@@ -85,10 +93,10 @@ export function App() {
 
   React.useEffect(() => {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
-    document.title = route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
+    document.title = route.bonusKey ? `Bonus examples | ML + Math Study Map` : route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
       : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
-  }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view]);
+  }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view, route.bonusKey]);
 
   function go(hash) {
     window.location.hash = hash;
@@ -135,7 +143,9 @@ export function App() {
         <AccountMenu />
       </header>
 
-      {route.homeworkKey ? (
+      {route.bonusKey ? (
+        <BonusPage key={route.bonusKey} sectionKeyValue={route.bonusKey} onOpen={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
+      ) : route.homeworkKey ? (
         <HomeworkPage key={route.homeworkKey} setKey={route.homeworkKey} problemId={route.problemId} onSelect={(id) => selectConcept(id, null)} onShowTrack={showTrack} onOpenHomework={openHomework} />
       ) : selectedConcept ? (
         <ConceptPage key={`${selectedConcept.id}:${route.trackId ?? ''}`} concept={selectedConcept} trackId={route.trackId} section={route.section} practice={route.practice} onBack={showLanding} onSelect={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
@@ -549,13 +559,21 @@ function WorkedExample({ concept, startInPractice }) {
     setShown(1);
   }
 
+  const task = exampleTasks[concept.id];
+
   return (
     <div className={`worked-example-box${practice ? ' practising' : ''}`}>
+      {task && (
+        <div className="example-task">
+          <span className="example-task-label">The task</span>
+          <p>{task}</p>
+        </div>
+      )}
       <div className="worked-example-bar">
         <button className="practice-toggle" onClick={togglePractice} aria-pressed={practice}>
           {practice ? 'Show all steps' : 'Practise: hide the steps'}
         </button>
-        {practice && <span className="practice-count">Step {Math.min(shown, steps.length)} of {steps.length}. Work out the next step yourself, then check it.</span>}
+        {practice && <span className="practice-count">Step {Math.min(shown, steps.length)} of {steps.length}. Try the next step of the task yourself, then check it.</span>}
       </div>
       <ol className="worked-example">
         {visible.map((line, index) => (
@@ -571,7 +589,7 @@ function WorkedExample({ concept, startInPractice }) {
           <button className="practice-all" onClick={() => setShown(steps.length)}>Show the rest</button>
         </div>
       )}
-      {practice && shown >= steps.length && <p className="practice-done">That is the whole example. Now try the homework with your own numbers.</p>}
+      {practice && shown >= steps.length && <p className="practice-done">That completes the task. Now try the homework with its own numbers.</p>}
     </div>
   );
 }

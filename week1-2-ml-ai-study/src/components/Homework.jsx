@@ -1,4 +1,5 @@
 import React from 'react';
+import { bonusExamples } from '../data/bonusExamples.js';
 import { ArrowLeft, ArrowRight, Check, Lightbulb, Lock, RotateCcw, X } from 'lucide-react';
 import { BlockMath } from 'react-katex';
 import { conceptMap } from '../data/concepts.js';
@@ -198,6 +199,7 @@ export function HomeworkPage({ setKey, problemId, onSelect, onShowTrack, onOpenH
         <h1>{set.section}</h1>
         <p className="lede">{set.intro}</p>
         <p className="hw-covers">Covers: <PageLinks ids={section.concepts} onSelect={onSelect} /></p>
+        {bonusExamples[setKey] && <p className="hw-covers"><a className="bonus-link" href={`#bonus=${setKey}`}>Want more practice first? {bonusExamples[setKey].length} bonus examples from the book</a></p>}
       </section>
 
       <div className="hw-howto">

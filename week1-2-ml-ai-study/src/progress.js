@@ -1,5 +1,6 @@
 import React from 'react';
 import { localChanged, registerStore } from './sync/registry.js';
+import { bumpActivity } from './activity.js';
 
 // Which concepts the student has marked as done, kept in this browser (and in their account when signed
 // in, see sync/). One list is shared by both tracks, so a concept in both (feature vectors) is ticked once.
@@ -54,7 +55,10 @@ export function useProgress() {
     toggleDone: (id) => {
       const next = new Set(done);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else {
+        next.add(id);
+        bumpActivity('d');
+      }
       setDone(next);
     },
   };

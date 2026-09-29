@@ -1,5 +1,6 @@
 import React from 'react';
 import { localChanged, registerStore } from './sync/registry.js';
+import { bumpActivity } from './activity.js';
 
 // Homework progress, kept in this browser (and in the student's account when signed in, see sync/). For each part: the distinct answers checked, whether it
 // is solved and how (tier), and how many clues were shown. For each problem: whether the full solution
@@ -84,6 +85,7 @@ export function recordAttempt(setKey, problemId, index, correct, key) {
     const tier = current.solution ? 'solution' : part.clues > 0 || tries > 1 ? 'help' : 'own';
     return { ...current, parts: { ...current.parts, [index]: { ...part, tries, answers: [...part.answers, key], solved: part.solved || correct, tier: part.solved ? part.tier : correct ? tier : null } } };
   });
+  bumpActivity('h');
   return true;
 }
 

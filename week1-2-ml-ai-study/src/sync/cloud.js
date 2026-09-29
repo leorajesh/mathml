@@ -91,6 +91,12 @@ async function reconcile(current, name) {
       }
     } catch (error) {
       current.pending -= 1;
+      // A store the account's security rules do not list yet (rules not redeployed) stays local-only
+      // instead of stopping the sync of everything else.
+      if (adapter.optional && error?.code === 'permission-denied') {
+        report();
+        return;
+      }
       fail(error);
       return;
     }
@@ -141,7 +147,12 @@ function begin(user) {
       current.remote[name] = entries;
       current.loaded.add(name);
       enqueue(current, name);
-    }, fail));
+    }, (error) => {
+      if (registeredStores().get(name)?.optional && error?.code === 'permission-denied') {
+        current.loaded.add(name);
+        report();
+      } else fail(error);
+    }));
   }
   current.unsubscribes.push(onLocalChange((name) => {
     if (session !== current) return;

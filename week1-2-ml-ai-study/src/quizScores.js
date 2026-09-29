@@ -1,5 +1,6 @@
 import React from 'react';
 import { localChanged, registerStore } from './sync/registry.js';
+import { bumpActivity } from './activity.js';
 
 // Best quiz score per concept or topic, kept in this browser (and in their account when signed in).
 const KEY = 'mathml-study:quiz:v1';
@@ -40,6 +41,7 @@ export function recordQuizScore(quizId, correct, total) {
   const previous = scores[quizId];
   const best = previous && previous.total === total ? Math.max(previous.best, correct) : correct;
   save({ ...scores, [quizId]: { best, total, last: correct } });
+  bumpActivity('q');
 }
 
 registerStore('quiz', {

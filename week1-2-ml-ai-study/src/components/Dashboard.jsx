@@ -519,6 +519,11 @@ export function Dashboard({ onOpen, onOpenHomework, onShowReview }) {
   return (
     <div className="dashboard">
       <ResumeStrip target={target} isDone={isDone} reviewAgain={reviewAgain} onOpen={onOpen} onShowReview={onShowReview} />
+      <a className="dash-intro" href="hands-on.html">
+        <span className="dash-intro-icon" aria-hidden="true"><Play size={18} /></span>
+        <span className="dash-intro-text"><strong>New here, or want the big picture?</strong> Four hands-on demos in about 20 minutes: teach a machine, build an autocomplete, memorise vs learn, and whose data a model learns from.</span>
+        <span className="dash-intro-go">Open the demos <ArrowRight size={15} /></span>
+      </a>
       <section className="dash-kpis" aria-label="Summary">
         {trackIds.map((trackId) => <TrackCard key={trackId} trackId={trackId} isDone={isDone} onOpen={onOpen} />)}
         <BridgeCard isDone={isDone} onOpen={onOpen} />

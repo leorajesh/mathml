@@ -49,6 +49,26 @@ const entries = [
     body_: '',
   })),
   {
+    kind: 'link',
+    id: 'hands-on.html',
+    title: 'Under the Hood of AI: hands-on demos',
+    context: 'Four interactive demos for the big picture',
+    blurb: 'Teach a machine, build an autocomplete, memorise vs learn, and whose data a model learns from.',
+    title_: normalize('hands on demos intro under the hood of ai beginner'),
+    summary_: normalize('introduction big picture perceptron autocomplete overfitting bias demo'),
+    body_: '',
+  },
+  {
+    kind: 'view',
+    id: 'projects',
+    title: 'Impact Projects',
+    context: 'Two social-impact capstone projects, math and ML',
+    blurb: 'A neighbourhood vulnerability index and an early-support model for students at risk of dropping out.',
+    title_: normalize('impact projects capstone social good'),
+    summary_: normalize('project vulnerability index pca dropout early support fairness sdg'),
+    body_: '',
+  },
+  {
     kind: 'view',
     id: 'cheatsheet',
     title: 'Formula Cheat Sheet',
@@ -139,6 +159,7 @@ export function SiteSearch({ onOpenPage, onOpenTopic, onOpenHomework }) {
     else if (entry.kind === 'topic') onOpenTopic(entry.id);
     else if (entry.kind === 'bonus') window.location.hash = `bonus=${entry.id}`;
     else if (entry.kind === 'view') window.location.hash = entry.id;
+    else if (entry.kind === 'link') window.location.href = entry.id;
     else onOpenHomework(entry.id);
   }
 

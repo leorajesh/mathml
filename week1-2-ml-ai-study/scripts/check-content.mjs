@@ -19,6 +19,8 @@ import { homework } from '../src/data/homework.js';
 import { courseHomework } from '../src/data/courseHomework.js';
 import { stories } from '../src/data/stories.js';
 import { exampleTasks } from '../src/data/exampleTasks.js';
+import { plainGuide } from '../src/data/plainGuide.js';
+import { impactProjects } from '../src/data/impactProjects.js';
 import { bonusExamples } from '../src/data/bonusExamples.js';
 import { reviewCategories, reviewTree } from '../src/data/quickReview.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
@@ -213,6 +215,25 @@ for (const concept of concepts) {
   else if (words(task) > 70) problems.push(`${concept.id}: task statement has ${words(task)} words (max 70)`);
 }
 for (const id of Object.keys(exampleTasks)) if (!conceptMap[id]) problems.push(`task for unknown page "${id}"`);
+// "Start here" plain-language card: every page has one, each part short and free of LaTeX.
+for (const concept of concepts) {
+  const guide = plainGuide[concept.id];
+  if (!guide) { problems.push(`${concept.id}: no "Start here" entry in plainGuide.js`); continue; }
+  for (const [field, limit] of [['question', 14], ['idea', 34], ['tryIt', 40], ['realWorld', 32]]) {
+    if (!guide[field]) problems.push(`${concept.id}: "Start here" needs a ${field}`);
+    else if (words(guide[field]) > limit) problems.push(`${concept.id}: "Start here" ${field} has ${words(guide[field])} words (max ${limit})`);
+    else if (guide[field].includes('\\')) problems.push(`${concept.id}: "Start here" ${field} contains LaTeX`);
+  }
+}
+for (const id of Object.keys(plainGuide)) if (!conceptMap[id]) problems.push(`"Start here" entry for unknown page "${id}"`);
+// Impact projects: links resolve and every section is filled in.
+for (const project of impactProjects) {
+  const where = `impact project ${project.id}`;
+  for (const field of ['title', 'why', 'question', 'code', 'expected']) if (!project[field]) problems.push(`${where}: missing ${field}`);
+  if (project.milestones.length < 6) problems.push(`${where}: needs a week-by-week plan`);
+  for (const id of [...project.skills.map((s) => s.page), ...project.milestones.flatMap((m) => m.pages)]) if (!conceptMap[id]) problems.push(`${where}: unknown page "${id}"`);
+  if (!project.ethics.length || !project.evaluation.length) problems.push(`${where}: needs ethics and evaluation sections`);
+}
 for (const key of sectionKeys) {
   const list = bonusExamples[key] ?? [];
   if (list.length < 2) problems.push(`section "${key}" needs at least 2 bonus examples (has ${list.length})`);

@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+  // Use the theme the student picked in the study map, if any.
+  (function () { var t = null; try { t = localStorage.getItem('mathml-study:theme'); } catch (e) {}
+    if (t === 'dark' || t === 'light') document.documentElement.setAttribute('data-theme', t); })();
+</script>
+<title>Under the Hood of AI | ML + Math Study Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a session script. A sticky run-of-show bar, then one full-width section per act:
+   the idea on the left, the live demo on the right (stacked on phones). Palette: the study
+   portal's cool analytical colours, so the session matches the site it comes from. */
+:root {
+  --bg: #f4f6f9; --surface: #fbfcfd; --surface-2: #eef1f5; --border: #d9dfe7;
+  --text: #1a2230; --muted: #525f70;
+  --primary: #1f5fae; --primary-soft: #e5eefa; --on-primary: #ffffff;
+  --action: #f0a020; --action-text: #9a5b00; --action-soft: #fdf1dc;
+  --concept: #6b3fd4; --concept-soft: #f0ebfc;
+  --good: #067a55; --good-soft: #e3f5ed; --bad: #b23a26; --bad-soft: #fdecea;
+  --class-a: #2563b8; --class-b: #e0603f; --grid: #d9dfe7;
+  --font-ui: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121820; --surface: #19212b; --surface-2: #1f2934; --border: #2d3947;
+  --text: #e2e8f0; --muted: #a3b0c2;
+  --primary: #6fa8ff; --primary-soft: #1c2e47; --on-primary: #0b1628;
+  --action: #f5b13d; --action-text: #f7c56b; --action-soft: #3a2c12;
+  --concept: #b39afc; --concept-soft: #2a2342;
+  --good: #3ccf95; --good-soft: #133328; --bad: #ff8f7d; --bad-soft: #3b1f1c;
+  --class-a: #6fa8ff; --class-b: #ff8a66; --grid: #2d3947; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #121820; --surface: #19212b; --surface-2: #1f2934; --border: #2d3947;
+  --text: #e2e8f0; --muted: #a3b0c2;
+  --primary: #6fa8ff; --primary-soft: #1c2e47; --on-primary: #0b1628;
+  --action: #f5b13d; --action-text: #f7c56b; --action-soft: #3a2c12;
+  --concept: #b39afc; --concept-soft: #2a2342;
+  --good: #3ccf95; --good-soft: #133328; --bad: #ff8f7d; --bad-soft: #3b1f1c;
+  --class-a: #6fa8ff; --class-b: #ff8a66; --grid: #2d3947; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font: 16px/1.6 var(--font-ui); margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 0 64px; }
+h1, h2, h3 { line-height: 1.2; letter-spacing: -0.015em; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; }
+h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); font-weight: 700; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.mono { font-family: var(--font-mono); }
+.kicker { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Run-of-show bar */
+.runbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.runbar-inner { max-width: 1180px; margin: 0 auto; padding: 8px clamp(16px, 4vw, 40px); display: flex; align-items: center; gap: 12px; }
+.runbar nav { display: flex; gap: 4px; overflow-x: auto; flex: 1; min-width: 0; }
+.runbar a { flex-shrink: 0; display: inline-flex; gap: 6px; align-items: baseline; padding: 6px 10px; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 0.88rem; font-weight: 600; }
+.runbar a span { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); font-weight: 400; }
+.runbar a:hover { background: var(--surface-2); }
+.notes-toggle { flex-shrink: 0; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.notes-toggle[aria-pressed="true"] { background: var(--concept-soft); border-color: var(--concept); color: var(--concept); }
+
+/* Opening */
+.hero { padding-block: 48px 28px; display: grid; gap: 18px; max-width: 820px; }
+.hero .lede { font-size: 1.2rem; color: var(--muted); max-width: 62ch; }
+.hero-question { margin-top: 6px; padding: 18px 20px; border-left: 4px solid var(--action); background: var(--action-soft); border-radius: 0 10px 10px 0; font-size: 1.15rem; font-weight: 600; }
+.hero-question small { display: block; margin-top: 6px; font-weight: 400; font-size: 0.95rem; color: var(--muted); }
+.schedule { margin-top: 8px; border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+.schedule-wrap { overflow-x: auto; }
+.schedule th, .schedule td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.schedule th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.schedule td:first-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--muted); }
+
+/* Acts */
+.act { padding-block: 40px; border-top: 1px solid var(--border); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px 40px; align-items: start; scroll-margin-top: 64px; }
+.act-text { display: grid; gap: 14px; min-width: 0; }
+.act-text > p { color: var(--muted); max-width: 60ch; }
+.act-text > p strong { color: var(--text); }
+.hidden-truth { padding: 14px 16px; border-radius: 10px; background: var(--concept-soft); display: grid; gap: 4px; }
+.hidden-truth .kicker { color: var(--concept); }
+.hidden-truth p { font-size: 0.97rem; }
+.frontier { padding: 12px 14px; border-radius: 10px; background: var(--surface-2); font-size: 0.93rem; display: grid; gap: 2px; }
+.frontier .kicker { color: var(--primary); }
+.sutd { font-size: 0.85rem; color: var(--muted); }
+.sutd b { color: var(--text); font-weight: 600; }
+.notes { display: none; padding: 12px 14px; border-radius: 10px; border: 1px dashed var(--concept); font-size: 0.9rem; }
+.notes ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+body.show-notes .notes { display: block; }
+.notes .kicker { color: var(--concept); }
+
+.demo { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.demo-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; }
+.demo canvas { width: 100%; max-width: 100%; aspect-ratio: 4 / 3; display: block; border-radius: 10px; background: var(--surface-2); touch-action: manipulation; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { padding: 8px 14px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+.btn:hover { border-color: var(--primary); }
+.btn.primary { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+.btn.go { background: var(--action); border-color: var(--action); color: #1f1400; }
+.seg { display: inline-flex; padding: 3px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--border); }
+.seg button { border: 0; background: none; padding: 5px 10px; border-radius: 7px; color: var(--muted); font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.12); }
+.seg .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+.readout { font-family: var(--font-mono); font-size: 0.84rem; padding: 10px 12px; border-radius: 9px; background: var(--surface-2); display: grid; gap: 3px; overflow-x: auto; }
+.readout .big { font-size: 1rem; color: var(--text); font-weight: 600; }
+.status { font-size: 0.93rem; font-weight: 600; }
+.status.ok { color: var(--good); } .status.warn { color: var(--action-text); } .status.bad { color: var(--bad); }
+label.slider { display: grid; gap: 4px; font-size: 0.88rem; font-weight: 600; flex: 1 1 220px; }
+label.slider input { width: 100%; accent-color: var(--primary); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.82rem; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+/* Act 2 */
+textarea { width: 100%; min-height: 120px; resize: vertical; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font: 0.88rem/1.5 var(--font-mono); }
+.prompt-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.prompt-row input { flex: 1 1 200px; min-width: 0; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: 0.95rem var(--font-mono); }
+.bars { display: grid; gap: 5px; }
+.bar { display: grid; grid-template-columns: minmax(70px, 130px) 1fr 48px; gap: 8px; align-items: center; font-family: var(--font-mono); font-size: 0.85rem; }
+.bar-track { height: 14px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+.bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 300ms ease; }
+.bar-num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.generated { min-height: 3.2em; padding: 12px 14px; border-radius: 9px; background: var(--action-soft); font-size: 1.02rem; line-height: 1.55; }
+.generated .note { display: block; margin-top: 6px; font-size: 0.82rem; color: var(--action-text); font-family: var(--font-mono); }
+
+/* Act 3 / 4 metrics */
+.metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.metric { padding: 10px 12px; border-radius: 9px; background: var(--surface-2); display: grid; gap: 4px; }
+.metric .label { font-size: 0.8rem; color: var(--muted); }
+.metric .value { font-family: var(--font-mono); font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.meter { height: 8px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.meter span { display: block; height: 100%; border-radius: 99px; transition: width 300ms ease; }
+
+/* Close */
+.close { padding-block: 40px; border-top: 1px solid var(--border); display: grid; gap: 24px; scroll-margin-top: 64px; }
+.compare-wrap { overflow-x: auto; }
+.compare { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 560px; }
+.compare th, .compare td { text-align: left; padding: 10px 14px 10px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+.compare th { font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.compare td:nth-child(2) { color: var(--muted); }
+.questions { counter-reset: q; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.questions li { counter-increment: q; padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); display: grid; gap: 6px; align-content: start; }
+.questions li::before { content: counter(q); font-family: var(--font-mono); font-weight: 600; color: var(--action-text); }
+.questions b { font-size: 0.98rem; }
+.questions span { font-size: 0.88rem; color: var(--muted); }
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.map div { padding: 14px; border-radius: 12px; background: var(--surface-2); display: grid; gap: 6px; font-size: 0.92rem; }
+.map ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; color: var(--muted); }
+footer { margin-top: 24px; font-size: 0.82rem; color: var(--muted); }
+.back-link { color: var(--primary); text-decoration: none; font-weight: 600; }
+.back-link:hover { text-decoration: underline; }
+.study-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.85rem; }
+.study-links span { color: var(--muted); }
+.page-link { padding: 3px 9px; border-radius: 99px; border: 1px solid var(--border); background: var(--surface); color: var(--primary); text-decoration: none; font-weight: 600; }
+.page-link:hover { border-color: var(--primary); }
+
+@media (max-width: 860px) { .act { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .schedule th:nth-child(3), .schedule td:nth-child(3) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .bar-fill, .meter span { transition: none; } }
+</style>
+</head>
+<body>
+
+
+<div class="runbar">
+  <div class="runbar-inner">
+    <nav aria-label="Session sections">
+      <a href="#opening">Opening <span>0–5</span></a>
+      <a href="#act1">Teach a machine <span>5–15</span></a>
+      <a href="#act2">Autocomplete <span>15–25</span></a>
+      <a href="#act3">Memorise vs learn <span>25–33</span></a>
+      <a href="#act4">Whose data? <span>33–40</span></a>
+      <a href="#close">Take-aways <span>40–45</span></a>
+    </nav>
+    <button class="notes-toggle" id="notesToggle" aria-pressed="false">Teaching notes</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<header class="hero" id="opening">
+  <p class="kicker"><a class="back-link" href="./">← Back to the study map</a> · Hands-on intro · four demos, about 20 minutes</p>
+  <h1>Under the Hood of AI</h1>
+  <p class="lede">New to the course, or want the big picture first? In four small demos you build the core ideas yourself, with no code: how a model learns, why it can sound sure and still be wrong, and where its mistakes come from. Each demo links to the pages that teach it properly.</p>
+  <p class="hero-question">When a chatbot answers your question, what is it actually doing?
+    <small>Take a guess now: looking it up, thinking about it, or predicting likely words? Act 2 answers it.</small></p>
+  <div class="schedule-wrap">
+    <table class="schedule">
+      <thead><tr><th>Min</th><th>Section</th><th>What you do</th><th>The idea underneath</th></tr></thead>
+      <tbody>
+        <tr><td>0–5</td><td>Opening question</td><td>Guess what a chatbot does</td><td>Using a tool vs understanding it</td></tr>
+        <tr><td>5–15</td><td>1 · Teach a machine</td><td>Place dots, press Train</td><td>Learning = adjusting numbers to reduce mistakes</td></tr>
+        <tr><td>15–25</td><td>2 · Build an autocomplete</td><td>Write text, generate from it</td><td>Language models predict the next word</td></tr>
+        <tr><td>25–33</td><td>3 · Memorise or learn?</td><td>Drag one slider</td><td>Perfect on practice ≠ good on the real test</td></tr>
+        <tr><td>33–40</td><td>4 · Whose data?</td><td>Change who is in the data</td><td>A model only knows who it was shown</td></tr>
+        <tr><td>40–45</td><td>Take-aways and questions</td><td>Five questions to ask any AI tool</td><td>From user to informed judge</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes"><span class="kicker">Presenter notes · opening</span>
+    <ul>
+      <li>Ask the question, take the three-way show of hands, and do not reveal the answer yet.</li>
+      <li>Frame it: "Using AI well is a skill. Knowing when not to trust it needs a little of what is inside. That is what I study at SUTD, and it fits in 45 minutes."</li>
+      <li>Everything runs in this page; no installs. Turn these notes off before projecting.</li>
+    </ul>
+  </div>
+</header>
+
+<!-- ============ ACT 1 ============ -->
+<section class="act" id="act1" aria-labelledby="act1-title">
+  <div class="act-text">
+    <p class="kicker">Act 1 · 10 minutes</p>
+    <h2 id="act1-title">Teach a machine to decide</h2>
+    <p>Each dot is a student: how many hours they studied and how many hours they slept before the exam. Blue passed, orange did not. <strong>Press Train</strong> and watch the machine find a line that separates them.</p>
+    <p>The machine starts knowing nothing. It visits the students one by one, and every time it gets one wrong it <strong>nudges three numbers</strong> a little. When a whole pass goes by with no mistakes, it stops. That is the whole of learning here.</p>
+    <div class="hidden-truth"><span class="kicker">What the chat box hides</span>
+      <p>An AI model is a set of numbers adjusted until its mistakes on examples become rare. It does not know what "studying" is. It knows three numbers that happen to work on these dots.</p></div>
+    <div class="frontier"><span class="kicker">At frontier scale</span>
+      <p>This model has 3 numbers. A frontier language model has hundreds of billions, adjusted the same way: guess, measure the error, nudge.</p></div>
+    <p class="sutd">From SUTD: <b>the perceptron</b> and <b>linear classifiers</b> (Production Ready ML), <b>vectors and dot products</b> (Mathematics for AI).</p>
+    <p class="study-links"><span>Study it in the portal:</span> <a class="page-link" href="./#perceptron">The Perceptron</a> <a class="page-link" href="./#linear-classifier">Linear classifiers</a> <a class="page-link" href="./#vectors-dot-product">Dot products</a></p>
+    <div class="notes"><span class="kicker">Presenter notes · Act 1</span>
+      <ul>
+        <li>Press <em>Train</em> once and narrate: "wrong, nudge… wrong, nudge… now a pass with no mistakes."</li>
+        <li>Invite someone to click a dot where it clearly does not belong (a blue dot deep in the orange area), then Train again. The line moves, and may never settle: no straight line fits, so it keeps adjusting.</li>
+        <li>Point at the formula readout: "That is the entire 'brain'. Three numbers."</li>
+      </ul>
+    </div>
+  </div>
+  <div class="demo">
+    <div class="demo-head"><h3>Will this student pass?</h3><span class="kicker">example data · click to add</span></div>
+    <canvas id="c1" aria-label="Scatter plot of students by hours studied and hours slept, with the learned boundary"></canvas>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Colour of new dots">
+        <button id="addPass" aria-pressed="true"><span class="dot" style="background:var(--class-a)"></span>Add: passed</button>
+        <button id="addFail" aria-pressed="false"><span class="dot" style="background:var(--class-b)"></span>Add: did not</button>
+      </div>
+      <button class="btn go" id="train1">Train</button>
+      <button class="btn" id="reset1">Forget everything</button>
+      <button class="btn" id="restore1">Restore the example</button>
+    </div>
+    <div class="readout" aria-live="polite">
+      <span class="big" id="rule1">score = 0.00 × study + 0.00 × sleep + 0.00</span>
+      <span id="stat1">Not trained yet. Blue side: predicted to pass.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACT 2 ============ -->
+<section class="act" id="act2" aria-labelledby="act2-title">
+  <div class="act-text">
+    <p class="kicker">Act 2 · 10 minutes</p>
+    <h2 id="act2-title">Build your own autocomplete</h2>
+    <p>Our tiny language model reads the text on the right and counts <strong>which word tends to come next</strong>. To write, it looks at the last few words, picks a likely next word, and repeats.</p>
+    <p>Type <span class="mono">the library opens at</span>. The text says the library opens at nine. Yet the model often answers <strong>ten</strong> or <strong>eight</strong>, fluently and without hesitation, because with a short memory it only sees "opens at", and in this text the cafe and the hall also open at something.</p>
+    <div class="hidden-truth"><span class="kicker">What the chat box hides</span>
+      <p>A language model predicts likely words. Sounding confident and being correct are different things; a fluent wrong answer is exactly what this process can produce. This is where "hallucinations" come from.</p></div>
+    <div class="frontier"><span class="kicker">At frontier scale</span>
+      <p>Frontier models read far more text and remember far more context, and a lot of extra training makes them helpful and more reliable. The core step is the same: score every possible next word, pick one, repeat.</p></div>
+    <p class="sutd">From SUTD: <b>probability and likelihood</b> (Mathematics for AI), <b>logistic outputs as probabilities</b> (Production Ready ML).</p>
+    <p class="study-links"><span>Study it in the portal:</span> <a class="page-link" href="./#likelihood-mle">Likelihood</a> <a class="page-link" href="./#logistic-regression">Probabilities from scores</a> <a class="page-link" href="./#markov-chains">Markov chains</a></p>
+    <div class="notes"><span class="kicker">Presenter notes · Act 2</span>
+      <ul>
+        <li>Reveal the opening question: "It is predicting likely words."</li>
+        <li>With memory 2, click <em>Show next-word odds</em> for "the library opens at": about 1/3 each for nine, ten and eight. Then set memory to 3: now it is always nine, because it copies the text more closely.</li>
+        <li>Ask the room to paste in their own paragraph (a school notice works well) and generate from it.</li>
+        <li>Turn up <em>creativity</em>: more surprising and more wrong. Turn it down: more repetitive.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="demo">
+    <div class="demo-head"><h3>What it has read</h3><span class="kicker">edit or paste your own</span></div>
+    <textarea id="corpus" aria-label="Training text for the autocomplete" spellcheck="false">The library opens at nine every morning. The cafe opens at ten on weekdays. The hall opens at eight for the exam. Students study in the library before class. Students drink coffee in the cafe after class. The teacher says that practice makes progress. The teacher says that questions make learning easier. A good question makes the class think. A good answer makes the class smile. The library closes at six in the evening. The cafe closes at eight in the evening. Every student has a laptop and a notebook. Every student has a question about the exam. The exam starts at nine in the hall.</textarea>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="How many previous words the model remembers">
+        <button data-order="1" aria-pressed="false">Memory: 1 word</button>
+        <button data-order="2" aria-pressed="true">2 words</button>
+        <button data-order="3" aria-pressed="false">3 words</button>
+      </div>
+    </div>
+    <div class="prompt-row">
+      <input id="prompt" value="the library opens at" aria-label="Start of the sentence">
+      <button class="btn" id="odds">Show next-word odds</button>
+      <button class="btn go" id="gen">Write the rest</button>
+    </div>
+    <label class="slider" for="temp">Creativity: <span id="tempVal" class="mono">1.0</span>
+      <input type="range" id="temp" min="0.2" max="2" step="0.1" value="1"></label>
+    <div class="bars" id="bars" aria-live="polite"></div>
+    <p class="generated" id="generated" aria-live="polite">Press <b>Write the rest</b> to continue the sentence.</p>
+  </div>
+</section>
+
+<!-- ============ ACT 3 ============ -->
+<section class="act" id="act3" aria-labelledby="act3-title">
+  <div class="act-text">
+    <p class="kicker">Act 3 · 8 minutes</p>
+    <h2 id="act3-title">Memorise or learn?</h2>
+    <p>Ten practice points (filled) follow a smooth pattern plus some noise. The slider sets how <strong>flexible</strong> the model's curve is allowed to be.</p>
+    <p>Drag it to the right. The curve bends to pass through every practice point and its practice error falls to almost zero. Then <strong>reveal the new data</strong> (hollow points) it never saw: the flexible curve is badly wrong on them. It memorised the noise instead of learning the pattern.</p>
+    <div class="hidden-truth"><span class="kicker">What the chat box hides</span>
+      <p>"It got 100% on the benchmark" can mean it memorised the benchmark. What matters is performance on questions it has never seen, which is why careful teams keep test data locked away until the very end.</p></div>
+    <div class="frontier"><span class="kicker">At frontier scale</span>
+      <p>When a model has seen the test questions during training, its scores look better than its real ability. This "contamination" is a live concern in how AI models are compared.</p></div>
+    <p class="sutd">From SUTD: <b>polynomial regression, overfitting, train/validation/test splits</b> (Production Ready ML), <b>least squares</b> (Mathematics for AI).</p>
+    <p class="study-links"><span>Study it in the portal:</span> <a class="page-link" href="./#polynomial-regression">Polynomial regression</a> <a class="page-link" href="./#model-complexity-generalization">Overfitting</a> <a class="page-link" href="./#train-validation-test">Train, validation, test</a></p>
+    <div class="notes"><span class="kicker">Presenter notes · Act 3</span>
+      <ul>
+        <li>Start at flexibility 3: both errors are low. Ask: "What happens if we allow more wiggle?"</li>
+        <li>Slide to 9 with the new data hidden: "perfect score on practice!" Then press <em>Reveal</em>. Let the reaction land.</li>
+        <li>Link to exams: memorising past papers vs understanding the topic.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="demo">
+    <div class="demo-head"><h3>Fitting a curve</h3><span class="kicker">generated example data</span></div>
+    <canvas id="c3" aria-label="Practice points, new points and the fitted curve"></canvas>
+    <div class="controls">
+      <label class="slider" for="deg">Flexibility (curve degree): <span id="degVal" class="mono">3</span>
+        <input type="range" id="deg" min="1" max="9" step="1" value="3"></label>
+      <button class="btn go" id="reveal3" aria-pressed="false">Reveal new data</button>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span class="label">Error on practice points</span><span class="value" id="trainErr">0.00</span><div class="meter"><span id="trainBar" style="background:var(--good)"></span></div></div>
+      <div class="metric"><span class="label">Error on new points</span><span class="value" id="testErr">hidden</span><div class="meter"><span id="testBar" style="background:var(--bad)"></span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ACT 4 ============ -->
+<section class="act" id="act4" aria-labelledby="act4-title">
+  <div class="act-text">
+    <p class="kicker">Act 4 · 7 minutes</p>
+    <h2 id="act4-title">Whose data taught it?</h2>
+    <p>A plant-disease detector looks at leaf colour and spot size. It was trained on photos from <strong>Farm A</strong>. Farm B photographs its leaves in sunlight, so its leaves look greener and the signs of disease look different.</p>
+    <p>With no Farm B photos in training, the detector is <strong>excellent on Farm A and poor on Farm B</strong>, and nothing in its output tells you so. Slide in more Farm B photos and watch its accuracy on Farm B recover.</p>
+    <div class="hidden-truth"><span class="kicker">What the chat box hides</span>
+      <p>A model's accuracy is an average over the people and cases it was tested on. Groups that are missing from the data can get much worse results, even when the overall number looks excellent.</p></div>
+    <div class="frontier"><span class="kicker">In the real world</span>
+      <p>The Gender Shades study (Buolamwini and Gebru, 2018) found commercial face-analysis systems were far less accurate for darker-skinned women than for lighter-skinned men, largely because of who was in the data.</p></div>
+    <p class="sutd">From SUTD: <b>feature engineering, missing data and bias</b>, <b>distribution shift and monitoring in production</b> (Production Ready ML).</p>
+    <p class="study-links"><span>Study it in the portal:</span> <a class="page-link" href="./#missing-data-imputation">Missing data and bias</a> <a class="page-link" href="./#ml-in-production">ML in production</a> <a class="page-link" href="./#classification-metrics">Classification metrics</a></p>
+    <div class="notes"><span class="kicker">Presenter notes · Act 4</span>
+      <ul>
+        <li>Start at 0% Farm B. Read out both accuracies (about 99% and 74%). Ask: "Would you deploy this at Farm B?" Point out the averaged accuracy still looks fine.</li>
+        <li>Slide to 10%, then 20%. Farm B jumps from about 74% to 97% while Farm A stays at 99%. The fix was data, not a smarter algorithm.</li>
+        <li>Bridge to people: "Replace farms with accents, age groups or neighbourhoods."</li>
+      </ul>
+    </div>
+  </div>
+  <div class="demo">
+    <div class="demo-head"><h3>Plant-disease detector</h3><span class="kicker">generated example data</span></div>
+    <canvas id="c4" aria-label="Leaves from two farms, healthy and diseased, with the detector's boundary"></canvas>
+    <div class="legend"><span><i style="background:var(--class-a)"></i>healthy</span><span><i style="background:var(--class-b)"></i>diseased</span><span>● Farm A · ◆ Farm B · shading: what the detector predicts</span></div>
+    <label class="slider" for="share">Farm B photos in the training data: <span id="shareVal" class="mono">0%</span>
+      <input type="range" id="share" min="0" max="50" step="5" value="0"></label>
+    <div class="metrics">
+      <div class="metric"><span class="label">Accuracy on Farm A</span><span class="value" id="accA">0%</span><div class="meter"><span id="barA" style="background:var(--class-a)"></span></div></div>
+      <div class="metric"><span class="label">Accuracy on Farm B</span><span class="value" id="accB">0%</span><div class="meter"><span id="barB" style="background:var(--class-b)"></span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSE ============ -->
+<section class="close" id="close" aria-labelledby="close-title">
+  <div class="act-text">
+    <p class="kicker">Take-aways · 5 minutes</p>
+    <h2 id="close-title">From user to informed judge</h2>
+    <p>You do not need to build models to use AI wisely. But a little of what is inside changes the questions you ask.</p>
+  </div>
+  <div class="compare-wrap">
+    <table class="compare">
+      <thead><tr><th>Situation</th><th>A user asks</th><th>Someone who understands also asks</th></tr></thead>
+      <tbody>
+        <tr><td>A chatbot answers a factual question</td><td>Is this answer good?</td><td>Could this be a fluent guess? Where can I check it? (Act 2)</td></tr>
+        <tr><td>A tool claims 99% accuracy</td><td>Great, let's use it.</td><td>99% on what data, and was that data kept separate from training? (Act 3)</td></tr>
+        <tr><td>A system decides about people</td><td>Does it work?</td><td>Does it work equally well for everyone, including groups missing from its data? (Act 4)</td></tr>
+        <tr><td>The model was trained last year</td><td>It worked before.</td><td>Has the world changed since? Who is watching for that? (production ML)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <h3 style="margin-bottom:12px">Five questions to ask any AI tool</h3>
+    <ol class="questions">
+      <li><b>What was it trained on?</b><span>And who or what is missing from that data?</span></li>
+      <li><b>How was it tested?</b><span>On data it had never seen, from people like the ones it will serve?</span></li>
+      <li><b>What does it do when unsure?</b><span>Does it say so, or answer just as confidently?</span></li>
+      <li><b>What happens when things change?</b><span>New users, new rules, a new year. Who monitors it?</span></li>
+      <li><b>Who checks its mistakes?</b><span>How would we even notice one, and who can fix it?</span></li>
+    </ol>
+  </div>
+  <div class="map">
+    <div><h3>Mathematics for AI (SUTD 99.512)</h3><ul><li>Vectors and dot products: the "score" in Act 1</li><li>Probability and likelihood: next-word odds in Act 2</li><li>Least squares and projections: curve fitting in Act 3</li><li>Gradients: how the nudging is done at scale</li></ul></div>
+    <div><h3>Production Ready ML (SUTD 61.501)</h3><ul><li>Perceptron and linear classifiers: Act 1</li><li>Overfitting, validation and test sets: Act 3</li><li>Feature engineering, missing data and bias: Act 4</li><li>Deployment, drift and monitoring: the questions above</li></ul></div>
+  </div>
+  <div class="notes"><span class="kicker">Presenter notes · close</span>
+    <ul>
+      <li>Walk the table row by row; each row points back to a demo they just played with.</li>
+      <li>Leave the five questions on screen during Q&amp;A.</li>
+      <li>If time allows, ask: "Which of today's demos surprised you most?"</li>
+    </ul>
+  </div>
+  <footer>All examples on this page are made up for teaching and run entirely in your browser. <a class="back-link" href="./">Back to the study map</a> to study each idea properly.</footer>
+</section>
+
+</div>
+
+<script id="logic">
+// ---------- pure logic (no DOM) ----------
+function mulberry32(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gaussian(rng) { return Math.sqrt(-2 * Math.log(1 - rng())) * Math.cos(2 * Math.PI * rng()); }
+
+// Act 2: word n-gram counts with back-off to shorter contexts.
+function tokenize(text) { return (text.toLowerCase().match(/[a-z0-9']+|[.!?]/g) || []); }
+function buildNgram(tokens, maxOrder) {
+  const tables = [];
+  for (let k = 1; k <= maxOrder; k += 1) {
+    const table = new Map();
+    for (let i = k; i < tokens.length; i += 1) {
+      const key = tokens.slice(i - k, i).join(' ');
+      if (!table.has(key)) table.set(key, new Map());
+      const next = table.get(key); next.set(tokens[i], (next.get(tokens[i]) || 0) + 1);
+    }
+    tables[k] = table;
+  }
+  return tables;
+}
+function nextDist(tables, context, order) {
+  for (let k = Math.min(order, context.length); k >= 1; k -= 1) {
+    const counts = tables[k] && tables[k].get(context.slice(-k).join(' '));
+    if (counts) {
+      const total = [...counts.values()].reduce((s, v) => s + v, 0);
+      return { used: k, items: [...counts.entries()].map(([w, c]) => ({ w, p: c / total })).sort((a, b) => b.p - a.p) };
+    }
+  }
+  return { used: 0, items: [] };
+}
+function sampleWord(items, temperature, rng) {
+  const weights = items.map((it) => Math.pow(it.p, 1 / temperature));
+  const total = weights.reduce((s, v) => s + v, 0);
+  let r = rng() * total;
+  for (let i = 0; i < items.length; i += 1) { r -= weights[i]; if (r <= 0) return items[i].w; }
+  return items[items.length - 1].w;
+}
+
+// Act 3: least-squares polynomial fit via the normal equations (x scaled to [-1, 1]).
+function solve(A, b) {
+  const n = b.length; const M = A.map((row, i) => [...row, b[i]]);
+  for (let c = 0; c < n; c += 1) {
+    let p = c; for (let r = c + 1; r < n; r += 1) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < n; r += 1) { if (r === c) continue; const f = M[r][c] / M[c][c]; for (let k = c; k <= n; k += 1) M[r][k] -= f * M[c][k]; }
+  }
+  return M.map((row, i) => row[n] / row[i]);
+}
+function polyFit(xs, ys, degree) {
+  const d = degree + 1;
+  const A = Array.from({ length: d }, () => Array(d).fill(0)); const b = Array(d).fill(0);
+  xs.forEach((x, i) => { const pw = Array.from({ length: d }, (_, k) => x ** k); for (let r = 0; r < d; r += 1) { b[r] += pw[r] * ys[i]; for (let c = 0; c < d; c += 1) A[r][c] += pw[r] * pw[c]; } });
+  for (let r = 0; r < d; r += 1) A[r][r] += 1e-10;
+  return solve(A, b);
+}
+const polyEval = (w, x) => w.reduce((s, c, k) => s + c * x ** k, 0);
+const rmse = (w, xs, ys) => Math.sqrt(xs.reduce((s, x, i) => s + (polyEval(w, x) - ys[i]) ** 2, 0) / xs.length);
+function curveData() {
+  const rng = mulberry32(42); const f = (x) => 0.9 * Math.sin(2.6 * x);
+  const train = Array.from({ length: 10 }, (_, i) => { const x = -0.95 + (1.9 * i) / 9 + (rng() - 0.5) * 0.08; return { x, y: f(x) + 0.28 * gaussian(rng) }; });
+  const test = Array.from({ length: 36 }, () => { const x = -0.97 + 1.94 * rng(); return { x, y: f(x) + 0.28 * gaussian(rng) }; });
+  return { train, test, f };
+}
+
+// Act 4: two farms, different boundaries; logistic regression trained on a mix.
+function farmData() {
+  const rng = mulberry32(7);
+  const leaf = (farm) => {
+    const x1 = farm === 'A' ? 0.5 + 4.5 * rng() : 5 + 4.5 * rng();
+    const x2 = 10 * rng();
+    const edge = farm === 'A' ? 3 + 0.4 * x1 : 5 - 0.9 * (x1 - 5);
+    return { x1, x2, farm, y: x2 > edge ? 1 : 0 };
+  };
+  const make = (farm, n) => Array.from({ length: n }, () => leaf(farm));
+  return { poolA: make('A', 400), poolB: make('B', 400), testA: make('A', 300), testB: make('B', 300) };
+}
+// Logistic regression on features [1, x1, x2, x1^2] (x scaled to about [-1, 1]), so the detector's
+// boundary can bend gently. Trained by plain gradient descent.
+const farmFeatures = (x1, x2) => [1, x1 / 5 - 1, x2 / 5 - 1, (x1 / 5 - 1) ** 2];
+function trainLogistic(points) {
+  const n = points.length; let w = [0, 0, 0, 0];
+  for (let it = 0; it < 1500; it += 1) {
+    const g = [0, 0, 0, 0];
+    for (const p of points) { const z = farmFeatures(p.x1, p.x2); const s = z[0] * w[0] + z[1] * w[1] + z[2] * w[2] + z[3] * w[3]; const h = 1 / (1 + Math.exp(-s)); for (let k = 0; k < 4; k += 1) g[k] += (h - p.y) * z[k] / n; }
+    for (let k = 0; k < 4; k += 1) w[k] -= 2 * g[k];
+  }
+  return (x1, x2) => { const z = farmFeatures(x1, x2); return z[0] * w[0] + z[1] * w[1] + z[2] * w[2] + z[3] * w[3]; };
+}
+function farmModel(data, sharePercent) {
+  const total = 200; const nB = Math.round((total * sharePercent) / 100);
+  const train = [...data.poolA.slice(0, total - nB), ...data.poolB.slice(0, nB)];
+  const score = trainLogistic(train);
+  const acc = (set) => set.filter((p) => (score(p.x1, p.x2) > 0 ? 1 : 0) === p.y).length / set.length;
+  return { score, train, accA: acc(data.testA), accB: acc(data.testB) };
+}
+</script>
+
+<script>
+// ---------- page wiring ----------
+(function () {
+  const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const redrawers = [];
+  const redrawAll = () => redrawers.forEach((fn) => fn());
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', redrawAll);
+  new MutationObserver(redrawAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  // Presenter notes toggle (remembered in this browser only)
+  const notesBtn = document.getElementById('notesToggle');
+  function setNotes(on) { document.body.classList.toggle('show-notes', on); notesBtn.setAttribute('aria-pressed', String(on)); try { localStorage.setItem('liberty-notes', on ? '1' : '0'); } catch (e) {} }
+  let notesOn = false; try { notesOn = localStorage.getItem('liberty-notes') === '1'; } catch (e) {}
+  setNotes(notesOn);
+  notesBtn.addEventListener('click', () => setNotes(!document.body.classList.contains('show-notes')));
+
+  // Canvas helper: logical coordinates [x0,x1] x [y0,y1] with room for axis labels.
+  function plot(canvas, box, labels) {
+    const ctx = canvas.getContext('2d');
+    const state = { ctx, box, labels, W: 0, H: 0 };
+    const pad = { l: 44, r: 12, t: 12, b: 34 };
+    state.fit = () => { const dpr = window.devicePixelRatio || 1; const w = canvas.clientWidth; const h = canvas.clientHeight; canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); state.W = w; state.H = h; };
+    state.sx = (x) => pad.l + ((x - box.x0) / (box.x1 - box.x0)) * (state.W - pad.l - pad.r);
+    state.sy = (y) => state.H - pad.b - ((y - box.y0) / (box.y1 - box.y0)) * (state.H - pad.t - pad.b);
+    state.ix = (px) => box.x0 + ((px - pad.l) / (state.W - pad.l - pad.r)) * (box.x1 - box.x0);
+    state.iy = (py) => box.y0 + ((state.H - pad.b - py) / (state.H - pad.t - pad.b)) * (box.y1 - box.y0);
+    state.frame = (ticksX, ticksY) => {
+      ctx.clearRect(0, 0, state.W, state.H);
+      ctx.strokeStyle = css('--grid'); ctx.lineWidth = 1; ctx.fillStyle = css('--muted'); ctx.font = '11px ' + css('--font-mono');
+      ticksX.forEach((t) => { ctx.beginPath(); ctx.moveTo(state.sx(t), state.sy(box.y0)); ctx.lineTo(state.sx(t), state.sy(box.y1)); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(String(t), state.sx(t), state.H - pad.b + 14); });
+      ticksY.forEach((t) => { ctx.beginPath(); ctx.moveTo(state.sx(box.x0), state.sy(t)); ctx.lineTo(state.sx(box.x1), state.sy(t)); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(String(t), pad.l - 6, state.sy(t) + 4); });
+      ctx.font = '12px ' + css('--font-ui'); ctx.textAlign = 'center'; ctx.fillText(labels.x, (pad.l + state.W - pad.r) / 2, state.H - 4);
+      ctx.save(); ctx.translate(12, (pad.t + state.H - pad.b) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText(labels.y, 0, 0); ctx.restore();
+    };
+    state.shade = (fn, colorPos, colorNeg) => {
+      const n = 36; const cw = (box.x1 - box.x0) / n; const ch = (box.y1 - box.y0) / n;
+      ctx.globalAlpha = 0.13;
+      for (let i = 0; i < n; i += 1) for (let j = 0; j < n; j += 1) {
+        const v = fn(box.x0 + (i + 0.5) * cw, box.y0 + (j + 0.5) * ch); if (v === null) continue;
+        ctx.fillStyle = v > 0 ? colorPos : colorNeg;
+        const x = state.sx(box.x0 + i * cw); const y = state.sy(box.y0 + (j + 1) * ch);
+        ctx.fillRect(x, y, state.sx(box.x0 + (i + 1) * cw) - x + 0.5, state.sy(box.y0 + j * ch) - y + 0.5);
+      }
+      ctx.globalAlpha = 1;
+    };
+    return state;
+  }
+  function observe(canvas, state, draw) {
+    const ro = new ResizeObserver(() => { state.fit(); draw(); }); ro.observe(canvas);
+    redrawers.push(draw);
+  }
+
+  // ---------- Act 1: perceptron ----------
+  const example1 = [[2, 4, -1], [3, 6, -1], [1.5, 7, -1], [4, 3, -1], [5, 4.5, -1], [2.5, 2, -1], [6, 2.5, -1], [7, 6, 1], [8, 5, 1], [6.5, 8, 1], [5.5, 8.5, 1], [8.5, 7.5, 1], [4.5, 9, 1], [9, 3.5, 1]];
+  const s1 = { pts: example1.map((p) => [...p]), th: [0, 0], b: 0, trained: false, adding: 1, active: -1, running: false };
+  const c1 = document.getElementById('c1');
+  const P1 = plot(c1, { x0: 0, x1: 10, y0: 0, y1: 10 }, { x: 'hours studied', y: 'hours slept' });
+  const u = (v) => (v - 5) / 5;
+  const score1 = (x, y) => s1.th[0] * u(x) + s1.th[1] * u(y) + s1.b;
+  function draw1() {
+    const ctx = P1.ctx; P1.frame([0, 2, 4, 6, 8, 10], [0, 2, 4, 6, 8, 10]);
+    const hasLine = s1.th[0] !== 0 || s1.th[1] !== 0;
+    if (hasLine) {
+      P1.shade((x, y) => score1(x, y), css('--class-a'), css('--class-b'));
+      const a = s1.th[0] / 5; const bb = s1.th[1] / 5; const c = s1.b - s1.th[0] - s1.th[1];
+      ctx.strokeStyle = css('--text'); ctx.lineWidth = 2.5; ctx.beginPath();
+      if (Math.abs(bb) > 1e-9) { ctx.moveTo(P1.sx(0), P1.sy(-c / bb)); ctx.lineTo(P1.sx(10), P1.sy(-(c + 10 * a) / bb)); } else { ctx.moveTo(P1.sx(-c / a), P1.sy(0)); ctx.lineTo(P1.sx(-c / a), P1.sy(10)); }
+      ctx.save(); ctx.beginPath(); ctx.rect(P1.sx(0), P1.sy(10), P1.sx(10) - P1.sx(0), P1.sy(0) - P1.sy(10)); ctx.clip();
+      ctx.beginPath(); if (Math.abs(bb) > 1e-9) { ctx.moveTo(P1.sx(0), P1.sy(-c / bb)); ctx.lineTo(P1.sx(10), P1.sy(-(c + 10 * a) / bb)); } else { ctx.moveTo(P1.sx(-c / a), P1.sy(0)); ctx.lineTo(P1.sx(-c / a), P1.sy(10)); }
+      ctx.stroke(); ctx.restore();
+    }
+    s1.pts.forEach((p, i) => {
+      const wrong = hasLine && p[2] * score1(p[0], p[1]) <= 0;
+      ctx.beginPath(); ctx.arc(P1.sx(p[0]), P1.sy(p[1]), 7, 0, Math.PI * 2);
+      ctx.fillStyle = p[2] > 0 ? css('--class-a') : css('--class-b'); ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = css('--surface'); ctx.stroke();
+      if (wrong) { ctx.beginPath(); ctx.arc(P1.sx(p[0]), P1.sy(p[1]), 11, 0, Math.PI * 2); ctx.strokeStyle = css('--bad'); ctx.lineWidth = 2; ctx.stroke(); }
+      if (i === s1.active) { ctx.beginPath(); ctx.arc(P1.sx(p[0]), P1.sy(p[1]), 15, 0, Math.PI * 2); ctx.strokeStyle = css('--action'); ctx.lineWidth = 3; ctx.stroke(); }
+    });
+    const f = (v) => (v >= 0 ? '+ ' : '− ') + Math.abs(v).toFixed(2);
+    document.getElementById('rule1').textContent = `score = ${(s1.th[0] / 5).toFixed(2)} × study ${f(s1.th[1] / 5)} × sleep ${f(s1.b - s1.th[0] - s1.th[1])}`;
+  }
+  observe(c1, P1, draw1);
+  const stat1 = document.getElementById('stat1');
+  function setAdding(v) { s1.adding = v; document.getElementById('addPass').setAttribute('aria-pressed', String(v === 1)); document.getElementById('addFail').setAttribute('aria-pressed', String(v === -1)); }
+  document.getElementById('addPass').onclick = () => setAdding(1);
+  document.getElementById('addFail').onclick = () => setAdding(-1);
+  c1.addEventListener('click', (e) => {
+    if (s1.running) return;
+    const r = c1.getBoundingClientRect(); const x = P1.ix(e.clientX - r.left); const y = P1.iy(e.clientY - r.top);
+    if (x < 0 || x > 10 || y < 0 || y > 10) return;
+    s1.pts.push([Math.round(x * 10) / 10, Math.round(y * 10) / 10, s1.adding]);
+    stat1.textContent = `Added a student who ${s1.adding > 0 ? 'passed' : 'did not pass'}. Press Train to update the machine.`; stat1.className = '';
+    draw1();
+  });
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('train1').onclick = async () => {
+    if (s1.running) return; s1.running = true;
+    const btn = document.getElementById('train1'); btn.disabled = true;
+    let pass = 0; let mistakes = 1; let updates = 0;
+    while (mistakes > 0 && pass < 20) {
+      pass += 1; mistakes = 0;
+      for (let i = 0; i < s1.pts.length; i += 1) {
+        const p = s1.pts[i]; s1.active = i;
+        if (p[2] * score1(p[0], p[1]) <= 0) { s1.th[0] += p[2] * u(p[0]); s1.th[1] += p[2] * u(p[1]); s1.b += p[2]; mistakes += 1; updates += 1; }
+        stat1.textContent = `Pass ${pass}: student ${i + 1} of ${s1.pts.length}, ${mistakes} mistake${mistakes === 1 ? '' : 's'} so far`; stat1.className = '';
+        draw1(); if (!reduced) await wait(pass <= 2 ? 110 : 35);
+      }
+      if (reduced) await wait(150);
+    }
+    s1.active = -1; s1.running = false; btn.disabled = false; draw1();
+    if (mistakes === 0) { stat1.textContent = `Learned: a whole pass with no mistakes after ${pass} pass${pass === 1 ? '' : 'es'} and ${updates} nudges.`; stat1.className = 'status ok'; }
+    else { stat1.textContent = `Still ${mistakes} mistake${mistakes === 1 ? '' : 's'} after 20 passes: no straight line separates these dots, so it keeps adjusting.`; stat1.className = 'status warn'; }
+  };
+  document.getElementById('reset1').onclick = () => { if (s1.running) return; s1.th = [0, 0]; s1.b = 0; stat1.textContent = 'Everything forgotten: all three numbers are back to zero.'; stat1.className = ''; draw1(); };
+  document.getElementById('restore1').onclick = () => { if (s1.running) return; s1.pts = example1.map((p) => [...p]); s1.th = [0, 0]; s1.b = 0; stat1.textContent = 'Example restored. Not trained yet.'; stat1.className = ''; draw1(); };
+
+  // ---------- Act 2: autocomplete ----------
+  let order = 2; let tables = null;
+  const corpus = document.getElementById('corpus'); const promptEl = document.getElementById('prompt');
+  const rebuild = () => { tables = buildNgram(tokenize(corpus.value), 3); };
+  rebuild(); corpus.addEventListener('input', rebuild);
+  document.querySelectorAll('[data-order]').forEach((b) => b.addEventListener('click', () => {
+    order = Number(b.dataset.order); document.querySelectorAll('[data-order]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); showOdds();
+  }));
+  const temp = document.getElementById('temp');
+  temp.addEventListener('input', () => { document.getElementById('tempVal').textContent = Number(temp.value).toFixed(1); });
+  function showOdds() {
+    const ctxWords = tokenize(promptEl.value); const d = nextDist(tables, ctxWords, order);
+    const bars = document.getElementById('bars'); bars.innerHTML = '';
+    const head = document.createElement('p'); head.className = 'kicker';
+    head.textContent = d.items.length ? `Next word after "${ctxWords.slice(-d.used).join(' ')}"${d.used < Math.min(order, ctxWords.length) ? ' (it never saw the longer phrase, so it used a shorter one)' : ''}` : 'It has never seen these words. Try words from the text.';
+    bars.appendChild(head);
+    d.items.slice(0, 6).forEach((it) => {
+      const row = document.createElement('div'); row.className = 'bar';
+      row.innerHTML = `<span></span><div class="bar-track"><div class="bar-fill" style="width:${(100 * it.p).toFixed(1)}%"></div></div><span class="bar-num">${Math.round(100 * it.p)}%</span>`;
+      row.firstChild.textContent = it.w; bars.appendChild(row);
+    });
+  }
+  document.getElementById('odds').onclick = showOdds;
+  document.getElementById('gen').onclick = () => {
+    const words = tokenize(promptEl.value); const start = words.length; const T = Number(temp.value);
+    for (let i = 0; i < 24; i += 1) { const d = nextDist(tables, words, order); if (!d.items.length) break; words.push(sampleWord(d.items, T, Math.random)); }
+    let text = ''; let cap = true;
+    words.forEach((w, i) => { const piece = /[.!?]/.test(w) ? w : (cap ? w[0].toUpperCase() + w.slice(1) : w); text += (/[.!?]/.test(w) || i === 0 ? '' : ' ') + piece; cap = /[.!?]/.test(w); });
+    const out = document.getElementById('generated'); out.textContent = '';
+    const promptSpan = document.createElement('b'); const cut = text.split(' ').slice(0, start).join(' ');
+    promptSpan.textContent = cut; out.appendChild(promptSpan); out.appendChild(document.createTextNode(text.slice(cut.length)));
+    const note = document.createElement('span'); note.className = 'note'; note.textContent = `memory ${order} · creativity ${T.toFixed(1)} · every word chosen by likelihood alone`; out.appendChild(note);
+    showOdds();
+  };
+  showOdds();
+
+  // ---------- Act 3: over-fitting ----------
+  const cd = curveData(); let revealed = false;
+  const c3 = document.getElementById('c3');
+  const P3 = plot(c3, { x0: -1, x1: 1, y0: -2, y1: 2 }, { x: 'input', y: 'output' });
+  const deg = document.getElementById('deg');
+  function draw3() {
+    const d = Number(deg.value); document.getElementById('degVal').textContent = d;
+    const w = polyFit(cd.train.map((p) => p.x), cd.train.map((p) => p.y), d);
+    const ctx = P3.ctx; P3.frame([-1, -0.5, 0, 0.5, 1], [-2, -1, 0, 1, 2]);
+    ctx.save(); ctx.beginPath(); ctx.rect(P3.sx(-1), P3.sy(2), P3.sx(1) - P3.sx(-1), P3.sy(-2) - P3.sy(2)); ctx.clip();
+    ctx.strokeStyle = css('--primary'); ctx.lineWidth = 3; ctx.beginPath();
+    for (let i = 0; i <= 300; i += 1) { const x = -1 + (2 * i) / 300; const y = Math.max(-3, Math.min(3, polyEval(w, x))); if (i) ctx.lineTo(P3.sx(x), P3.sy(y)); else ctx.moveTo(P3.sx(x), P3.sy(y)); }
+    ctx.stroke(); ctx.restore();
+    if (revealed) cd.test.forEach((p) => { ctx.beginPath(); ctx.arc(P3.sx(p.x), P3.sy(p.y), 5, 0, Math.PI * 2); ctx.strokeStyle = css('--bad'); ctx.lineWidth = 2; ctx.stroke(); });
+    cd.train.forEach((p) => { ctx.beginPath(); ctx.arc(P3.sx(p.x), P3.sy(p.y), 6, 0, Math.PI * 2); ctx.fillStyle = css('--text'); ctx.fill(); });
+    const tr = rmse(w, cd.train.map((p) => p.x), cd.train.map((p) => p.y)); const te = rmse(w, cd.test.map((p) => p.x), cd.test.map((p) => p.y));
+    document.getElementById('trainErr').textContent = tr.toFixed(2);
+    document.getElementById('trainBar').style.width = `${Math.min(100, (100 * tr) / 1.5)}%`;
+    document.getElementById('testErr').textContent = revealed ? te.toFixed(2) : 'hidden';
+    document.getElementById('testBar').style.width = revealed ? `${Math.min(100, (100 * te) / 1.5)}%` : '0%';
+  }
+  observe(c3, P3, draw3); deg.addEventListener('input', draw3);
+  const rv = document.getElementById('reveal3');
+  rv.onclick = () => { revealed = !revealed; rv.textContent = revealed ? 'Hide new data' : 'Reveal new data'; rv.setAttribute('aria-pressed', String(revealed)); draw3(); };
+
+  // ---------- Act 4: whose data ----------
+  const fd = farmData(); const share = document.getElementById('share');
+  const c4 = document.getElementById('c4');
+  const P4 = plot(c4, { x0: 0, x1: 10, y0: 0, y1: 10 }, { x: 'leaf colour (yellow → green)', y: 'spot size' });
+  let model4 = farmModel(fd, 0);
+  function draw4() {
+    const ctx = P4.ctx; P4.frame([0, 2, 4, 6, 8, 10], [0, 2, 4, 6, 8, 10]);
+    P4.shade((x, y) => model4.score(x, y), css('--class-b'), css('--class-a'));
+    ctx.strokeStyle = css('--muted'); ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(P4.sx(5), P4.sy(0)); ctx.lineTo(P4.sx(5), P4.sy(10)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css('--muted'); ctx.font = '600 12px ' + css('--font-ui'); ctx.textAlign = 'center';
+    ctx.fillText('Farm A', P4.sx(2.75), P4.sy(9.6)); ctx.fillText('Farm B', P4.sx(7.25), P4.sy(9.6));
+    const shown = [...fd.testA.slice(0, 70), ...fd.testB.slice(0, 70)];
+    shown.forEach((p) => {
+      const x = P4.sx(p.x1); const y = P4.sy(p.x2); ctx.fillStyle = p.y ? css('--class-b') : css('--class-a');
+      ctx.beginPath(); if (p.farm === 'A') ctx.arc(x, y, 4.5, 0, Math.PI * 2); else { ctx.moveTo(x, y - 6); ctx.lineTo(x + 6, y); ctx.lineTo(x, y + 6); ctx.lineTo(x - 6, y); ctx.closePath(); }
+      ctx.fill();
+      if ((model4.score(p.x1, p.x2) > 0 ? 1 : 0) !== p.y) { ctx.strokeStyle = css('--text'); ctx.lineWidth = 1.5; ctx.stroke(); }
+    });
+    document.getElementById('accA').textContent = `${Math.round(100 * model4.accA)}%`; document.getElementById('barA').style.width = `${100 * model4.accA}%`;
+    document.getElementById('accB').textContent = `${Math.round(100 * model4.accB)}%`; document.getElementById('barB').style.width = `${100 * model4.accB}%`;
+  }
+  observe(c4, P4, draw4);
+  share.addEventListener('input', () => { document.getElementById('shareVal').textContent = `${share.value}%`; model4 = farmModel(fd, Number(share.value)); draw4(); });
+})();
+</script>
+
+</body>
+</html>

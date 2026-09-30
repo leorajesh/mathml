@@ -5,6 +5,7 @@ import { ConceptGraph } from './components/ConceptGraph.jsx';
 import { ConceptFigure } from './components/Figures.jsx';
 import { Dashboard, HeaderStats } from './components/Dashboard.jsx';
 import { CheatSheet } from './components/CheatSheet.jsx';
+import { ImpactProjects } from './components/ImpactProjects.jsx';
 import { QuickReview } from './components/QuickReview.jsx';
 import { codeExamples } from './data/codeExamples.js';
 import { conceptMap, entryFor, topicMap, topicOf } from './data/concepts.js';
@@ -22,6 +23,7 @@ import { MML_BOOK, mmlLink, mmlReferences, mmlReferencesFor } from './data/mmlRe
 import { caseStudies, courseBooks, courseLink, courseReferences, courseReferencesFor } from './data/courseReferences.js';
 import { mathLinks, mlUsesOf } from './data/mathLinks.js';
 import { FormulaDefinition } from './components/FormulaDefinition.jsx';
+import { StartHere } from './components/StartHere.jsx';
 import { PythonRunner } from './python/PythonRunner.jsx';
 import { DoneToggle, TrackBar, TrackMembership, TrackView } from './components/LearningTrack.jsx';
 import { Quiz, QuizBadge } from './components/Quiz.jsx';
@@ -51,6 +53,7 @@ function routeFromHash() {
   const [path, query = ''] = raw.split('?');
   if (path === 'review') return { view: 'review' };
   if (path === 'cheatsheet') return { view: 'cheatsheet' };
+  if (path === 'projects') return { view: 'projects' };
   if (path.startsWith('bonus=')) {
     const bonusKey = path.slice('bonus='.length);
     if (Object.hasOwn(bonusExamples, bonusKey)) return { bonusKey, trackId: bonusKey.slice(0, bonusKey.indexOf('/')) };
@@ -98,7 +101,7 @@ export function App() {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
     document.title = route.bonusKey ? `Bonus examples | ML + Math Study Map` : route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
-      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : route.view === 'cheatsheet' ? 'Formula Cheat Sheet | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
+      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : route.view === 'cheatsheet' ? 'Formula Cheat Sheet | ML + Math Study Map' : route.view === 'projects' ? 'Impact Projects | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
   }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view, route.bonusKey]);
 
   function go(hash) {
@@ -157,15 +160,15 @@ export function App() {
       ) : selectedTopic ? (
         <TopicPage key={selectedTopic.id} topic={selectedTopic} onBack={showLanding} onSelect={selectConcept} />
       ) : (
-        <Landing trackId={route.trackId} view={route.view} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onShowReview={() => go('review')} onShowCheatSheet={() => go('cheatsheet')} onOpenHomework={openHomework} />
+        <Landing trackId={route.trackId} view={route.view} onSelect={selectConcept} onShowTrack={showTrack} onShowLanding={showLanding} onShowReview={() => go('review')} onShowCheatSheet={() => go('cheatsheet')} onShowProjects={() => go('projects')} onOpenHomework={openHomework} />
       )}
     </div>
   );
 }
 
-function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowReview, onShowCheatSheet, onOpenHomework }) {
+function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowReview, onShowCheatSheet, onShowProjects, onOpenHomework }) {
   const [localTab, setLocalTab] = React.useState('overview');
-  const activeTab = trackId ? `track-${trackId}` : view === 'review' || view === 'cheatsheet' ? view : localTab;
+  const activeTab = trackId ? `track-${trackId}` : view === 'review' || view === 'cheatsheet' || view === 'projects' ? view : localTab;
 
   function openLocalTab(tab) {
     setLocalTab(tab);
@@ -181,12 +184,14 @@ function Landing({ trackId, view, onSelect, onShowTrack, onShowLanding, onShowRe
         ))}
         <button className={activeTab === 'review' ? 'active' : ''} onClick={onShowReview}>Quick Review</button>
         <button className={activeTab === 'cheatsheet' ? 'active' : ''} onClick={onShowCheatSheet}>Cheat Sheet</button>
+        <button className={activeTab === 'projects' ? 'active' : ''} onClick={onShowProjects}>Impact Projects</button>
         <button className={activeTab === 'objectives' ? 'active' : ''} onClick={() => openLocalTab('objectives')}>Learning Objectives</button>
       </nav>
 
       {activeTab === 'overview' && <Dashboard onOpen={onSelect} onOpenHomework={onOpenHomework} onShowReview={onShowReview} />}
       {activeTab === 'review' && <QuickReview onOpen={onSelect} />}
       {activeTab === 'cheatsheet' && <CheatSheet onOpen={(id) => onSelect(id, null)} />}
+      {activeTab === 'projects' && <ImpactProjects onOpen={(id) => onSelect(id, null)} />}
       {trackId && <TrackView trackId={trackId} onOpen={onSelect} onShowTrack={onShowTrack} onOpenHomework={onOpenHomework} />}
       {activeTab === 'objectives' && <LearningObjectives onSelect={(id) => onSelect(id, null)} />}
     </main>
@@ -214,6 +219,8 @@ function ConceptPage({ concept, trackId, section, practice, onBack, onSelect, on
         <p className="eyebrow">{concept.group} / {conceptLevel(concept.id)} / Source context: {concept.week}</p>
         <h1>{concept.title}</h1>
       </section>
+
+      <StartHere conceptId={concept.id} />
 
       <PageSections />
 

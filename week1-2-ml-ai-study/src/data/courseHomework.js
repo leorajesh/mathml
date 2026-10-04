@@ -1,6 +1,7 @@
 // Reading guides for the course's own homework sheets: for each problem, the topic in our words and the
-// pages that teach what it needs. No problem text or solutions are reproduced; the pages' worked
-// examples use different numbers, so the homework is still the student's own work.
+// pages that teach what it needs. The pages' worked examples use different numbers, so the homework is
+// still the student's own work. Full worked solutions, for after an own attempt, are kept separately in
+// homeworkSolutions.js behind a "do your own attempt first" step.
 
 export const courseHomework = [
   {

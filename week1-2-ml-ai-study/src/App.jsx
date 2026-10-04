@@ -6,6 +6,8 @@ import { ConceptFigure } from './components/Figures.jsx';
 import { Dashboard, HeaderStats } from './components/Dashboard.jsx';
 import { CheatSheet } from './components/CheatSheet.jsx';
 import { ImpactProjects } from './components/ImpactProjects.jsx';
+import { HomeworkSolutions } from './components/HomeworkSolutions.jsx';
+import { homeworkSolutions } from './data/homeworkSolutions.js';
 import { QuickReview } from './components/QuickReview.jsx';
 import { codeExamples } from './data/codeExamples.js';
 import { conceptMap, entryFor, topicMap, topicOf } from './data/concepts.js';
@@ -41,6 +43,7 @@ import { recordVisit } from './activity.js';
 //   #<concept-id>?track=math   concept page inside the Math or ML track, with previous / next
 //   #track=ml                  the ML track's step-by-step list
 //   #review                    quick review of every page, grouped by category
+//   #solutions=math-hw1        worked solutions and review of a course homework sheet
 //   #homework=ml/regression    the homework of one track section (optionally ?problem=<id>)
 //   #<concept-id>?section=example&practice=1   jump to the worked example, steps hidden for practice
 function routeFromHash() {
@@ -54,6 +57,10 @@ function routeFromHash() {
   if (path === 'review') return { view: 'review' };
   if (path === 'cheatsheet') return { view: 'cheatsheet' };
   if (path === 'projects') return { view: 'projects' };
+  if (path.startsWith('solutions=')) {
+    const solutionsId = path.slice('solutions='.length);
+    return Object.hasOwn(homeworkSolutions, solutionsId) ? { solutionsId } : {};
+  }
   if (path.startsWith('bonus=')) {
     const bonusKey = path.slice('bonus='.length);
     if (Object.hasOwn(bonusExamples, bonusKey)) return { bonusKey, trackId: bonusKey.slice(0, bonusKey.indexOf('/')) };
@@ -101,7 +108,7 @@ export function App() {
     const trackTitle = route.trackId ? tracks[route.trackId].title : null;
     document.title = route.bonusKey ? `Bonus examples | ML + Math Study Map` : route.homeworkKey ? `Homework: ${homework[route.homeworkKey].section} | ML + Math Study Map` : selectedConcept || selectedTopic
       ? `${(selectedConcept ?? selectedTopic).title} | ML + Math Study Map`
-      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : route.view === 'cheatsheet' ? 'Formula Cheat Sheet | ML + Math Study Map' : route.view === 'projects' ? 'Impact Projects | ML + Math Study Map' : 'ML & Mathematics for AI Study Map';
+      : trackTitle ? `${trackTitle} | ML + Math Study Map` : route.view === 'review' ? 'Quick Review | ML + Math Study Map' : route.view === 'cheatsheet' ? 'Formula Cheat Sheet | ML + Math Study Map' : route.view === 'projects' ? 'Impact Projects | ML + Math Study Map' : route.solutionsId ? `${homeworkSolutions[route.solutionsId].title} | ML + Math Study Map` : 'ML & Mathematics for AI Study Map';
   }, [selectedConcept, selectedTopic, route.trackId, route.homeworkKey, route.view, route.bonusKey]);
 
   function go(hash) {
@@ -151,7 +158,9 @@ export function App() {
         <AccountMenu />
       </header>
 
-      {route.bonusKey ? (
+      {route.solutionsId ? (
+        <HomeworkSolutions key={route.solutionsId} setId={route.solutionsId} onOpen={(id) => selectConcept(id, null)} onBack={() => showTrack('math')} />
+      ) : route.bonusKey ? (
         <BonusPage key={route.bonusKey} sectionKeyValue={route.bonusKey} onOpen={selectConcept} onShowTrack={showTrack} onOpenHomework={openHomework} />
       ) : route.homeworkKey ? (
         <HomeworkPage key={route.homeworkKey} setKey={route.homeworkKey} problemId={route.problemId} onSelect={(id) => selectConcept(id, null)} onShowTrack={showTrack} onOpenHomework={openHomework} />

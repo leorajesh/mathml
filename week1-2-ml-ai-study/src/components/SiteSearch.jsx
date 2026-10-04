@@ -70,6 +70,16 @@ const entries = [
   },
   {
     kind: 'view',
+    id: 'solutions=math-hw1',
+    title: 'Math Homework 1: worked solutions and review',
+    context: '99.512 Mathematics for AI, all 15 problems',
+    blurb: 'Step-by-step solutions with a self-check and the slips from a graded attempt for every problem.',
+    title_: normalize('math homework 1 solutions answers review hw1 worked'),
+    summary_: normalize('differentiation matrix p4 p3 inverse gauss jordan determinant change of basis rank nullity trace subspace'),
+    body_: '',
+  },
+  {
+    kind: 'view',
     id: 'cheatsheet',
     title: 'Formula Cheat Sheet',
     context: 'Every formula on one searchable, printable page',

@@ -11,6 +11,7 @@ import { projects } from '../data/projects.js';
 import { HomeworkButton } from './Homework.jsx';
 import { PracticeLinks } from './PracticeLinks.jsx';
 import { courseHomework } from '../data/courseHomework.js';
+import { homeworkSolutions } from '../data/homeworkSolutions.js';
 
 function otherTrack(trackId) {
   return trackIds.find((id) => id !== trackId);
@@ -66,6 +67,7 @@ export function TrackView({ trackId, onOpen, onShowTrack, onOpenHomework }) {
         <details className="course-hw-guide" key={guide.id}>
           <summary>{guide.kind === 'activities' ? 'Class activities guide' : 'Course homework guide'}: {guide.course}, {guide.title}. Which pages to read for each {guide.kind === 'activities' ? 'activity' : 'problem'}</summary>
           <p>{guide.note}</p>
+          {homeworkSolutions[guide.id] && <p><a className="course-hw-solutions" href={`#solutions=${guide.id}`}>After your own attempt: worked solutions and the professor's review of {guide.title} →</a></p>}
           <ol className="course-hw-list">
             {guide.items.map((item) => (
               <li key={item.problems}>

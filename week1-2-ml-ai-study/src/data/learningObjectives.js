@@ -1,3 +1,4 @@
+import { week45GraphObjectives, week45LearningObjectives } from './week45MathExtras.js';
 export const learningObjectives = [
   {
     area: 'Introduction to ML Modelling',
@@ -81,6 +82,10 @@ export const learningObjectives = [
     ],
   },
 ];
+
+// Weeks 4 and 5 of Mathematics for AI (week45MathExtras.js).
+learningObjectives.find((section) => section.area.startsWith('Analytic Geometry')).items.push(...week45LearningObjectives);
+learningObjectives.push(week45GraphObjectives);
 
 export const selfChecksByConcept = learningObjectives
   .flatMap((section) => section.items)

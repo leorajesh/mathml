@@ -1,3 +1,4 @@
+import { week45CourseBooks, week45CourseReferences } from './week45MathExtras.js';
 // The machine learning course's reading list, and where each ML page is covered in it.
 // Bishop is free to read from Microsoft Research, so its entries carry printed page numbers and link to
 // the right PDF page (printed page + 20). Section numbers for the other books follow the editions
@@ -295,3 +296,7 @@ export function courseReferencesFor(ids) {
     return true;
   });
 }
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(courseBooks, week45CourseBooks);
+Object.assign(courseReferences, week45CourseReferences);

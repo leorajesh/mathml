@@ -1,3 +1,4 @@
+import { week45ActivitiesGuide } from './week45MathExtras.js';
 // Reading guides for the course's own homework sheets: for each problem, the topic in our words and the
 // pages that teach what it needs. The pages' worked examples use different numbers, so the homework is
 // still the student's own work. Full worked solutions, for after an own attempt, are kept separately in
@@ -62,3 +63,5 @@ export const courseHomework = [
     ],
   },
 ];
+
+courseHomework.push(week45ActivitiesGuide);

@@ -11,6 +11,7 @@ export const reviewCategories = [
   { subject: 'Mathematics', title: 'Eigenvalues and Matrix Decompositions', sections: ['math:Eigenvalues and eigenvectors', 'math:Matrix decompositions', 'math:Dimensionality reduction'] },
   { subject: 'Mathematics', title: 'Calculus', sections: ['math:Vector calculus'] },
   { subject: 'Mathematics', title: 'Probability and Statistics', sections: ['math:Probability and statistics'] },
+  { subject: 'Mathematics', title: 'Graph Theory', sections: ['math:Graph theory'] },
   { subject: 'Machine Learning', title: 'The Learning Problem', sections: ['ml:The learning problem'] },
   { subject: 'Machine Learning', title: 'Classification', sections: ['ml:Linear classification', 'ml:Logistic regression'] },
   { subject: 'Machine Learning', title: 'Losses and Optimization', sections: ['ml:Losses and convexity', 'ml:Optimization'] },

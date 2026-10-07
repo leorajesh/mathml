@@ -1,3 +1,4 @@
+import { week45Stories } from './week45MathExtras.js';
 // "Why would you invent this?" A short story at the top of the main pages, before any formula: a
 // situation where you would want the idea, and how you might have stumbled on it yourself. Our own
 // words; checked by scripts/check-content.mjs (known pages, at most 130 words each).
@@ -74,3 +75,6 @@ export const stories = {
 
   'missing-data-imputation': "Your hospital data has blood pressure missing for a fifth of patients. Dropping those rows would lose a fifth of the data, and worse, the missing ones are mostly the sickest patients, who were rushed straight into treatment. Filling in the average would quietly give them normal readings. Before choosing a fix you need to ask why the values are missing, then fill them from what else you know, and keep a note that they were missing: that note may be one of the most informative things in the table.",
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(stories, week45Stories);

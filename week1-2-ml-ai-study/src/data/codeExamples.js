@@ -1,3 +1,4 @@
+import { week45CodeExamples } from './week45MathExtras.js';
 // Starter code for the "Try It in Python" editor on each concept page. Every snippet reproduces the
 // page's worked example, prints labeled results, and ends with a "Try" line suggesting an experiment.
 // String.raw keeps Python backslashes intact; avoid "${" inside snippets.
@@ -2240,3 +2241,6 @@ print("mean learned on training rows only:", train_mean)
 
 # Try: make the missing rows the oldest people instead. How does mean imputation bias them now?`,
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(codeExamples, week45CodeExamples);

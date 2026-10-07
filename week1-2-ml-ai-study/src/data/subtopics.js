@@ -1,3 +1,4 @@
+import { week45Topics } from './week45MathConcepts.js';
 // Topics whose titles name several ideas are split into subtopic pages. The topic keeps its
 // original id (so the concept map, old links, and edges still point at it) and becomes an overview
 // page; each subtopic is a full concept page with its own formulas, example, graph, and code.
@@ -29,8 +30,8 @@ export const topics = [
     group: 'Representation',
     week: 'MML book §3.1-3.4',
     summary: 'Ways to measure the length of a vector, the distance between two vectors, and the angle between them.',
-    overview: 'A norm measures length, and different norms (L1, L2, max) give differently shaped unit balls, which matters for regularization. An inner product generalizes the dot product; each one brings its own length, distance, angle, and meaning of orthogonal.',
-    children: ['norms', 'inner-products'],
+    overview: 'A norm measures length, and different norms (L1, L2, max) give differently shaped unit balls, which matters for regularization. A metric is the general notion of distance, with which convergence and completeness are defined. An inner product generalizes the dot product; each one brings its own length, distance, angle, and meaning of orthogonal, and the cosine of the angle is how words and documents are compared.',
+    children: ['norms', 'metric-spaces', 'inner-products', 'cosine-similarity'],
   },
   {
     id: 'projections-gram-schmidt',
@@ -38,8 +39,8 @@ export const topics = [
     group: 'Representation',
     week: 'MML book §3.6, §3.8',
     summary: 'Splitting space into perpendicular pieces, finding the closest point in a subspace, and building orthonormal bases.',
-    overview: 'Every subspace has an orthogonal complement, and every matrix has four fundamental subspaces that come in perpendicular pairs. Orthogonal projection finds the closest point of a subspace by making the error perpendicular to it, which is exactly least squares. Gram-Schmidt uses projections to turn any basis into an orthonormal one.',
-    children: ['orthogonal-complement', 'orthogonal-projections', 'gram-schmidt'],
+    overview: 'A direct sum splits a space into pieces so that every vector divides between them in exactly one way. Every subspace has an orthogonal complement, and every matrix has four fundamental subspaces that come in perpendicular pairs. Orthogonal projection finds the closest point of a subspace by making the error perpendicular to it, which is exactly least squares. Gram-Schmidt uses projections to turn any basis into an orthonormal one.',
+    children: ['direct-sum', 'orthogonal-complement', 'orthogonal-projections', 'gram-schmidt'],
   },
   {
     id: 'vector-calculus',
@@ -829,3 +830,5 @@ export const subtopicConcepts = [
     sources: ['W3C2.pdf'],
   },
 ];
+
+topics.push(...week45Topics);

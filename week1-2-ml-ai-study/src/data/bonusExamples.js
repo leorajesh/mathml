@@ -1,3 +1,4 @@
+import { week45BonusExamples } from './week45MathExtras.js';
 // Bonus worked examples for each track section, for students who want to go further. Each one is
 // modelled on a worked example (or section) of the course reference book, Mathematics for Machine
 // Learning (Deisenroth, Faisal and Ong), so students can compare with the original: the setup follows
@@ -309,3 +310,6 @@ export const bonusExamples = {
     },
   ],
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+for (const [key, list] of Object.entries(week45BonusExamples)) bonusExamples[key] = [...(bonusExamples[key] ?? []), ...list];

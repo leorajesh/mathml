@@ -1,3 +1,4 @@
+import { week45Quizzes } from './week45MathExtras.js';
 // Multiple-choice quizzes for each concept page. In each question the first option listed is
 // the correct one; the page shuffles options deterministically so the answer is not always first.
 // Topic pages combine the questions of their subtopics. Checked by scripts/check-content.mjs.
@@ -510,3 +511,6 @@ export const quizzes = {
     {"question": "Why fit an imputer on the training rows only?", "answer": "Otherwise test-set information leaks into training and the test score is optimistic", "wrong": ["Because test rows have no missing values", "Because imputation needs the labels", "It does not matter where it is fitted"], "why": "The test set stands in for future data, which the imputer cannot have seen."},
   ],
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(quizzes, week45Quizzes);

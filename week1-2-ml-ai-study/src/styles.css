@@ -1275,3 +1275,56 @@ a.overview-homework { text-decoration: none; }
 .ip-note { color: var(--text-muted); font-size: 0.92rem; }
 .ip-expected summary { cursor: pointer; font-weight: 600; }
 .ip-expected pre { margin: 8px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--code-bg); color: var(--code-text); font-family: var(--font-code); font-size: 0.8rem; overflow-x: auto; }
+
+/* Homework worked solutions and review */
+.solutions-page { max-width: 980px; margin: 0 auto; padding: 16px 16px 48px; }
+.sol-header { display: grid; gap: 8px; margin: 8px 0 20px; }
+.sol-header h1 { margin: 0; }
+.sol-header .ip-kicker { display: inline-flex; align-items: center; gap: 6px; }
+.sol-gate, .sol-general { margin: 0 0 20px; padding: 16px 18px; border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; background: var(--surface-2); }
+.sol-gate p { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 12px; }
+.sol-gate p:nth-child(2) { display: block; color: var(--text-muted); }
+.sol-general h2 { margin: 0 0 8px; font-size: 1.05rem; }
+.sol-general ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.sol-toc { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 18px; padding: 8px 0; background: var(--bg); }
+.sol-toc a { min-width: 34px; padding: 4px 8px; text-align: center; border: 1px solid var(--border); border-radius: 6px; color: var(--text); text-decoration: none; font-weight: 600; }
+.sol-toc a:hover { border-color: var(--primary); color: var(--primary); }
+.sol-problem { min-width: 0; margin: 0 0 22px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); scroll-margin-top: 56px; }
+.sol-head { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+.sol-head h3 { margin: 0; font-size: 1.1rem; }
+.sol-number { display: inline-grid; place-items: center; min-width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: var(--on-primary); font-weight: 700; }
+.sol-optional { margin-left: auto; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+.sol-idea, .sol-check { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0; line-height: 1.55; }
+.sol-idea svg { color: var(--ai); flex: none; margin-top: 3px; }
+.sol-check { padding: 10px 12px; border-radius: 8px; background: var(--primary-soft); }
+.sol-check svg { color: var(--primary); flex: none; margin-top: 3px; }
+.sol-steps { margin: 12px 0; padding-left: 22px; display: grid; gap: 10px; }
+.sol-steps li { min-width: 0; }
+.sol-steps p { margin: 0 0 4px; line-height: 1.55; }
+.sol-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; }
+.sol-slips { margin: 12px 0 8px; padding: 10px 12px; border-radius: 8px; border: 1px dashed var(--border); }
+.sol-slips-title { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; font-weight: 700; font-size: 0.9rem; }
+.sol-slips-title svg { color: var(--ai); }
+.sol-slips ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.solutions-page .bonus-answer .katex, .sol-problem p .katex { font-size: 1.02em; }
+.course-hw-solutions { font-weight: 700; color: var(--primary); }
+@media (max-width: 640px) { .sol-problem { padding: 12px; } .sol-problem p, .sol-steps > li, .sol-slips li, .sol-idea > span, .sol-check > span, .bonus-answer > span { overflow-x: auto; overflow-y: hidden; min-width: 0; padding-block: 2px; } .sol-head h3 { font-size: 1rem; } }
+
+/* Network diagrams and colourings (graph theory and Week 4 graphs) */
+.net-edge { stroke: var(--c-grey); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+.net-edge.hot { stroke: var(--c-blue); stroke-width: 4.5; }
+.net-edge.clash { stroke: var(--c-rose); stroke-width: 5; stroke-dasharray: 7 5; }
+.net-node { fill: var(--surface); stroke: var(--c-ink); stroke-width: 2; }
+.net-node.odd { fill: color-mix(in srgb, var(--c-rose) 30%, var(--surface)); stroke: var(--c-rose); }
+.col-1 { fill: color-mix(in srgb, var(--c-blue) 38%, var(--surface)); }
+.col-2 { fill: color-mix(in srgb, var(--c-coral) 42%, var(--surface)); }
+.col-3 { fill: color-mix(in srgb, var(--c-teal) 40%, var(--surface)); }
+.col-4 { fill: color-mix(in srgb, var(--c-amber) 40%, var(--surface)); }
+.seat { stroke: var(--border-strong); stroke-width: 1.5; }
+.seat.clash { stroke: var(--c-rose); stroke-width: 4; }
+.adj-cell { fill: var(--surface); stroke: var(--border); }
+.adj-cell.on { fill: color-mix(in srgb, var(--c-blue) 30%, var(--surface)); stroke: var(--c-blue); }
+.plot .net-name { font-size: 13px; font-weight: 800; fill: var(--text); }
+.plot .net-note { font-size: 12px; font-weight: 700; fill: var(--text-muted); }
+.plot .net-weight { font-size: 13px; font-weight: 800; fill: var(--c-amber); paint-order: stroke; stroke: var(--surface-2); stroke-width: 4px; }
+.eps-band { fill: color-mix(in srgb, var(--c-teal) 16%, transparent); }

@@ -21,6 +21,7 @@ import { stories } from '../src/data/stories.js';
 import { exampleTasks } from '../src/data/exampleTasks.js';
 import { plainGuide } from '../src/data/plainGuide.js';
 import { impactProjects } from '../src/data/impactProjects.js';
+import { homeworkSolutions } from '../src/data/homeworkSolutions.js';
 import { bonusExamples } from '../src/data/bonusExamples.js';
 import { reviewCategories, reviewTree } from '../src/data/quickReview.js';
 import { answerAsInput, checkAnswer } from '../src/utils/answerCheck.js';
@@ -32,7 +33,7 @@ const graphTypes = new Set([...graphSource.matchAll(/case '(\w+)':/g)].map((matc
 const figureSource = fs.readFileSync(new URL('../src/components/Figures.jsx', import.meta.url), 'utf8');
 const drawnFigures = new Set([...figureSource.slice(figureSource.indexOf('const drawings')).matchAll(/'([\w-]+)':/g)].map((match) => match[1]));
 // Pages the reference book does not cover; every other page must cite a section of it.
-const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'markov-chains', 'classification-metrics', 'roc-auc', 'ml-in-production', 'bootstrap', 'feature-engineering', 'missing-data-imputation']);
+const notInBook = new Set(['sets', 'perceptron', 'perceptron-convergence', 'elastic-net', 'lu-decomposition', 'markov-chains', 'classification-metrics', 'roc-auc', 'ml-in-production', 'bootstrap', 'feature-engineering', 'missing-data-imputation', 'graphs-basics', 'special-graphs', 'graph-matrices', 'graph-connectivity-paths', 'euler-hamilton', 'shortest-paths', 'graph-coloring']);
 
 function renders(tex, where) {
   try {
@@ -251,6 +252,23 @@ for (const key of sectionKeys) {
       const source = example.source;
       if (source.book === 'mml' ? !(source.page >= 1 && source.page <= 400) || !source.label : !courseBooks[source.book]) problems.push(`${where}: malformed source`);
     }
+  }
+}
+// Homework solutions: every problem complete, every formula (displayed or inline $...$) renders, links resolve.
+for (const [setId, set] of Object.entries(homeworkSolutions)) {
+  if (!courseHomework.some((guide) => guide.id === setId)) problems.push(`solutions ${setId}: no matching course homework guide`);
+  for (const problem of set.problems) {
+    const where = `solutions ${setId}/${problem.id}`;
+    for (const field of ['title', 'statement', 'idea', 'answer', 'check']) if (!problem[field]) problems.push(`${where}: missing ${field}`);
+    if (problem.steps.length < 2 || !problem.slips.length) problems.push(`${where}: needs at least 2 steps and the review notes`);
+    for (const id of problem.pages) if (!conceptMap[id]) problems.push(`${where}: unknown page "${id}"`);
+    const texts = [problem.statement, problem.idea, problem.answer, problem.check, ...problem.slips, ...problem.steps.map((step) => step.text)];
+    for (const text of texts) {
+      const parts = text.split('$');
+      if (parts.length % 2 === 0) problems.push(`${where}: unbalanced $ in "${text.slice(0, 40)}"`);
+      parts.forEach((part, index) => { if (index % 2) renders(part, where); });
+    }
+    for (const step of problem.steps) if (step.tex) renders(step.tex, `${where} step`);
   }
 }
 for (const guide of courseHomework) for (const item of guide.items) for (const id of item.pages) if (!conceptMap[id]) problems.push(`course homework guide ${guide.id} problem ${item.problems}: unknown page "${id}"`);

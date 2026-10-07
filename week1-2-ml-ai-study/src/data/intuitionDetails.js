@@ -1,3 +1,4 @@
+import { week45IntuitionDetails } from './week45MathExtras.js';
 // The structured part of "Plain-Language Intuition" on every page. The short hook
 // stays in each concept's `intuition`; here each page gets two to five labelled key ideas and,
 // optionally, notes on the course notes, slides, or book notation (shown collapsed). Lengths are checked by
@@ -809,3 +810,6 @@ export const intuitionDetails = {
     ],
   },
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(intuitionDetails, week45IntuitionDetails);

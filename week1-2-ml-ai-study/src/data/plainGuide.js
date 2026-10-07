@@ -1,3 +1,4 @@
+import { week45PlainGuide } from './week45MathExtras.js';
 // The "Start here" card at the top of every page, written in the style of the hands-on demos:
 //   question   the everyday question this idea answers
 //   idea       the idea in one plain sentence, no symbols
@@ -104,3 +105,6 @@ export const plainGuide = {
   'likelihood-mle': { question: 'Which explanation makes the data most likely?', idea: 'Maximum likelihood picks the parameter under which the observed data would be most probable.', tryIt: 'Set the number of ones k and move mu. The likelihood peaks exactly at mu = k/10.', realWorld: 'Training logistic regression and language models is maximum likelihood.' },
   pca: { question: 'Which directions hold most of the variation?', idea: 'PCA finds the perpendicular directions along which the data spread the most, so a few of them can summarize everything.', tryIt: 'Rotate the projection direction. The spread of the projected points is largest along the data\'s long axis.', realWorld: 'Face recognition, gene expression studies and data visualization use PCA.' },
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(plainGuide, week45PlainGuide);

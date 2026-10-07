@@ -9,7 +9,7 @@ const yMax = 5;
 // Geometric graphs (angles, rotations, perpendicular lines) use the same pixel scale on both axes,
 // so the x range is widened to match the canvas shape; the others keep x in [-5, 5].
 const EQUAL_X_HALF = (5 * (width - padding * 2)) / (height - padding * 2);
-const EQUAL_ASPECT = new Set(['svdSteps', 'eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity', 'marginScale', 'svmDual', 'softMargin', 'kernelBoundary']);
+const EQUAL_ASPECT = new Set(['svdSteps', 'eigenspace', 'quadraticForm', 'dotProduct', 'basis', 'transform', 'determinant', 'perceptron', 'eigen', 'spectral', 'decomposition', 'lineProjection', 'basisCoords', 'span', 'subspaceTest', 'linearBoundary', 'linearSystem', 'rowOpLines', 'normBall', 'innerProductBall', 'complement', 'gramSchmidt', 'pca', 'momentum', 'lagrange', 'gradientField', 'jacobianMap', 'maxMargin', 'scaling', 'perceptronMistakes', 'gaussianCloud', 'collinearity', 'marginScale', 'svmDual', 'softMargin', 'kernelBoundary', 'cosineSim', 'directSum']);
 // Set by ConceptGraph just before a graph is drawn; every sx() call happens synchronously inside that draw.
 let xHalf = 5;
 
@@ -156,6 +156,14 @@ const plotAxes = {
   featureLift: { x: 'x', y: 'x^2 after the lift' },
   featureBins: { x: 'income (raw or log)', y: 'examples per bin' },
   imputation: { x: 'age (18 to 63)', y: 'income (thousands)' },
+  convergence: { x: 'index n (1 to 30)', y: 'x_n' },
+  handshake: { x: '', y: '' },
+  cycleColoring: { x: '', y: '' },
+  adjacencyMatrix: { x: '', y: '' },
+  walkCount: { x: '', y: '' },
+  eulerBridges: { x: '', y: '' },
+  dijkstra: { x: '', y: '' },
+  kingColoring: { x: '', y: '' },
 };
 
 function renderCanvas(content, axes) {
@@ -229,6 +237,16 @@ function renderGraph(type, values) {
     case 'subgradient': return SubgradientGraph({ values });
     case 'kfold': return KFoldGraph({ values });
     case 'pagerank': return PageRankGraph({ values });
+    case 'convergence': return ConvergenceGraph({ values });
+    case 'cosineSim': return CosineSimGraph({ values });
+    case 'directSum': return DirectSumGraph({ values });
+    case 'handshake': return HandshakeGraph({ values });
+    case 'cycleColoring': return CycleColoringGraph({ values });
+    case 'adjacencyMatrix': return AdjacencyMatrixGraph({ values });
+    case 'walkCount': return WalkCountGraph({ values });
+    case 'eulerBridges': return EulerBridgesGraph({ values });
+    case 'dijkstra': return DijkstraGraph({ values });
+    case 'kingColoring': return KingColoringGraph({ values });
     case 'eigenspace': return EigenspaceGraph({ values });
     case 'markov': return MarkovGraph({ values });
     case 'quadraticForm': return QuadraticFormGraph({ values });
@@ -2315,5 +2333,332 @@ function ImputationGraph({ values }) {
       `spread kept: variance ${filledVar.toFixed(0)} versus ${trueVar.toFixed(0)} with the true values`,
       `correlation of age and income: ${corr(rows.map((r) => r.age), rows.map((r) => r.value)).toFixed(3)} (true ${corr(imputationRows.map((r) => r.age), imputationRows.map((r) => r.income)).toFixed(3)})`,
     ],
+  };
+}
+
+// ---------- Mathematics for AI Weeks 4 and 5: convergence, cosine similarity, direct sums, graph theory ----------
+
+// x_n = 3(-r)^n converges to 0; the band is every value within epsilon of the limit.
+function ConvergenceGraph({ values }) {
+  const { eps, r } = values;
+  const count = 30;
+  const xOf = (n) => -4.6 + ((n - 1) * 9.2) / (count - 1);
+  const term = (n) => 3 * (-r) ** n;
+  const N = Math.max(1, Math.floor(Math.log(eps / 3) / Math.log(r)) + 1);
+  const inside = (n) => Math.abs(term(n)) < eps;
+  return {
+    content: <g>
+      <rect className="eps-band" x={sx(-4.9)} y={sy(eps)} width={sx(4.9) - sx(-4.9)} height={sy(-eps) - sy(eps)} />
+      <path className="axis" d={`M ${sx(-4.9)} ${sy(0)} L ${sx(4.9)} ${sy(0)}`} />
+      {N <= count && <path className="net-edge dashed" d={`M ${sx(xOf(N))} ${sy(4.6)} L ${sx(xOf(N))} ${sy(-4.6)}`} />}
+      {Array.from({ length: count }, (_, i) => i + 1).map((n) => <circle key={n} className={n >= N ? 'point-a' : inside(n) ? 'muted-dot' : 'point-b'} cx={sx(xOf(n))} cy={sy(term(n))} r="5" />)}
+      <text className="graph-note" x="44" y="48">{N <= count ? `N = ${N}: every later dot stays in the band` : `N = ${N}, beyond the 30 dots shown`}</text>
+    </g>,
+    readout: [`x_n = 3(-${r.toFixed(2)})^n; limit 0; tolerance epsilon = ${eps.toFixed(2)}`, `|x_n| < epsilon for every n >= N = ${N}`, `so any two terms from N on differ by less than 2 epsilon = ${(2 * eps).toFixed(2)}: the sequence is Cauchy`],
+  };
+}
+
+// Cosine similarity: only the angle matters.
+function CosineSimGraph({ values }) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const a = { x: 4 * Math.cos(toRad(values.angleA)), y: 4 * Math.sin(toRad(values.angleA)) };
+  const b = { x: values.lengthB * Math.cos(toRad(values.angleB)), y: values.lengthB * Math.sin(toRad(values.angleB)) };
+  const cos = Math.cos(toRad(values.angleB - values.angleA));
+  const distance = Math.hypot(a.x - b.x, a.y - b.y);
+  const lo = Math.min(values.angleA, values.angleB);
+  const hi = Math.max(values.angleA, values.angleB);
+  const arc = Array.from({ length: 25 }, (_, i) => { const t = toRad(lo + ((hi - lo) * i) / 24); return { x: 0.9 * Math.cos(t), y: 0.9 * Math.sin(t) }; });
+  return {
+    content: <g>
+      <path className="faint-vector" d={linePath(arc)} />
+      <path className="residual" d={linePath([a, b])} />
+      <path className="vector-a" d={linePath([{ x: 0, y: 0 }, a])} />
+      <path className="vector-b" d={linePath([{ x: 0, y: 0 }, b])} />
+      {circlePoint(a, 'point-a', 'a')}
+      {circlePoint(b, 'point-b', 'b')}
+    </g>,
+    readout: [`angle = ${Math.abs(values.angleB - values.angleA).toFixed(0)} degrees, cosine similarity = ${cos.toFixed(3)}`, `distance between the tips = ${distance.toFixed(2)} (changes when b is stretched)`, `after normalizing both to length 1: distance = ${Math.sqrt(Math.max(0, 2 * (1 - cos))).toFixed(3)} = sqrt(2(1 - cos))`],
+  };
+}
+
+// R^2 = U (+) W: split v along two lines (an oblique parallelogram).
+function DirectSumGraph({ values }) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const u = { x: Math.cos(toRad(values.alpha)), y: Math.sin(toRad(values.alpha)) };
+  const w = { x: Math.cos(toRad(values.beta)), y: Math.sin(toRad(values.beta)) };
+  const v = { x: values.px, y: values.py };
+  const det = u.x * w.y - u.y * w.x;
+  const line = (dir, className) => <path className={className} d={linePath([{ x: -9 * dir.x, y: -9 * dir.y }, { x: 9 * dir.x, y: 9 * dir.y }])} />;
+  if (Math.abs(det) < 1e-9) {
+    return {
+      content: <g>{line(u, 'eigen-line')}{circlePoint(v, 'active-dot', 'v')}<text className="graph-note" x="44" y="48">U and W are the same line: no unique split</text></g>,
+      readout: ['U = W, so U + W is only one line and U ∩ W is that whole line', 'vectors off the line cannot be split at all: not a direct sum'],
+    };
+  }
+  const a = (v.x * w.y - v.y * w.x) / det;
+  const b = (u.x * v.y - u.y * v.x) / det;
+  const pu = { x: a * u.x, y: a * u.y };
+  const pw = { x: b * w.x, y: b * w.y };
+  const perpendicular = Math.abs(u.x * w.x + u.y * w.y) < 1e-9;
+  return {
+    content: <g>
+      {line(u, 'eigen-line')}
+      {line(w, 'eigen-line alt')}
+      <path className="residual" d={linePath([pu, v, pw])} />
+      <path className="vector-a" d={linePath([{ x: 0, y: 0 }, pu])} />
+      <path className="vector-b" d={linePath([{ x: 0, y: 0 }, pw])} />
+      {circlePoint(v, 'active-dot', 'v')}
+      <text className="graph-note" x="44" y="48">{perpendicular ? 'U and W perpendicular: the split is W ⊕ W⊥' : 'v = u + w, one piece on each line'}</text>
+    </g>,
+    readout: [`u = [${pu.x.toFixed(2)}, ${pu.y.toFixed(2)}] on U (blue), w = [${pw.x.toFixed(2)}, ${pw.y.toFixed(2)}] on W (orange)`, `u + w = [${(pu.x + pw.x).toFixed(2)}, ${(pu.y + pw.y).toFixed(2)}] = v; different lines meet only in 0, so this split is the only one`],
+  };
+}
+
+// Drawing helpers for network diagrams: positions are in plot coordinates.
+function netEdge(p, q, className, key, bend = 0, label) {
+  const mx = (sx(p.x) + sx(q.x)) / 2;
+  const my = (sy(p.y) + sy(q.y)) / 2;
+  const dx = sx(q.x) - sx(p.x);
+  const dy = sy(q.y) - sy(p.y);
+  const length = Math.hypot(dx, dy) || 1;
+  const cx = mx - (dy / length) * bend;
+  const cy = my + (dx / length) * bend;
+  return (
+    <g key={key}>
+      <path className={className} d={`M ${sx(p.x)} ${sy(p.y)} Q ${cx} ${cy} ${sx(q.x)} ${sy(q.y)}`} />
+      {label !== undefined && <text className="net-weight" x={(mx + cx) / 2} y={(my + cy) / 2 - 4} textAnchor="middle">{label}</text>}
+    </g>
+  );
+}
+function netNode(p, name, className = 'net-node', key = name, note) {
+  return (
+    <g key={key}>
+      <circle className={className} cx={sx(p.x)} cy={sy(p.y)} r="15" />
+      <text className="net-name" x={sx(p.x)} y={sy(p.y) + 4} textAnchor="middle">{name}</text>
+      {note !== undefined && <text className="net-note" x={sx(p.x)} y={p.y >= 0 ? sy(p.y) - 22 : sy(p.y) + 32} textAnchor="middle">{note}</text>}
+    </g>
+  );
+}
+const ring = (count, radius, cx = 0, cy = 0, start = 90) => Array.from({ length: count }, (_, i) => {
+  const angle = ((start - (360 * i) / count) * Math.PI) / 180;
+  return { x: cx + radius * Math.cos(angle) * 1.25, y: cy + radius * Math.sin(angle) };
+});
+
+// Handshaking: add edges one at a time; the last is a loop at B.
+const HANDSHAKE_EDGES = [[0, 1], [0, 2], [1, 2], [2, 3], [2, 4], [3, 4], [0, 3], [1, 1]];
+function HandshakeGraph({ values }) {
+  const k = Math.round(values.edges);
+  const names = ['A', 'B', 'C', 'D', 'E'];
+  const position = ring(5, 3.4);
+  const degree = [0, 0, 0, 0, 0];
+  HANDSHAKE_EDGES.slice(0, k).forEach(([i, j]) => { degree[i] += 1; degree[j] += 1; });
+  const odd = degree.filter((d) => d % 2).length;
+  return {
+    content: <g>
+      {HANDSHAKE_EDGES.slice(0, k).map(([i, j], index) => (i === j
+        ? <circle key={index} className="net-edge hot" cx={sx(position[i].x)} cy={sy(position[i].y) - 26} r="13" />
+        : netEdge(position[i], position[j], index === k - 1 ? 'net-edge hot' : 'net-edge', index)))}
+      {names.map((name, i) => netNode(position[i], name, degree[i] % 2 ? 'net-node odd' : 'net-node', name, `deg ${degree[i]}`))}
+    </g>,
+    readout: [`edges: ${k}${k === 8 ? ' (the last one is a loop at B, adding 2 to its degree)' : ''}`, `sum of degrees = ${degree.join(' + ')} = ${degree.reduce((s, d) => s + d, 0)} = 2 × ${k}`, `odd-degree vertices (red): ${odd}, always an even number`],
+  };
+}
+
+// C_n coloured by alternating two colours; optional hub makes the wheel W_n.
+function CycleColoringGraph({ values }) {
+  const n = Math.round(values.n);
+  const hub = Math.round(values.hub) === 1;
+  const position = ring(n, 3.6);
+  const colour = Array.from({ length: n }, (_, i) => i % 2);
+  const clash = n % 2 === 1;
+  return {
+    content: <g>
+      {hub && position.map((p, i) => netEdge({ x: 0, y: 0 }, p, 'net-edge', `h${i}`))}
+      {position.map((p, i) => netEdge(p, position[(i + 1) % n], clash && i === n - 1 ? 'net-edge clash' : 'net-edge', `e${i}`))}
+      {position.map((p, i) => netNode(p, String(i + 1), `net-node col-${colour[i] + 1}`, `v${i}`))}
+      {hub && netNode({ x: 0, y: 0 }, 'h', 'net-node col-3', 'hub')}
+    </g>,
+    readout: [
+      clash ? `C_${n} has odd length: two neighbours (red edge) get the same colour, so it is not bipartite and χ(C_${n}) = 3` : `C_${n} has even length: two colours work, so it is bipartite and χ(C_${n}) = 2`,
+      hub ? `the hub touches every rim vertex, so it needs a colour of its own: χ(W_${n}) = ${clash ? 4 : 3}` : `edges: ${n}; with a hub the wheel W_${n} would have ${2 * n}`,
+    ],
+  };
+}
+
+// Adjacency matrix of a 4-vertex graph under a relabelling of its vertices.
+const SMALL_GRAPHS = {
+  1: { name: 'triangle with a tail', edges: [[0, 1], [1, 2], [2, 0], [2, 3]] },
+  2: { name: 'path', edges: [[0, 1], [1, 2], [2, 3]] },
+  3: { name: 'star', edges: [[0, 1], [0, 2], [0, 3]] },
+  4: { name: '4-cycle', edges: [[0, 1], [1, 2], [2, 3], [3, 0]] },
+  5: { name: 'complete graph K_4', edges: [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]] },
+};
+function AdjacencyMatrixGraph({ values }) {
+  const graph = SMALL_GRAPHS[Math.round(values.graph)] ?? SMALL_GRAPHS[1];
+  const shift = Math.round(values.relabel);
+  const letters = ['a', 'b', 'c', 'd'];
+  const labelOf = (i) => (i + shift) % 4;
+  const position = [{ x: -4.2, y: 2.6 }, { x: -1.2, y: 2.6 }, { x: -1.2, y: -2.2 }, { x: -4.2, y: -2.2 }];
+  const A = Array.from({ length: 4 }, () => [0, 0, 0, 0]);
+  graph.edges.forEach(([i, j]) => { A[labelOf(i)][labelOf(j)] = 1; A[labelOf(j)][labelOf(i)] = 1; });
+  const degrees = A.map((row) => row.reduce((s, x) => s + x, 0));
+  const cell = 34;
+  const left = sx(1.1);
+  const top = sy(3.2);
+  return {
+    content: <g>
+      {graph.edges.map(([i, j], index) => netEdge(position[i], position[j], 'net-edge', index))}
+      {position.map((p, i) => netNode(p, letters[labelOf(i)], 'net-node', `n${i}`))}
+      {letters.map((name, c) => <text key={`c${c}`} className="net-note" x={left + cell * (c + 0.5)} y={top - 8} textAnchor="middle">{name}</text>)}
+      {letters.map((name, r) => <text key={`r${r}`} className="net-note" x={left - 12} y={top + cell * (r + 0.62)} textAnchor="middle">{name}</text>)}
+      {A.map((row, r) => row.map((entry, c) => (
+        <g key={`${r}-${c}`}>
+          <rect className={entry ? 'adj-cell on' : 'adj-cell'} x={left + cell * c} y={top + cell * r} width={cell - 3} height={cell - 3} rx="5" />
+          <text className="net-name" x={left + cell * (c + 0.5) - 1} y={top + cell * (r + 0.62)} textAnchor="middle">{entry}</text>
+        </g>
+      )))}
+      {degrees.map((d, r) => <text key={`d${r}`} className="net-note" x={left + cell * 4 + 22} y={top + cell * (r + 0.62)} textAnchor="middle">{d}</text>)}
+      <text className="net-note" x={left + cell * 4 + 22} y={top - 8} textAnchor="middle">sum</text>
+    </g>,
+    readout: [`${graph.name}: ${graph.edges.length} edges; A is symmetric and its row sums are the degrees`, `degree list (a graph invariant): ${[...degrees].sort((x, y) => y - x).join(', ')}, the same for every relabelling`],
+  };
+}
+
+// Count routes of length r with A^r on a 5-vertex graph.
+const WALK_EDGES = [[0, 1], [1, 2], [2, 3], [3, 0], [0, 2], [3, 4]];
+function WalkCountGraph({ values }) {
+  const names = ['a', 'b', 'c', 'd', 'e'];
+  const from = Math.round(values.from) - 1;
+  const to = Math.round(values.to) - 1;
+  const r = Math.round(values.r);
+  const position = [{ x: -1.8, y: 2.6 }, { x: 1.4, y: 2.6 }, { x: 1.4, y: -2.2 }, { x: -1.8, y: -2.2 }, { x: -4.4, y: -2.2 }];
+  const neighbours = names.map((_, v) => WALK_EDGES.flatMap(([i, j]) => (i === v ? [j] : j === v ? [i] : [])));
+  const routes = [];
+  const extend = (route) => {
+    if (route.length === r + 1) { if (route[r] === to) routes.push(route); return; }
+    neighbours[route[route.length - 1]].forEach((next) => extend([...route, next]));
+  };
+  extend([from]);
+  const shown = routes.slice(0, 6).map((route) => route.map((v) => names[v]).join('→'));
+  return {
+    content: <g>
+      {WALK_EDGES.map(([i, j], index) => netEdge(position[i], position[j], 'net-edge', index))}
+      {names.map((name, i) => netNode(position[i], name, i === from && i === to ? 'net-node col-3' : i === from ? 'net-node col-1' : i === to ? 'net-node col-2' : 'net-node', name))}
+      <text className="graph-note" x={sx(2.6)} y={sy(3.6)}>{`(A^${r})_${names[from]}${names[to]} = ${routes.length}`}</text>
+      {shown.map((text, index) => <text key={text} className="net-note" x={sx(2.6)} y={sy(2.6) + 22 * index} textAnchor="start">{text}</text>)}
+      {routes.length > shown.length && <text className="net-note" x={sx(2.6)} y={sy(2.6) + 22 * shown.length} textAnchor="start">{`... and ${routes.length - shown.length} more`}</text>}
+    </g>,
+    readout: [`routes of length ${r} from ${names[from]} (blue) to ${names[to]} (orange): ${routes.length}`, routes.length ? 'vertices may repeat: A^r counts every route, not only simple paths' : `no route of exactly ${r} edges joins them`],
+  };
+}
+
+// Euler routes on a 4-district town; extra bridges change the degrees.
+const TOWN_EDGES = [[0, 1], [0, 1], [0, 2], [1, 2], [2, 3], [2, 3], [1, 3]];
+const TOWN_EXTRA = { 0: [], 1: [[0, 3]], 2: [[0, 3], [1, 2]], 3: [[0, 2]] };
+function eulerRoute(edges, vertexCount) {
+  const degree = Array(vertexCount).fill(0);
+  edges.forEach(([i, j]) => { degree[i] += 1; degree[j] += 1; });
+  const odd = degree.map((d, v) => (d % 2 ? v : -1)).filter((v) => v >= 0);
+  if (odd.length !== 0 && odd.length !== 2) return { degree, odd, route: null };
+  const unused = new Set(edges.map((_, k) => k));
+  const stack = [{ v: odd.length ? odd[0] : 0, k: null }];
+  const route = [];
+  while (stack.length) {
+    const top = stack[stack.length - 1];
+    const k = [...unused].find((index) => edges[index].includes(top.v));
+    if (k === undefined) route.push(stack.pop());
+    else {
+      unused.delete(k);
+      const [i, j] = edges[k];
+      stack.push({ v: i === top.v ? j : i, k });
+    }
+  }
+  route.reverse();
+  return { degree, odd, route: route.slice(1).map((step) => step.k), vertices: route.map((step) => step.v) };
+}
+function EulerBridgesGraph({ values }) {
+  const names = ['A', 'B', 'C', 'D'];
+  const position = [{ x: -4.2, y: 0.2 }, { x: -0.6, y: 3 }, { x: 2.8, y: 0.2 }, { x: -0.6, y: -3.2 }];
+  const edges = [...TOWN_EDGES, ...(TOWN_EXTRA[Math.round(values.extra)] ?? [])];
+  const { degree, odd, route, vertices } = eulerRoute(edges, 4);
+  const traced = route ? route.slice(0, Math.round(values.progress)) : [];
+  const stepOf = new Map(traced.map((k, index) => [k, index + 1]));
+  const seen = {};
+  const bendOf = (k) => {
+    const key = [...edges[k]].sort().join('-');
+    const total = edges.filter((e) => [...e].sort().join('-') === key).length;
+    seen[key] = (seen[key] ?? 0) + 1;
+    if (total === 1) return key === '1-3' ? -95 : 0; // bow B–D so its label clears the crossing with A–C
+    return (seen[key] - (total + 1) / 2) * 46;
+  };
+  const verdict = odd.length === 0 ? 'every degree even: Euler circuit' : odd.length === 2 ? `odd vertices ${names[odd[0]]} and ${names[odd[1]]}: Euler path between them, no circuit` : `${odd.length} odd vertices: neither an Euler path nor a circuit`;
+  return {
+    content: <g>
+      {edges.map(([i, j], k) => netEdge(position[i], position[j], stepOf.has(k) ? 'net-edge hot' : k >= TOWN_EDGES.length ? 'net-edge dashed' : 'net-edge', k, bendOf(k), stepOf.get(k)))}
+      {names.map((name, i) => netNode(position[i], name, degree[i] % 2 ? 'net-node odd' : 'net-node', name, `deg ${degree[i]}`))}
+    </g>,
+    readout: [verdict, route ? `route: ${vertices.map((v) => names[v]).join('–')} (${route.length} bridges, traced ${traced.length})` : 'no route can cross every bridge exactly once'],
+  };
+}
+
+// Dijkstra's algorithm on a fixed weighted graph, one settled vertex per step.
+const DIJKSTRA_NODES = [
+  { name: 's', x: -4.6, y: 0 }, { name: 'a', x: -1.6, y: 2.8 }, { name: 'b', x: -1.6, y: -2.8 },
+  { name: 'c', x: 1.6, y: 2.8 }, { name: 'd', x: 1.6, y: -2.8 }, { name: 't', x: 4.6, y: 0 },
+];
+const DIJKSTRA_EDGES = [[0, 1, 4], [0, 2, 2], [1, 2, 1], [1, 3, 5], [2, 3, 8], [2, 4, 10], [3, 4, 2], [3, 5, 6], [4, 5, 3]];
+function DijkstraGraph({ values }) {
+  const steps = Math.round(values.step);
+  const label = DIJKSTRA_NODES.map((_, i) => (i === 0 ? 0 : Infinity));
+  const previous = DIJKSTRA_NODES.map(() => -1);
+  const settled = [];
+  for (let k = 0; k < steps; k += 1) {
+    let u = -1;
+    label.forEach((value, v) => { if (!settled.includes(v) && (u < 0 || value < label[u])) u = v; });
+    settled.push(u);
+    DIJKSTRA_EDGES.forEach(([i, j, w]) => {
+      const other = i === u ? j : j === u ? i : -1;
+      if (other >= 0 && !settled.includes(other) && label[u] + w < label[other]) { label[other] = label[u] + w; previous[other] = u; }
+    });
+  }
+  const pathEdges = new Set();
+  if (settled.includes(5)) for (let v = 5; previous[v] >= 0; v = previous[v]) pathEdges.add([v, previous[v]].sort().join('-'));
+  const show = (value) => (value === Infinity ? '∞' : String(value));
+  return {
+    content: <g>
+      {DIJKSTRA_EDGES.map(([i, j, w], index) => netEdge(DIJKSTRA_NODES[i], DIJKSTRA_NODES[j], pathEdges.has([i, j].sort().join('-')) ? 'net-edge hot' : 'net-edge', index, 0, w))}
+      {DIJKSTRA_NODES.map((node, i) => netNode(node, node.name, settled.includes(i) ? (i === settled[settled.length - 1] ? 'net-node col-2' : 'net-node col-1') : 'net-node', node.name, `L = ${show(label[i])}`))}
+    </g>,
+    readout: [steps === 0 ? 'start: L(s) = 0, every other label ∞' : `settled so far: ${settled.map((v) => DIJKSTRA_NODES[v].name).join(', ')} (orange = just settled)`, `labels: ${DIJKSTRA_NODES.map((node, i) => `${node.name} ${show(label[i])}`).join(', ')}`, settled.includes(5) ? 'shortest s to t: s–b–a–c–d–t, length 13 (highlighted)' : 'the labels only ever go down; a settled label is final'],
+  };
+}
+
+// King's graph colouring: 4 versions by row and column parity, or a 2-colour chessboard with clashes.
+function KingColoringGraph({ values }) {
+  const rows = Math.round(values.rows);
+  const cols = Math.round(values.cols);
+  const four = Math.round(values.scheme) === 1;
+  const colourOf = (r, c) => (four ? 1 + 2 * (r % 2) + (c % 2) : 1 + ((r + c) % 2));
+  const size = Math.min(54, 520 / cols, 250 / rows);
+  const left = width / 2 - (size * cols) / 2;
+  const top = height / 2 - (size * rows) / 2 + 6;
+  let clashes = 0;
+  const cells = [];
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      const bad = [-1, 0, 1].some((dr) => [-1, 0, 1].some((dc) => (dr || dc) && r + dr >= 0 && r + dr < rows && c + dc >= 0 && c + dc < cols && colourOf(r + dr, c + dc) === colourOf(r, c)));
+      if (bad) clashes += 1;
+      cells.push(
+        <g key={`${r}-${c}`}>
+          <rect className={`seat col-${colourOf(r, c)}${bad ? ' clash' : ''}`} x={left + c * size} y={top + r * size} width={size - 4} height={size - 4} rx="6" />
+          <text className="net-name" x={left + c * size + (size - 4) / 2} y={top + r * size + (size - 4) / 2 + 4} textAnchor="middle">{colourOf(r, c)}</text>
+        </g>,
+      );
+    }
+  }
+  const chi = rows >= 2 && cols >= 2 ? 4 : rows * cols >= 2 ? 2 : 1;
+  return {
+    content: <g>{cells}</g>,
+    readout: [`${rows} × ${cols} seats; versions used: ${four ? Math.min(4, (rows >= 2 ? 2 : 1) * (cols >= 2 ? 2 : 1)) : Math.min(2, rows * cols)}; seats clashing with a neighbour: ${clashes}`, `fewest versions possible: χ = ${chi}${chi === 4 ? ' (any 2 × 2 block is a clique of 4 seats)' : ''}`],
   };
 }

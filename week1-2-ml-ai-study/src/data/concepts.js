@@ -3,6 +3,7 @@ import { mlConcepts } from './mlConcepts.js';
 import { mmlConcepts } from './mmlConcepts.js';
 import { probabilityConcepts } from './probabilityConcepts.js';
 import { week3MlConcepts } from './week3MlConcepts.js';
+import { week45MathConcepts } from './week45MathConcepts.js';
 import { subtopicConcepts, topics } from './subtopics.js';
 
 // Reading order of every concept page (topics are overview pages, not listed here).
@@ -36,8 +37,11 @@ export const conceptOrder = [
   'determinants-cofactor-row-ops',
   'invertible-transformations',
   'affine-maps',
+  'metric-spaces',
   'inner-products',
+  'cosine-similarity',
   'orthogonality',
+  'direct-sum',
   'orthogonal-complement',
   'orthogonal-projections',
   'gram-schmidt',
@@ -104,6 +108,13 @@ export const conceptOrder = [
   'covariance-gaussian',
   'likelihood-mle',
   'pca',
+  'graphs-basics',
+  'special-graphs',
+  'graph-matrices',
+  'graph-connectivity-paths',
+  'euler-hamilton',
+  'shortest-paths',
+  'graph-coloring',
 ];
 
 export const sourceNotes = [
@@ -113,6 +124,8 @@ export const sourceNotes = [
   'Mathematics for AI Week 1: Matrices, Linear Systems, Vector Spaces, Bases, Linear Transformations',
   'Mathematics for AI Week 2: Invertible Matrices, Rank/Nullity, Affine Spaces, Determinants, Change of Basis',
   'Mathematics for AI Week 3: Eigenvalues, Eigenvectors, Diagonalization, PageRank, Spectral Theorem, Cholesky, LU, SVD',
+  'Mathematics for AI Week 4: Norms, Metrics, Inner Products, Cosine Similarity, Orthogonality, Direct Sums, Orthogonal Projections, Least Squares',
+  'Mathematics for AI Week 5: Graph Theory (models, special graphs, adjacency and incidence matrices, connectivity, Euler and Hamilton paths, shortest paths, planar graphs and colouring)',
   'Mathematics for Machine Learning (Deisenroth, Faisal, Ong): Ch. 3 analytic geometry, §4.1 trace, Ch. 5 vector calculus, Ch. 6 probability (§6.1-6.5), §7.1-7.2 momentum and Lagrange multipliers, Ch. 10 PCA',
 ];
 
@@ -706,7 +719,7 @@ const baseConcepts = [
   },
 ];
 
-const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts, ...week3MlConcepts].map((concept) => [concept.id, concept]));
+const conceptById = Object.fromEntries([...baseConcepts, ...subtopicConcepts, ...mmlConcepts, ...calculusConcepts, ...mlConcepts, ...probabilityConcepts, ...week3MlConcepts, ...week45MathConcepts].map((concept) => [concept.id, concept]));
 export const concepts = conceptOrder.map((id) => conceptById[id]);
 export const conceptMap = Object.fromEntries(concepts.map((concept) => [concept.id, concept]));
 

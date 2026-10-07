@@ -1,3 +1,4 @@
+import { week45MmlReferences } from './week45MathExtras.js';
 // Where to read more in the course reference book: M. P. Deisenroth, A. A. Faisal, and C. S. Ong,
 // "Mathematics for Machine Learning" (Cambridge University Press, 2020), free PDF at
 // https://mml-book.github.io. Pages are the printed page numbers; the PDF has 6 front-matter pages
@@ -119,3 +120,6 @@ export function mmlReferencesFor(ids) {
     return true;
   });
 }
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(mmlReferences, week45MmlReferences);

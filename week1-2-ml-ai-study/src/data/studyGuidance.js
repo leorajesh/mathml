@@ -8,6 +8,8 @@ export const advancedConceptIds = new Set([
   'backpropagation',
   'taylor-hessian',
   'orthogonal-complement',
+  'metric-spaces',
+  'direct-sum',
   'gram-schmidt',
   'trace',
   'pca',

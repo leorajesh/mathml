@@ -1,3 +1,4 @@
+import { week45ExampleTasks } from './week45MathExtras.js';
 // The question each worked example answers, shown above its first step so the student knows what
 // they are working towards (and, in practice mode, what to try before revealing the steps).
 // Checked by scripts/check-content.mjs: every page has one.
@@ -101,3 +102,6 @@ export const exampleTasks = {
   'feature-engineering': "On 1 May, build features for a customer whose monthly spend from January to April was 40, 60, 50, 150 and who lives in KL: a 3-month average, a relative feature, a log feature, a one-hot city and equal-width age bins, and name one feature that would leak.",
   'missing-data-imputation': "Six people have ages 22, 25, 35, 45, 28, 50 and incomes 30, ?, 56, 76, ?, 86 (thousands). Fill the gaps by mean, regression and 2-nearest-neighbour imputation, and compare what each does to the spread and to the young group.",
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(exampleTasks, week45ExampleTasks);

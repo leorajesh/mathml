@@ -1,3 +1,4 @@
+import { week45WorkedExampleMath } from './week45MathExtras.js';
 const tex = String.raw;
 
 export const workedExampleMath = {
@@ -602,3 +603,6 @@ export const workedExampleMath = {
     tex`\hat x=2\cdot25-14=36,\quad 2\cdot28-14=42;\qquad k\text{NN}: \tfrac{30+56}{2}=43`,
   ],
 };
+
+// Mathematics for AI Weeks 4 and 5 (week45MathExtras.js).
+Object.assign(workedExampleMath, week45WorkedExampleMath);

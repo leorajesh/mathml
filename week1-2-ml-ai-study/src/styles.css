@@ -1309,3 +1309,22 @@ a.overview-homework { text-decoration: none; }
 .solutions-page .bonus-answer .katex, .sol-problem p .katex { font-size: 1.02em; }
 .course-hw-solutions { font-weight: 700; color: var(--primary); }
 @media (max-width: 640px) { .sol-problem { padding: 12px; } .sol-problem p, .sol-steps > li, .sol-slips li, .sol-idea > span, .sol-check > span, .bonus-answer > span { overflow-x: auto; overflow-y: hidden; min-width: 0; padding-block: 2px; } .sol-head h3 { font-size: 1rem; } }
+
+/* Network diagrams and colourings (graph theory and Week 4 graphs) */
+.net-edge { stroke: var(--c-grey); stroke-width: 2.5; fill: none; stroke-linecap: round; }
+.net-edge.hot { stroke: var(--c-blue); stroke-width: 4.5; }
+.net-edge.clash { stroke: var(--c-rose); stroke-width: 5; stroke-dasharray: 7 5; }
+.net-node { fill: var(--surface); stroke: var(--c-ink); stroke-width: 2; }
+.net-node.odd { fill: color-mix(in srgb, var(--c-rose) 30%, var(--surface)); stroke: var(--c-rose); }
+.col-1 { fill: color-mix(in srgb, var(--c-blue) 38%, var(--surface)); }
+.col-2 { fill: color-mix(in srgb, var(--c-coral) 42%, var(--surface)); }
+.col-3 { fill: color-mix(in srgb, var(--c-teal) 40%, var(--surface)); }
+.col-4 { fill: color-mix(in srgb, var(--c-amber) 40%, var(--surface)); }
+.seat { stroke: var(--border-strong); stroke-width: 1.5; }
+.seat.clash { stroke: var(--c-rose); stroke-width: 4; }
+.adj-cell { fill: var(--surface); stroke: var(--border); }
+.adj-cell.on { fill: color-mix(in srgb, var(--c-blue) 30%, var(--surface)); stroke: var(--c-blue); }
+.plot .net-name { font-size: 13px; font-weight: 800; fill: var(--text); }
+.plot .net-note { font-size: 12px; font-weight: 700; fill: var(--text-muted); }
+.plot .net-weight { font-size: 13px; font-weight: 800; fill: var(--c-amber); paint-order: stroke; stroke: var(--surface-2); stroke-width: 4px; }
+.eps-band { fill: color-mix(in srgb, var(--c-teal) 16%, transparent); }
